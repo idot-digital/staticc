@@ -1,0 +1,17 @@
+{
+  "name": "staticc",
+  "version": "0.0.1",
+  "description": "",
+  "main": "build.dev.js",
+  "bin": {
+    "staticc": "cli.js"
+  },
+  "author": "idot digital",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.17.1",
+    "glob": "^7.1.6",
+    "html-minifier": "^4.0.0",
+    "morgan": "^1.10.0"
+  }
+}
