@@ -1,8 +1,8 @@
 {
   "name": "staticc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
-  "main": "build.dev.js",
+  "main": "lib.js",
   "bin": {
     "staticc": "cli.js"
   },

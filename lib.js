@@ -1,13 +1,45 @@
 const fs = require("fs");
 
 const transpile = (input_string, data) => {
-	const [plainHTMLSnippets, jsSnippets] = seperateSnippets(input_string)
-	const resolvedSnippets = resolveSnippets(jsSnippets, data)
+	//splits text into normal html code and code snippets 
+	const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string)
+	//convertes code snippets to actual value
+	const resolvedSnippets = resolveSnippets(codeSnippets, data)
+	//recombines html with the resolved code snippets
 	let result = resolvedSnippets.reduce((total, currentValue, currentIndex)=>{
 		return total + plainHTMLSnippets[currentIndex] + currentValue
 	}, "")
 	result += plainHTMLSnippets[plainHTMLSnippets.length-1]
-  return result
+	return result
+}
+
+const seperateSnippets = (input_string) => {
+  //count number of {{ => number of code blocks
+  const oc = occurrences(input_string, "{{");
+  const plainHTMLSnippets = [];
+  const codeSnippets = [];
+  //for every code block, get the plain html and the code block and add it to the lists
+  for (let i = 0; i < oc; i++) {
+    const [firstPart, middlePart, lastPart] = cutString(input_string);
+		plainHTMLSnippets.push(firstPart);
+		codeSnippets.push(middlePart);
+		input_string = lastPart;
+	}
+	plainHTMLSnippets.push(input_string);
+	return [plainHTMLSnippets, codeSnippets]
+}
+
+const occurrences = (string, subString) => {
+  return string.split(subString).length - 1;
+}
+
+const cutString = (input_string) => {
+  const openingIndex = input_string.indexOf("{{");
+  const cloringIndex = input_string.indexOf("}}");
+  const firstPart = input_string.slice(0, openingIndex);
+  const middlePart = input_string.slice(openingIndex + 2, cloringIndex);
+  const lastPart = input_string.slice(cloringIndex + 2);
+  return [firstPart, middlePart, lastPart];
 }
 
 const resolveSnippets = (jsSnippets_array, data) => {
@@ -25,60 +57,47 @@ const resolveSnippets = (jsSnippets_array, data) => {
 	})
 }
 
-const resolveDataSnippet = (snippet_string, data) => {
-	return data[snippet_string.replace(/\s/g,'')]
-}
-
 const resolveJsSnippet = (snippet_string, data) => {
-	snippet_string = snippet_string.trim().replace('#','');
-	//is string or array of strings
+  //remove spaces and the #
+  snippet_string = snippet_string.trim().replace('#','');
+  //run the js code and convert string array to array
 	const evaluated_snippet = eval(snippet_string)
 	return noramlizeJsReturns(evaluated_snippet)
 }
 
 const resolvePrefabSnippet = (snippet_string, data) => {
-	snippet_string = snippet_string.trim().replace('!','');
+  //remove spaces and first !
+  snippet_string = snippet_string.trim().replace('!','');
+  //check if its a js or html prefab
 	if(snippet_string.indexOf("!") != -1){
-		//JS snippet
+    //=> JS snippet
+    //remove the second ! and seperate the path of the snippet from the args
 		snippet_string_parts = snippet_string.replace('!','').split(" ");
-		snippet_path = snippet_string_parts.shift()
-		const jsFile = readFileFromDisk("prefabs/" +  snippet_path + ".js");
-		const evalResult = eval(jsFile)
+    snippet_path = snippet_string_parts.shift()
+    //read in the file
+    const jsFile = readFileFromDisk("prefabs/" +  snippet_path + ".js");
+    //parse the js code 
+    const evalResult = eval(jsFile)
+    //run the render function with the provided args. Then convert string array to array if neccesary
 		return noramlizeJsReturns(render(...decodePrefabArgs(snippet_string_parts, data)))
 	}else{
-		//HTML snippet
+    //=> HTML snippet
+    //read in html file from disk and return it
 		return readFileFromDisk("prefabs/" +  snippet_string + ".html");
 	}
 }
 
-const seperateSnippets = (input_string) => {
-  const oc = occurrences(input_string, "{{");
-  const plainHTMLSnippets = [];
-  const jsSnippets = [];
-  for (let i = 0; i < oc; i++) {
-    const [firstPart, middlePart, lastPart] = cutString(input_string);
-    input_string = lastPart;
-    plainHTMLSnippets.push(firstPart);
-    jsSnippets.push(middlePart);
-	}
-	plainHTMLSnippets.push(input_string);
-	return [plainHTMLSnippets, jsSnippets]
-}
-
-const cutString = (input_string) => {
-  const openingIndex = input_string.indexOf("{{");
-  const cloringIndex = input_string.indexOf("}}");
-  const firstPart = input_string.slice(0, openingIndex);
-  const middlePart = input_string.slice(openingIndex + 2, cloringIndex);
-	const lastPart = input_string.slice(cloringIndex + 2);
-  return [firstPart, middlePart, lastPart];
-}
-
-const occurrences = (string, subString) => {
-  return string.split(subString).length - 1;
+const resolveDataSnippet = (snippet_string, data) => {
+  let value = data
+  const snippetParts = snippet_string.replace(/\s/g,'').split(".")
+  for (let i = 0; i < snippetParts.length; i++) {
+    value = value[snippetParts]
+  }
+	return value
 }
 
 const noramlizeJsReturns = (evaluated_snippet) => {
+  //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
 	if(evaluated_snippet.constructor == String){
 		return evaluated_snippet
 	}else if(evaluated_snippet.constructor == Array){
@@ -104,12 +123,14 @@ const decodePrefabArgs = (args, data) => {
 }
 
 const readFileFromDisk = (filepath) => {
+  //read file from disk
 	return fs.readFileSync(filepath, {
 		encoding: "utf8"
 	});
 }
 
 const saveFileToDisk = (filepath, content) => {
+  //save file to disk (+ create folders if neccesary)
 	const folderpath = filepath.split("/").splice(0, filepath.split("/").length-1).join("/")
 	if(folderpath) fs.mkdirSync(folderpath, { recursive: true });
 	fs.writeFileSync(filepath, content);

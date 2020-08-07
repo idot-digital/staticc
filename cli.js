@@ -33,7 +33,7 @@ if(version){
 	console.log("v\t\t alias for version")
 	console.log("version\t\t shows the version of the staticc-cli")
 	console.log("build\t\t creates a production build of all html files")
-	console.log("build-dev\t creates a production build of all html files")
+	console.log("build-dev\t creates a development build of all html files")
 	console.log("serve\t\t starts a development webserver")
 	console.log("init\t\t initializes a new staticc project")
 	console.log("")
