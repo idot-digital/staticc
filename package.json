@@ -1,18 +1,26 @@
 {
-  "name": "staticc",
+  "name": "@idot-digital/staticc",
   "version": "0.1.0",
-  "description": "",
   "main": "lib.js",
   "bin": {
     "staticc": "cli.js"
   },
   "author": "idot digital",
-  "license": "UNLICENSED",
+  "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
     "glob": "^7.1.6",
     "html-minifier": "^4.0.0",
     "morgan": "^1.10.0",
     "sass": "^1.26.10"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idot-digital/staticc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/idot-digital/staticc/issues"
+  },
+  "homepage": "https://github.com/idot-digital/staticc#readme",
+  "description": ""
 }
