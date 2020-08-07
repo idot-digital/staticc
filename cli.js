@@ -66,7 +66,7 @@ if (version) {
     if (build_prod) transpiledCode = minifyHTML(transpiledCode);
     saveFileToDisk(changeFilenameFromSrcToDist(file), transpiledCode);
   });
-  copyAllFiles(getImportedFiles());
+  copyAllFiles([...getImportedFiles(), ...HTMLfiles]);
   console.log("finished build!");
 } else if (serve) {
   if (error) {
