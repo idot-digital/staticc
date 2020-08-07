@@ -1,6 +1,6 @@
 {
   "name": "staticc",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "lib.js",
   "bin": {

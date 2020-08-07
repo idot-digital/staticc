@@ -46,11 +46,14 @@ const resolveSnippets = (jsSnippets_array, data) => {
 	return jsSnippets_array.map(snippet => {
 		const js = snippet.indexOf("#")
 		const prefab = snippet.indexOf("!")
+		const cmd = snippet.indexOf("?")
 		
 		if(js != -1){
 			return resolveJsSnippet(snippet, data)
 		}else if(prefab != -1){
 			return resolvePrefabSnippet(snippet, data)
+		}else if(cmd != -1){
+			return resolveCmdSnippet(snippet)
 		}else{
 			return resolveDataSnippet(snippet, data)
 		}
@@ -72,7 +75,7 @@ const resolvePrefabSnippet = (snippet_string, data) => {
 	if(snippet_string.indexOf("!") != -1){
     //=> JS snippet
     //remove the second ! and seperate the path of the snippet from the args
-		snippet_string_parts = snippet_string.replace('!','').split(" ");
+	snippet_string_parts = snippet_string.replace('!','').split(" ");
     snippet_path = snippet_string_parts.shift()
     //read in the file
     const jsFile = readFileFromDisk("prefabs/" +  snippet_path + ".js");
@@ -85,6 +88,20 @@ const resolvePrefabSnippet = (snippet_string, data) => {
     //read in html file from disk and return it
 		return readFileFromDisk("prefabs/" +  snippet_string + ".html");
 	}
+}
+
+const resolveCmdSnippet = (snippet_string) => {
+	//remove spaces and ?
+	snippet_string_parts = snippet_string.trim().replace('?','').split(" ");;
+	snippet_cmd = snippet_string_parts.shift()
+	switch(snippet_cmd) {
+		case "svg":
+		  return importSvg(...snippet_string_parts)
+		case "css":
+		  return importCss(...snippet_string_parts)
+		default:
+		  return ""
+	  } 
 }
 
 const resolveDataSnippet = (snippet_string, data) => {
@@ -120,6 +137,15 @@ const decodePrefabArgs = (args, data) => {
 		}
 	})
 	return args
+}
+
+const importSvg = (svgPath) => {
+	return readFileFromDisk("src/" + svgPath)
+}
+
+const importCss = (svgPath) => {
+	const styleSheet = readFileFromDisk("src/" + svgPath)
+	return `<style>${styleSheet}</style>`
 }
 
 const readFileFromDisk = (filepath) => {
