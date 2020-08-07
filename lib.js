@@ -1,4 +1,5 @@
 const fs = require("fs");
+const sass = require("sass");
 
 const importedFiles = [];
 
@@ -104,6 +105,8 @@ const resolveCmdSnippet = (snippet_string) => {
       return importSvg(...snippet_string_parts);
     case "css":
       return importCss(...snippet_string_parts);
+    case "sass":
+      return importSass(...snippet_string_parts);
     default:
       return "";
   }
@@ -152,6 +155,12 @@ const importSvg = (svgPath) => {
 const importCss = (cssPath) => {
   importedFiles.push("src/" + cssPath);
   const styleSheet = readFileFromDisk("src/" + cssPath);
+  return `<style>${styleSheet}</style>`;
+};
+
+const importSass = (sassPath) => {
+  importedFiles.push("src/" + sassPath);
+  var styleSheet = sass.renderSync({ file: "src/" + sassPath }).css.toString();
   return `<style>${styleSheet}</style>`;
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "staticc",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "lib.js",
   "bin": {
@@ -12,6 +12,7 @@
     "express": "^4.17.1",
     "glob": "^7.1.6",
     "html-minifier": "^4.0.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "sass": "^1.26.10"
   }
 }
