@@ -2,6 +2,7 @@ const fs = require("fs");
 const sass = require("sass");
 
 const importedFiles = [];
+const importedImages = [];
 
 const transpile = (input_string, data) => {
   //splits text into normal html code and code snippets
@@ -109,6 +110,8 @@ const resolveCmdSnippet = (snippet_string) => {
       return importSass(...snippet_string_parts);
     case "js":
       return importJs(...snippet_string_parts);
+    case "img":
+      return importImg(...snippet_string_parts);
     default:
       return "";
   }
@@ -172,6 +175,20 @@ const importJs = (jsPath) => {
   return `<script>${jsCode}</script>`;
 };
 
+const importImg = (imgPath) => {
+  importedImages.push("src/" + imgPath);
+  const imagePathParts = imgPath.split(".");
+  imagePathParts.pop();
+  const imagepathWithoutExt = imagePathParts.join(".");
+  return `
+<picture>
+  <source srcset='${imagepathWithoutExt}.webp' type='image/webp'>
+  <source srcset='${imagepathWithoutExt}.jxr' type='image/vnd.ms-photo'>
+  <source srcset='${imagepathWithoutExt}.jp2' type='image/jp2'>
+  <img srcset='${imgPath}' alt='ein bild'>
+</picture>`;
+};
+
 const readFileFromDisk = (filepath) => {
   //read file from disk
   return fs.readFileSync(filepath, {
@@ -193,7 +210,12 @@ const getImportedFiles = () => {
   return importedFiles;
 };
 
+const getImportedImages = () => {
+  return importedImages;
+};
+
 exports.saveFileToDisk = saveFileToDisk;
 exports.readFileFromDisk = readFileFromDisk;
 exports.transpile = transpile;
 exports.getImportedFiles = getImportedFiles;
+exports.getImportedImages = getImportedImages;

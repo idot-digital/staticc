@@ -4,11 +4,14 @@ const {
   saveFileToDisk,
   transpile,
   getImportedFiles,
+  getImportedImages,
 } = require("./lib");
 const express = require("express");
 const morgan = require("morgan");
 const minify = require("html-minifier").minify;
 const glob = require("glob");
+const imagemin = require("imagemin");
+const imageminWebp = require("imagemin-webp");
 const args = process.argv.slice(2);
 const fs = require("fs");
 
@@ -66,8 +69,13 @@ if (version) {
     if (build_prod) transpiledCode = minifyHTML(transpiledCode);
     saveFileToDisk(changeFilenameFromSrcToDist(file), transpiledCode);
   });
+
   copyAllFiles([...getImportedFiles(), ...HTMLfiles]);
-  console.log("finished build!");
+  convertAllImages(getImportedImages())
+    .then(() => {
+      console.log("finished build!");
+    })
+    .catch((err) => console.log(err));
 } else if (serve) {
   if (error) {
     console.log(error);
@@ -135,4 +143,12 @@ function copyAllFiles(filter) {
 
 function changeFilenameFromSrcToDist(file) {
   return "dist" + file.substring(3);
+}
+
+async function convertAllImages(filepaths) {
+  await imagemin(filepaths, {
+    destination: "dist/",
+    plugins: [imageminWebp({ quality: 50 })],
+  });
+  console.log("Images optimized");
 }

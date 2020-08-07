@@ -1,6 +1,6 @@
 {
   "name": "@idot-digital/staticc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "lib.js",
   "bin": {
     "staticc": "cli.js"
@@ -11,6 +11,8 @@
     "express": "^4.17.1",
     "glob": "^7.1.6",
     "html-minifier": "^4.0.0",
+    "imagemin": "^7.0.1",
+    "imagemin-webp": "^6.0.0",
     "morgan": "^1.10.0",
     "sass": "^1.26.10"
   },
