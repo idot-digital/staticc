@@ -5,6 +5,7 @@ const morgan = require('morgan')
 const minify = require('html-minifier').minify;
 const glob = require("glob")
 const args = process.argv.slice(2);
+const fs = require('fs')
 
 const help = args.indexOf('--help') >= 0 || args.indexOf('-h') >= 0 || args.indexOf('help') >= 0;
 const version = args.indexOf('version') >= 0 || args.indexOf('v') >= 0 || args.indexOf('-v') >= 0
@@ -21,7 +22,7 @@ try {
     error = "Could not open data.json!"
 }
 
-const files = glob.sync("src/**/*.html")
+
 if(version){
 	const package_info = require("./package.json")
 	console.log(package_info.version)
@@ -38,24 +39,18 @@ if(version){
 	console.log("init\t\t initializes a new staticc project")
 	console.log("")
 	console.log("Visit https://github.com/luiskugel/staticc to learn more about staticc.")
-}else if(build_dev){
+}else if(build_dev || build_prod){
 	if(error) {console.log(error); return}
 	console.log("")
 	console.log("starting build!")
-	files.forEach(file => {
+	const HTMLfiles = glob.sync("src/**/*.html")
+	copyAllFiles()
+	HTMLfiles.forEach(file => {
 		console.log("Building: " + file)
 		const inputFile = readFileFromDisk(file)
-    	saveFileToDisk("dist/" + file, transpile(inputFile, data))
-	});
-    console.log("finished build!")
-}else if(build_prod){
-	if(error) {console.log(error); return}
-	console.log("")
-	console.log("starting build!")
-	files.forEach(file => {
-		console.log("Building: " + file)
-		const inputFile = readFileFromDisk(file)
-    	saveFileToDisk("dist/" + file, minifyHTML(transpile(inputFile, data)))
+		let transpiledCode = transpile(inputFile, data)
+		if(build_prod) transpiledCode = minifyHTML(transpiledCode)
+    	saveFileToDisk(changeFilenameFromSrcToDist(file), transpiledCode)
 	});
     console.log("finished build!")
 }else if(serve){
@@ -105,4 +100,18 @@ function minifyHTML(html_String){
 		minifyCSS: true,
 		minifyJS: true
 	});
+}
+
+function copyAllFiles(){
+	const allfiles = glob.sync("src/**/*.*")
+	allfiles.forEach(file => {
+		const newFilepath = changeFilenameFromSrcToDist(file)
+		const folderpath = newFilepath.split("/").splice(0, newFilepath.split("/").length-1).join("/")
+		if(folderpath) fs.mkdirSync(folderpath, { recursive: true });
+		fs.copyFileSync(file, newFilepath)
+	});
+}
+
+function changeFilenameFromSrcToDist(file){
+	return "dist" + file.substring(3)
 }
