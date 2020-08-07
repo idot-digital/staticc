@@ -107,6 +107,8 @@ const resolveCmdSnippet = (snippet_string) => {
       return importCss(...snippet_string_parts);
     case "sass":
       return importSass(...snippet_string_parts);
+    case "js":
+      return importJs(...snippet_string_parts);
     default:
       return "";
   }
@@ -162,6 +164,12 @@ const importSass = (sassPath) => {
   importedFiles.push("src/" + sassPath);
   var styleSheet = sass.renderSync({ file: "src/" + sassPath }).css.toString();
   return `<style>${styleSheet}</style>`;
+};
+
+const importJs = (jsPath) => {
+  importedFiles.push("src/" + jsPath);
+  const jsCode = readFileFromDisk("src/" + jsPath);
+  return `<script>${jsCode}</script>`;
 };
 
 const readFileFromDisk = (filepath) => {
