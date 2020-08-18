@@ -3,6 +3,7 @@ const sass = require("sass");
 
 const importedFiles = [];
 const importedImages = [];
+let currentSnippet = "";
 
 const transpile = (input_string, data) => {
   //splits text into normal html code and code snippets
@@ -47,7 +48,9 @@ const cutString = (input_string) => {
 };
 
 const resolveSnippets = (jsSnippets_array, data) => {
-  return jsSnippets_array.map((snippet) => {
+  return jsSnippets_array.map((snippet, index) => {
+    console.log("Resolving Snippet: " + index)
+    currentSnippet = snippet;
     const js = snippet.indexOf("#");
     const prefab = snippet.indexOf("!");
     const cmd = snippet.indexOf("?");
@@ -214,8 +217,14 @@ const getImportedImages = () => {
   return importedImages;
 };
 
+const getCurrentSnippet = () => {
+  return currentSnippet;
+};
+
+
 exports.saveFileToDisk = saveFileToDisk;
 exports.readFileFromDisk = readFileFromDisk;
 exports.transpile = transpile;
 exports.getImportedFiles = getImportedFiles;
 exports.getImportedImages = getImportedImages;
+exports.getCurrentSnippet = getCurrentSnippet;
