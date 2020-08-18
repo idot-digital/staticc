@@ -5,6 +5,7 @@ const {
   transpile,
   getImportedFiles,
   getImportedImages,
+  getCurrentSnippet
 } = require("./lib");
 const express = require("express");
 const morgan = require("morgan");
@@ -65,7 +66,13 @@ if (version) {
   HTMLfiles.forEach((file) => {
     console.log("Building: " + file);
     const inputFile = readFileFromDisk(file);
-    let transpiledCode = transpile(inputFile, data);
+    let transpiledCode;
+    try {
+      transpiledCode = transpile(inputFile, data);
+    } catch (error) {
+      console.log("")
+      console.log("Error compiling Code snippet: " + getCurrentSnippet())
+    }
     if (build_prod) transpiledCode = minifyHTML(transpiledCode);
     saveFileToDisk(changeFilenameFromSrcToDist(file), transpiledCode);
   });
