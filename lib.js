@@ -135,7 +135,9 @@ const resolveDataSnippet = (snippet_string, data) => {
 
 const noramlizeJsReturns = (evaluated_snippet) => {
   //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
-  if (evaluated_snippet.constructor == String) {
+  if(!evaluated_snippet){
+    return ""
+  }else if (evaluated_snippet.constructor == String) {
     return evaluated_snippet;
   } else if (evaluated_snippet.constructor == Array) {
     return evaluated_snippet.reduce((total, current) => {

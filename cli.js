@@ -115,6 +115,7 @@ function startServer() {
       const inputFile = readFileFromDisk("src/" + req.url);
       res.write(transpile(inputFile, data, ""));
       res.end();
+      data = JSON.parse(readFileFromDisk("data.json"));
     } else {
       next();
     }
