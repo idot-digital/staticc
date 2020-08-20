@@ -5,11 +5,11 @@ const importedFiles = [];
 const importedImages = [];
 let currentSnippet = "";
 
-const transpile = (input_string, data) => {
+const transpile = (input_string, data, snippetPrefix) => {
   //splits text into normal html code and code snippets
   const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string);
   //convertes code snippets to actual value
-  const resolvedSnippets = resolveSnippets(codeSnippets, data);
+  const resolvedSnippets = resolveSnippets(codeSnippets, data, snippetPrefix);
   //recombines html with the resolved code snippets
   let result = resolvedSnippets.reduce((total, currentValue, currentIndex) => {
     return total + plainHTMLSnippets[currentIndex] + currentValue;
@@ -47,9 +47,10 @@ const cutString = (input_string) => {
   return [firstPart, middlePart, lastPart];
 };
 
-const resolveSnippets = (jsSnippets_array, data) => {
+const resolveSnippets = (jsSnippets_array, data, snippetPrefix) => {
   return jsSnippets_array.map((snippet, index) => {
-    console.log("Resolving Snippet: " + index)
+    index = index + 1
+    console.log("Resolving Snippet: " + snippetPrefix + index)
     currentSnippet = snippet;
     const js = snippet.indexOf("#");
     const prefab = snippet.indexOf("!");
@@ -57,15 +58,15 @@ const resolveSnippets = (jsSnippets_array, data) => {
 
     if (js != -1) {
       const resolvedSnippet = resolveJsSnippet(snippet, data);
-      return transpile(resolvedSnippet, data);
+      return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
     } else if (prefab != -1) {
       const resolvedSnippet = resolvePrefabSnippet(snippet, data);
-      return transpile(resolvedSnippet, data);
+      return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
     } else if (cmd != -1) {
       const resolvedSnippet = resolveCmdSnippet(snippet);
-      return transpile(resolvedSnippet, data);
+      return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
     } else {
-      return resolveDataSnippet(snippet, data);
+      return resolveDataSnippet(snippet, data, snippetPrefix + index + ".");
     }
   });
 };
