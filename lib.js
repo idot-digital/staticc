@@ -56,11 +56,14 @@ const resolveSnippets = (jsSnippets_array, data) => {
     const cmd = snippet.indexOf("?");
 
     if (js != -1) {
-      return resolveJsSnippet(snippet, data);
+      const resolvedSnippet = resolveJsSnippet(snippet, data);
+      return transpile(resolvedSnippet, data);
     } else if (prefab != -1) {
-      return resolvePrefabSnippet(snippet, data);
+      const resolvedSnippet = resolvePrefabSnippet(snippet, data);
+      return transpile(resolvedSnippet, data);
     } else if (cmd != -1) {
-      return resolveCmdSnippet(snippet);
+      const resolvedSnippet = resolveCmdSnippet(snippet);
+      return transpile(resolvedSnippet, data);
     } else {
       return resolveDataSnippet(snippet, data);
     }
