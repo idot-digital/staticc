@@ -28,11 +28,19 @@ const build_dev = args.indexOf("build-dev") >= 0;
 const build_prod = args.indexOf("build") >= 0;
 const serve = args.indexOf("serve") >= 0;
 const init = args.indexOf("init") >= 0;
+const data_json_override = args.indexOf("-data") >= 0 || args.indexOf("-d") >= 0;
+
+let data_json_path = "data.json"
+
+if(data_json_override){
+  const index = (args.indexOf("-d") !== -1 ? args.indexOf("-d") : args.indexOf("-data"))
+  data_json_path = args[index+1]
+}
 
 let error;
 let data;
 try {
-  data = JSON.parse(readFileFromDisk("data.json"));
+  data = JSON.parse(readFileFromDisk(data_json_path));
 } catch (e) {
   error = "Could not open data.json!";
 }
@@ -112,7 +120,7 @@ function startServer() {
     }
     const urlParts = req.url.split(".");
     if (urlParts[urlParts.length - 1] == "html" || req.url == "/") {
-      data = JSON.parse(readFileFromDisk("data.json"));
+      data = JSON.parse(readFileFromDisk(data_json_path));
       const inputFile = readFileFromDisk("src/" + req.url);
       res.write(transpile(inputFile, data));
       res.end();
