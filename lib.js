@@ -107,21 +107,22 @@ const resolvePrefabSnippet = (snippet_string, data) => {
 const resolveCmdSnippet = (snippet_string) => {
   //remove spaces and ?
   snippet_string_parts = snippet_string.trim().replace("?", "").split(" ");
-  snippet_cmd = snippet_string_parts.shift();
-  switch (snippet_cmd) {
-    case "svg":
-      return importSvg(...snippet_string_parts);
-    case "css":
-      return importCss(...snippet_string_parts);
-    case "sass":
-      return importSass(...snippet_string_parts);
-    case "js":
-      return importJs(...snippet_string_parts);
-    case "img":
-      return importImg(...snippet_string_parts);
-    default:
-      return "";
+  const snippet_cmd = snippet_string_parts.shift();
+  let resolvedString = "";
+  for (let i = 0; i < snippet_string_parts.length; i++) {
+    if(snippet_cmd === "svg"){
+      resolvedString += importSvg(snippet_string_parts[i]);
+    }else if(snippet_cmd === "css"){
+      resolvedString += importCss(snippet_string_parts[i]);
+    }else if(snippet_cmd === "sass"){
+      resolvedString += importSass(snippet_string_parts[i]);
+    }else if(snippet_cmd === "js"){
+      resolvedString += importJs(snippet_string_parts[i]);
+    }else if(snippet_cmd === "img"){
+      resolvedString += importImg(snippet_string_parts[i]);
+    }
   }
+  return resolvedString;
 };
 
 const resolveDataSnippet = (snippet_string, data) => {
