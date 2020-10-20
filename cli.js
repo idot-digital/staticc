@@ -18,6 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const chokidar = require('chokidar');
 const { clearTimeout } = require("timers");
+const lite_server = require("lite-server")
 
 const help =
   args.indexOf("--help") >= 0 ||
@@ -33,6 +34,7 @@ const serve = args.indexOf("serve") >= 0;
 const init = args.indexOf("init") >= 0;
 const data_json_override = args.indexOf("-data") >= 0 || args.indexOf("-d") >= 0;
 
+
 let data_json_path = "data.json"
 
 if(data_json_override){
@@ -42,11 +44,6 @@ if(data_json_override){
 
 let error;
 let data;
-try {
-  data = JSON.parse(readFileFromDisk(data_json_path));
-} catch (e) {
-  error = `Could not open ${data_json_path}!`;
-}
 
 if (version) {
   const package_info = require("./package.json");
@@ -91,7 +88,7 @@ function startServer() {
   process.title = 'lite-server';
   process.argv = ['','', '-c', path.join(require.main.path, 'bs-config.json')
   ]
-  require('./node_modules/lite-server/lib/lite-server')();
+  lite_server.server()
   console.log("Staticc server listening on http://localhost:8888/");
   
   let timeoutHandler;
@@ -107,6 +104,11 @@ function startServer() {
 }
 
 function build(){
+  try {
+    data = JSON.parse(readFileFromDisk(data_json_path));
+  } catch (e) {
+    error = `Could not open ${data_json_path}!`;
+  }
   if (error) {
     console.log(error);
     return;
