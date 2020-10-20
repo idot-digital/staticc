@@ -6,8 +6,9 @@ const importedImages = [];
 let currentSnippet = "";
 
 const transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
+  input_string = cleanComments(input_string)
   //splits text into normal html code and code snippets
-  const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string);
+  const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string, "{{", "}}");
   //convertes code snippets to actual value
   const resolvedSnippets = resolveSnippets(codeSnippets, data, snippetPrefix, path);
   //recombines html with the resolved code snippets
@@ -18,14 +19,14 @@ const transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
   return result;
 };
 
-const seperateSnippets = (input_string) => {
+const seperateSnippets = (input_string, start_seperator, end_seperator) => {
   //count number of {{ => number of code blocks
-  const oc = occurrences(input_string, "{{");
+  const oc = occurrences(input_string, start_seperator);
   const plainHTMLSnippets = [];
   const codeSnippets = [];
   //for every code block, get the plain html and the code block and add it to the lists
   for (let i = 0; i < oc; i++) {
-    const [firstPart, middlePart, lastPart] = cutString(input_string);
+    const [firstPart, middlePart, lastPart] = cutString(input_string, start_seperator, end_seperator);
     plainHTMLSnippets.push(firstPart);
     codeSnippets.push(middlePart);
     input_string = lastPart;
@@ -38,9 +39,9 @@ const occurrences = (string, subString) => {
   return string.split(subString).length - 1;
 };
 
-const cutString = (input_string) => {
-  const openingIndex = input_string.indexOf("{{");
-  const cloringIndex = input_string.indexOf("}}");
+const cutString = (input_string, start_seperator, end_seperator) => {
+  const openingIndex = input_string.indexOf(start_seperator);
+  const cloringIndex = input_string.indexOf(end_seperator);
   const firstPart = input_string.slice(0, openingIndex);
   const middlePart = input_string.slice(openingIndex + 2, cloringIndex);
   const lastPart = input_string.slice(cloringIndex + 2);
@@ -243,3 +244,12 @@ exports.transpile = transpile;
 exports.getImportedFiles = getImportedFiles;
 exports.getImportedImages = getImportedImages;
 exports.getCurrentSnippet = getCurrentSnippet;
+
+
+const cleanComments = (input_string) => {
+  const [nonCommentSnippets] = seperateSnippets(input_string, "{#", "#}")
+  const result = nonCommentSnippets.reduce((total, currentValue)=>{
+    return total + currentValue
+  }, "")
+  return result
+}
