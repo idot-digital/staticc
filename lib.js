@@ -128,7 +128,7 @@ const resolveDataSnippet = (snippet_string, data) => {
   let value = data;
   const snippetParts = snippet_string.replace(/\s/g, "").split(".");
   for (let i = 0; i < snippetParts.length; i++) {
-    value = value[snippetParts];
+    value = value[snippetParts[i]];
   }
   return value;
 };
