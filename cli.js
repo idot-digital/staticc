@@ -89,7 +89,7 @@ if (version) {
 
 function startServer() {
   process.title = 'lite-server';
-  process.argv = ['','', '-c', path.join(process.mainModule.path, 'bs-config.json')
+  process.argv = ['','', '-c', path.join(require.main.path, 'bs-config.json')
   ]
   require('./node_modules/lite-server/lib/lite-server')();
   console.log("Staticc server listening on http://localhost:8888/");
