@@ -68,7 +68,7 @@ if (version) {
     const inputFile = readFileFromDisk(file);
     let transpiledCode;
     try {
-      transpiledCode = transpile(inputFile, data, "");
+      transpiledCode = transpile(inputFile, data);
     } catch (error) {
       console.log("")
       console.log("Error compiling Code snippet: " + getCurrentSnippet())
@@ -114,7 +114,7 @@ function startServer() {
     if (urlParts[urlParts.length - 1] == "html" || req.url == "/") {
       data = JSON.parse(readFileFromDisk("data.json"));
       const inputFile = readFileFromDisk("src/" + req.url);
-      res.write(transpile(inputFile, data, ""));
+      res.write(transpile(inputFile, data));
       res.end();
     } else {
       next();

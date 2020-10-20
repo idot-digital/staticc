@@ -5,11 +5,11 @@ const importedFiles = [];
 const importedImages = [];
 let currentSnippet = "";
 
-const transpile = (input_string, data, snippetPrefix) => {
+const transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
   //splits text into normal html code and code snippets
   const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string);
   //convertes code snippets to actual value
-  const resolvedSnippets = resolveSnippets(codeSnippets, data, snippetPrefix);
+  const resolvedSnippets = resolveSnippets(codeSnippets, data, snippetPrefix, path);
   //recombines html with the resolved code snippets
   let result = resolvedSnippets.reduce((total, currentValue, currentIndex) => {
     return total + plainHTMLSnippets[currentIndex] + currentValue;
@@ -47,7 +47,7 @@ const cutString = (input_string) => {
   return [firstPart, middlePart, lastPart];
 };
 
-const resolveSnippets = (jsSnippets_array, data, snippetPrefix) => {
+const resolveSnippets = (jsSnippets_array, data, snippetPrefix, path) => {
   return jsSnippets_array.map((snippet, index) => {
     index = index + 1
     console.log("Resolving Snippet: " + snippetPrefix + index)
@@ -60,13 +60,12 @@ const resolveSnippets = (jsSnippets_array, data, snippetPrefix) => {
       const resolvedSnippet = resolveJsSnippet(snippet, data);
       return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
     } else if (prefab != -1) {
-      const resolvedSnippet = resolvePrefabSnippet(snippet, data);
-      return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
+      const {resolvedSnippet, prefab_path} = resolvePrefabSnippet(snippet, data);
+      return transpile(resolvedSnippet, data, snippetPrefix + index + ".", prefab_path);
     } else if (cmd != -1) {
-      const resolvedSnippet = resolveCmdSnippet(snippet);
-      return transpile(resolvedSnippet, data, snippetPrefix + index + ".");
+      return resolveCmdSnippet(snippet, path);
     } else {
-      return resolveDataSnippet(snippet, data, snippetPrefix + index + ".");
+      return resolveDataSnippet(snippet, data);
     }
   });
 };
@@ -82,44 +81,49 @@ const resolveJsSnippet = (snippet_string, data) => {
 const resolvePrefabSnippet = (snippet_string, data) => {
   //remove spaces and first !
   snippet_string = snippet_string.trim().replace("!", "");
+  //seperate the path of the snippet from the args
+  snippet_string_parts = snippet_string.split(" ");
+  snippet_path = snippet_string_parts.shift();
   //check if its a js or html prefab
-  if (snippet_string.indexOf("!") != -1) {
-    //=> JS snippet
-    //remove the second ! and seperate the path of the snippet from the args
-    snippet_string_parts = snippet_string.replace("!", "").split(" ");
-    snippet_path = snippet_string_parts.shift();
-    //read in the file
-    const jsFile = readFileFromDisk("prefabs/" + snippet_path + ".js");
-    //parse the js code
-    const evalResult = eval(jsFile);
-    //run the render function with the provided args. Then convert string array to array if neccesary
-    return noramlizeJsReturns(
-      render(...decodePrefabArgs(snippet_string_parts, data))
-    );
-  } else {
+  const prefab_path = "prefabs/" +  snippet_path + "/"
+  if(fileExists(prefab_path + "prefab.html")){
     //=> HTML snippet
     //read in html file from disk and return it
-    importedFiles.push("prefabs/" + snippet_string + ".html");
-    return readFileFromDisk("prefabs/" + snippet_string + ".html");
+    importedFiles.push(prefab_path + "prefab.html");
+    return {resolvedSnippet: readFileFromDisk(prefab_path + "prefab.html"), prefab_path}
+  }else if(fileExists(prefab_path + "prefab.js")){
+    //=> JS snippet
+    //read in the file
+    const jsFile = readFileFromDisk(prefab_path + "prefab.js");
+    //parse the js code
+    eval(jsFile);
+    return {resolvedSnippet: noramlizeJsReturns(
+      render(...decodePrefabArgs(snippet_string_parts, data))
+    ), prefab_path}
+  }else{
+    //ERROR with prefab
+    console.log("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")")
+    return ""
   }
 };
 
-const resolveCmdSnippet = (snippet_string) => {
+const resolveCmdSnippet = (snippet_string, path) => {
   //remove spaces and ?
   snippet_string_parts = snippet_string.trim().replace("?", "").split(" ");
   const snippet_cmd = snippet_string_parts.shift();
   let resolvedString = "";
   for (let i = 0; i < snippet_string_parts.length; i++) {
+    const filepath = path + snippet_string_parts[i]
     if(snippet_cmd === "svg"){
-      resolvedString += importSvg(snippet_string_parts[i]);
+      resolvedString += importSvg(filepath);
     }else if(snippet_cmd === "css"){
-      resolvedString += importCss(snippet_string_parts[i]);
+      resolvedString += importCss(filepath);
     }else if(snippet_cmd === "sass"){
-      resolvedString += importSass(snippet_string_parts[i]);
+      resolvedString += importSass(filepath);
     }else if(snippet_cmd === "js"){
-      resolvedString += importJs(snippet_string_parts[i]);
+      resolvedString += importJs(filepath);
     }else if(snippet_cmd === "img"){
-      resolvedString += importImg(snippet_string_parts[i]);
+      resolvedString += importImg(filepath);
     }
   }
   return resolvedString;
@@ -163,30 +167,30 @@ const decodePrefabArgs = (args, data) => {
 };
 
 const importSvg = (svgPath) => {
-  importedFiles.push("src/" + svgPath);
-  return readFileFromDisk("src/" + svgPath);
+  importedFiles.push(svgPath);
+  return readFileFromDisk(svgPath);
 };
 
 const importCss = (cssPath) => {
-  importedFiles.push("src/" + cssPath);
-  const styleSheet = readFileFromDisk("src/" + cssPath);
+  importedFiles.push(cssPath);
+  const styleSheet = readFileFromDisk(cssPath);
   return `<style>${styleSheet}</style>`;
 };
 
 const importSass = (sassPath) => {
-  importedFiles.push("src/" + sassPath);
-  var styleSheet = sass.renderSync({ file: "src/" + sassPath }).css.toString();
+  importedFiles.push(sassPath);
+  var styleSheet = sass.renderSync({ file: sassPath }).css.toString();
   return `<style>${styleSheet}</style>`;
 };
 
 const importJs = (jsPath) => {
-  importedFiles.push("src/" + jsPath);
-  const jsCode = readFileFromDisk("src/" + jsPath);
+  importedFiles.push(jsPath);
+  const jsCode = readFileFromDisk(jsPath);
   return `<script>${jsCode}</script>`;
 };
 
 const importImg = (imgPath) => {
-  importedImages.push("src/" + imgPath);
+  importedImages.push(imgPath);
   const imagePathParts = imgPath.split(".");
   imagePathParts.pop();
   const imagepathWithoutExt = imagePathParts.join(".");
@@ -215,6 +219,10 @@ const saveFileToDisk = (filepath, content) => {
   if (folderpath) fs.mkdirSync(folderpath, { recursive: true });
   fs.writeFileSync(filepath, content);
 };
+
+const fileExists = (filepath) => {
+  return fs.existsSync(filepath)
+}
 
 const getImportedFiles = () => {
   return importedFiles;
