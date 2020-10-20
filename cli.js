@@ -15,6 +15,9 @@ const imagemin = require("imagemin");
 const imageminWebp = require("imagemin-webp");
 const args = process.argv.slice(2);
 const fs = require("fs");
+const path = require("path");
+const chokidar = require('chokidar');
+const { clearTimeout } = require("timers");
 
 const help =
   args.indexOf("--help") >= 0 ||
@@ -42,7 +45,7 @@ let data;
 try {
   data = JSON.parse(readFileFromDisk(data_json_path));
 } catch (e) {
-  error = "Could not open data.json!";
+  error = `Could not open ${data_json_path}!`;
 }
 
 if (version) {
@@ -64,6 +67,46 @@ if (version) {
     "Visit https://github.com/luiskugel/staticc to learn more about staticc."
   );
 } else if (build_dev || build_prod) {
+  build()
+} else if (serve) {
+  if (error) {
+    console.log(error);
+    return;
+  }
+  startServer();
+} else if (init) {
+  console.log("");
+  console.log("Initializing staticc project!");
+  console.log("");
+  const example_project = require("./example_project.json");
+  Object.keys(example_project).forEach((filepath) => {
+    saveFileToDisk(filepath, example_project[filepath]);
+  });
+  console.log("Finished!");
+} else {
+  console.log("Use -h or --help for help!");
+}
+
+function startServer() {
+  process.title = 'lite-server';
+  process.argv = ['','', '-c', path.join(process.mainModule.path, 'bs-config.json')
+  ]
+  require('./node_modules/lite-server/lib/lite-server')();
+  console.log("Staticc server listening on http://localhost:8888/");
+  
+  let timeoutHandler;
+  chokidar.watch('./', { ignored: /dist/}).on('all', (event, path) => {
+    clearTimeout(timeoutHandler);
+    timeoutHandler = setTimeout(()=>{
+      //reload server
+      build();
+    },100)
+  });
+
+
+}
+
+function build(){
   if (error) {
     console.log(error);
     return;
@@ -91,47 +134,6 @@ if (version) {
       console.log("finished build!");
     })
     .catch((err) => console.log(err));
-} else if (serve) {
-  if (error) {
-    console.log(error);
-    return;
-  }
-  startServer();
-} else if (init) {
-  console.log("");
-  console.log("Initializing staticc project!");
-  console.log("");
-  const example_project = require("./example_project.json");
-  Object.keys(example_project).forEach((filepath) => {
-    saveFileToDisk(filepath, example_project[filepath]);
-  });
-  console.log("Finished!");
-} else {
-  console.log("Use -h or --help for help!");
-}
-
-function startServer() {
-  const app = express();
-  app.use(morgan("dev"));
-
-  app.use((req, res, next) => {
-    if (req.url == "/") {
-      req.url += "index.html";
-    }
-    const urlParts = req.url.split(".");
-    if (urlParts[urlParts.length - 1] == "html" || req.url == "/") {
-      data = JSON.parse(readFileFromDisk(data_json_path));
-      const inputFile = readFileFromDisk("src/" + req.url);
-      res.write(transpile(inputFile, data));
-      res.end();
-    } else {
-      next();
-    }
-  });
-  app.use(express.static("src"));
-  app.listen(8888, () => {
-    console.log("Staticc server listening on http://localhost:8888/");
-  });
 }
 
 function minifyHTML(html_String) {
