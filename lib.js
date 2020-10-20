@@ -1,5 +1,6 @@
 const fs = require("fs");
 const sass = require("sass");
+const pathLib = require("path");
 
 const importedFiles = [];
 const importedImages = [];
@@ -86,16 +87,16 @@ const resolvePrefabSnippet = (snippet_string, data) => {
   snippet_string_parts = snippet_string.split(" ");
   snippet_path = snippet_string_parts.shift();
   //check if its a js or html prefab
-  const prefab_path = "prefabs/" +  snippet_path + "/"
-  if(fileExists(prefab_path + "prefab.html")){
+  const prefab_path = pathLib.join("prefabs" ,  snippet_path)
+  if(fileExists(pathLib.join(prefab_path, "prefab.html"))){
     //=> HTML snippet
     //read in html file from disk and return it
-    importedFiles.push(prefab_path + "prefab.html");
-    return {resolvedSnippet: readFileFromDisk(prefab_path + "prefab.html"), prefab_path}
-  }else if(fileExists(prefab_path + "prefab.js")){
+    importedFiles.push(pathLib.join(prefab_path, "prefab.html"));
+    return {resolvedSnippet: readFileFromDisk(pathLib.join(prefab_path, "prefab.html")), prefab_path}
+  }else if(fileExists(pathLib.join(prefab_path, "prefab.js"))){
     //=> JS snippet
     //read in the file
-    const jsFile = readFileFromDisk(prefab_path + "prefab.js");
+    const jsFile = readFileFromDisk(pathLib.join(prefab_path, "prefab.js"));
     //parse the js code
     eval(jsFile);
     return {resolvedSnippet: noramlizeJsReturns(
@@ -114,7 +115,7 @@ const resolveCmdSnippet = (snippet_string, path) => {
   const snippet_cmd = snippet_string_parts.shift();
   let resolvedString = "";
   for (let i = 0; i < snippet_string_parts.length; i++) {
-    const filepath = path + snippet_string_parts[i]
+    const filepath = pathLib.join(path, snippet_string_parts[i])
     if(snippet_cmd === "svg"){
       resolvedString += importSvg(filepath);
     }else if(snippet_cmd === "css"){
@@ -198,11 +199,17 @@ const importImg = (imgPath) => {
   return `
 <picture>
   <source srcset='${imagepathWithoutExt}.webp' type='image/webp'>
-  <source srcset='${imagepathWithoutExt}.jxr' type='image/vnd.ms-photo'>
-  <source srcset='${imagepathWithoutExt}.jp2' type='image/jp2'>
   <img srcset='${imgPath}' alt='ein bild'>
 </picture>`;
 };
+
+const cleanComments = (input_string) => {
+  const [nonCommentSnippets] = seperateSnippets(input_string, "{#", "#}")
+  const result = nonCommentSnippets.reduce((total, currentValue)=>{
+    return total + currentValue
+  }, "")
+  return result
+}
 
 const readFileFromDisk = (filepath) => {
   //read file from disk
@@ -213,10 +220,7 @@ const readFileFromDisk = (filepath) => {
 
 const saveFileToDisk = (filepath, content) => {
   //save file to disk (+ create folders if neccesary)
-  const folderpath = filepath
-    .split("/")
-    .splice(0, filepath.split("/").length - 1)
-    .join("/");
+  const folderpath = pathLib.join(...(filepath.split("/").splice(0, filepath.split("/").length - 1)));
   if (folderpath) fs.mkdirSync(folderpath, { recursive: true });
   fs.writeFileSync(filepath, content);
 };
@@ -244,12 +248,3 @@ exports.transpile = transpile;
 exports.getImportedFiles = getImportedFiles;
 exports.getImportedImages = getImportedImages;
 exports.getCurrentSnippet = getCurrentSnippet;
-
-
-const cleanComments = (input_string) => {
-  const [nonCommentSnippets] = seperateSnippets(input_string, "{#", "#}")
-  const result = nonCommentSnippets.reduce((total, currentValue)=>{
-    return total + currentValue
-  }, "")
-  return result
-}
