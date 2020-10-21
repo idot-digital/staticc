@@ -1,9 +1,12 @@
 {
-  "name": "@idot-digital/staticc",
-  "version": "0.2.3",
+  "name": "staticc",
+  "version": "0.2.4",
   "main": "lib.js",
   "bin": {
     "staticc": "cli.js"
+  },
+  "scripts": {
+    "test": "jest --collect-coverage"
   },
   "author": "idot digital",
   "license": "ISC",
@@ -27,5 +30,8 @@
     "url": "https://github.com/idot-digital/staticc/issues"
   },
   "homepage": "https://github.com/idot-digital/staticc#readme",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "jest": "^26.6.0"
+  }
 }

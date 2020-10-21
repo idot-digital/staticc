@@ -2,9 +2,12 @@ const fs = require("fs");
 const sass = require("sass");
 const pathLib = require("path");
 
+const { readFileFromDisk, saveFileToDisk, fileExists } = require("./read_write_lib")
+
 const importedFiles = [];
 const importedImages = [];
 let currentSnippet = "";
+let surpress_logs = false
 
 const transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
   input_string = cleanComments(input_string)
@@ -52,7 +55,7 @@ const cutString = (input_string, start_seperator, end_seperator) => {
 const resolveSnippets = (jsSnippets_array, data, snippetPrefix, path) => {
   return jsSnippets_array.map((snippet, index) => {
     index = index + 1
-    console.log("Resolving Snippet: " + snippetPrefix + index)
+    if(!surpress_console_logs) console.log("Resolving Snippet: " + snippetPrefix + index)
     currentSnippet = snippet;
     const js = snippet.indexOf("#");
     const prefab = snippet.indexOf("!");
@@ -104,8 +107,8 @@ const resolvePrefabSnippet = (snippet_string, data) => {
     ), prefab_path}
   }else{
     //ERROR with prefab
-    console.log("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")")
-    return ""
+    if(!surpress_console_logs) console.log("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")")
+    throw new Error("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")");
   }
 };
 
@@ -113,22 +116,19 @@ const resolveCmdSnippet = (snippet_string, path) => {
   //remove spaces and ?
   snippet_string_parts = snippet_string.trim().replace("?", "").split(" ");
   const snippet_cmd = snippet_string_parts.shift();
-  let resolvedString = "";
-  for (let i = 0; i < snippet_string_parts.length; i++) {
-    const filepath = pathLib.join(path, snippet_string_parts[i])
-    if(snippet_cmd === "svg"){
-      resolvedString += importSvg(filepath);
-    }else if(snippet_cmd === "css"){
-      resolvedString += importCss(filepath);
-    }else if(snippet_cmd === "sass"){
-      resolvedString += importSass(filepath);
-    }else if(snippet_cmd === "js"){
-      resolvedString += importJs(filepath);
-    }else if(snippet_cmd === "img"){
-      resolvedString += importImg(filepath);
-    }
+  if(snippet_cmd === "svg"){
+    return importSvg(snippet_string_parts, path);
+  }else if(snippet_cmd === "css"){
+    return importCss(snippet_string_parts, path);
+  }else if(snippet_cmd === "sass" || snippet_cmd === "scss"){
+    return importSass(snippet_string_parts, path);
+  }else if(snippet_cmd === "js"){
+    return importJs(snippet_string_parts, path);
+  }else if(snippet_cmd === "img"){
+    return importImg(snippet_string_parts, path);
+  }else{
+    return "";
   }
-  return resolvedString;
 };
 
 const resolveDataSnippet = (snippet_string, data) => {
@@ -168,39 +168,59 @@ const decodePrefabArgs = (args, data) => {
   return args;
 };
 
-const importSvg = (svgPath) => {
-  importedFiles.push(svgPath);
-  return readFileFromDisk(svgPath);
+const importSvg = (args, path) => {
+  let resolvedSnippet = ""
+  for (let i = 0; i < args.length; i++) {
+    const filepath = pathLib.join(path, args[i])
+    importedFiles.push(filepath);
+    resolvedSnippet += readFileFromDisk(filepath);
+  }
+  return resolvedSnippet; 
 };
 
-const importCss = (cssPath) => {
-  importedFiles.push(cssPath);
-  const styleSheet = readFileFromDisk(cssPath);
-  return `<style>${styleSheet}</style>`;
+const importCss = (args, path) => {
+  let stylesheet = ""
+  for (let i = 0; i < args.length; i++) {
+    const filepath = pathLib.join(path, args[i])
+    importedFiles.push(filepath);
+    stylesheet += readFileFromDisk(filepath);
+  }
+  return `<style>${stylesheet}</style>`;
 };
 
-const importSass = (sassPath) => {
-  importedFiles.push(sassPath);
-  var styleSheet = sass.renderSync({ file: sassPath }).css.toString();
-  return `<style>${styleSheet}</style>`;
+const importSass = (args, path) => {
+  let stylesheet = ""
+  for (let i = 0; i < args.length; i++) {
+    const filepath = pathLib.join(path, args[i])
+    importedFiles.push(filepath);
+    stylesheet += sass.renderSync({ file: filepath }).css.toString()
+  }
+  return `<style>${stylesheet}</style>`;
 };
 
-const importJs = (jsPath) => {
-  importedFiles.push(jsPath);
-  const jsCode = readFileFromDisk(jsPath);
-  return `<script>${jsCode}</script>`;
+const importJs = (args, path) => {
+  let script = ""
+  for (let i = 0; i < args.length; i++) {
+    const filepath = pathLib.join(path, args[i])
+    importedFiles.push(filepath);
+    script += readFileFromDisk(filepath);
+  }
+  return `<script>${script}</script>`;
 };
 
-const importImg = (imgPath) => {
+const importImg = (args, path, onlyWebP = false) => {
+  const [ filepath, alt_text, id, className ] = args;
+  const imgPath = pathLib.join(path, filepath)
   importedImages.push(imgPath);
   const imagePathParts = imgPath.split(".");
   imagePathParts.pop();
   const imagepathWithoutExt = imagePathParts.join(".");
-  return `
-<picture>
-  <source srcset='${imagepathWithoutExt}.webp' type='image/webp'>
-  <img srcset='${imgPath}' alt='ein bild'>
-</picture>`;
+  if(onlyWebP){
+    return `<picture class="${className}" id="${id}"><source srcset="${imagepathWithoutExt}.webp" type="image/webp"><img srcset="${imgPath}" alt="${alt_text}"></picture>`;
+  }else{
+    return `<picture class="${className}" id="${id}"><source srcset="${imagepathWithoutExt}.webp" type="image/webp"><source srcset="${imagepathWithoutExt}.jp2" type="image/jp2"><img srcset="${imgPath}" alt="${alt_text}"></picture>`;
+  }
+  
 };
 
 const cleanComments = (input_string) => {
@@ -211,40 +231,46 @@ const cleanComments = (input_string) => {
   return result
 }
 
-const readFileFromDisk = (filepath) => {
-  //read file from disk
-  return fs.readFileSync(filepath, {
-    encoding: "utf8",
-  });
-};
-
-const saveFileToDisk = (filepath, content) => {
-  //save file to disk (+ create folders if neccesary)
-  const folderpath = pathLib.join(...(filepath.split("/").splice(0, filepath.split("/").length - 1)));
-  if (folderpath) fs.mkdirSync(folderpath, { recursive: true });
-  fs.writeFileSync(filepath, content);
-};
-
-const fileExists = (filepath) => {
-  return fs.existsSync(filepath)
-}
-
 const getImportedFiles = () => {
-  return importedFiles;
+  return [...new Set(importedFiles)];
 };
 
 const getImportedImages = () => {
-  return importedImages;
+  return [...new Set(importedImages)];
 };
 
 const getCurrentSnippet = () => {
   return currentSnippet;
 };
 
+const surpress_console_logs = () => {
+  surpress_logs = true
+};
 
-exports.saveFileToDisk = saveFileToDisk;
-exports.readFileFromDisk = readFileFromDisk;
+
 exports.transpile = transpile;
 exports.getImportedFiles = getImportedFiles;
 exports.getImportedImages = getImportedImages;
 exports.getCurrentSnippet = getCurrentSnippet;
+
+exports.importSvg = importSvg;
+exports.importCss = importCss;
+exports.importSass = importSass;
+exports.importJs = importJs;
+exports.importImg = importImg;
+exports.importSvg = importSvg;
+exports.cleanComments = cleanComments;
+
+exports.resolveDataSnippet = resolveDataSnippet;
+exports.resolveJsSnippet = resolveJsSnippet;
+exports.resolvePrefabSnippet = resolvePrefabSnippet;
+exports.resolveCmdSnippet = resolveCmdSnippet;
+exports.resolveSnippets = resolveSnippets;
+
+exports.occurrences = occurrences;
+exports.cutString = cutString;
+exports.seperateSnippets = seperateSnippets;
+exports.noramlizeJsReturns = noramlizeJsReturns;
+exports.decodePrefabArgs = decodePrefabArgs;
+
+exports.surpress_console_logs = surpress_console_logs;

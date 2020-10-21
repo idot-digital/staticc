@@ -1,12 +1,12 @@
 #! /usr/bin/env node
 const {
-  readFileFromDisk,
-  saveFileToDisk,
   transpile,
   getImportedFiles,
   getImportedImages,
   getCurrentSnippet
 } = require("./lib");
+
+const { readFileFromDisk, saveFileToDisk } = require("./read_write_lib")
 const express = require("express");
 const morgan = require("morgan");
 const minify = require("html-minifier").minify;
