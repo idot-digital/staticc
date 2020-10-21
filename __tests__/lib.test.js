@@ -14,14 +14,15 @@ const MOCK_FILE_INFO = {
 MOCK_FILE_INFO[pathLib.join("prefabs", "html", "prefab.html")] = "<h5>Hello, World!</h5>"
 MOCK_FILE_INFO[pathLib.join("prefabs", "javascript", "prefab.js")] = "function render(){return 'test'}"
 
-describe('CMD Snippets', () => {
-    beforeEach(() => {
-        // Set up some mocked out file info before each test
-        require('../read_write_lib').__setMockFiles(MOCK_FILE_INFO)
-        const {surpress_console_logs} = require("../lib");
-        surpress_console_logs()
-    });
 
+beforeAll(() => {
+    // Set up some mocked out file info before each test
+    require('../read_write_lib').__setMockFiles(MOCK_FILE_INFO)
+    const {surpress_console_logs} = require("../lib");
+    surpress_console_logs()
+});
+
+describe('CMD Snippets', () => {
     test('importSVG single file', () => {
         const {importSvg} = require('../lib');
         const resolvedSnippet = importSvg(['image1.svg'], "")
@@ -90,12 +91,6 @@ describe('CMD Snippets', () => {
 });
 
 describe('Resolver Functions', () => {
-
-    beforeEach(() => {
-        // Set up some mocked out file info before each test
-        require('../read_write_lib').__setMockFiles(MOCK_FILE_INFO)
-    });
-
     test('resolveDataSnippet stage 1', () => {
         const {resolveDataSnippet} = require('../lib');
         const cleanedString = resolveDataSnippet("title", {title: "test"})
