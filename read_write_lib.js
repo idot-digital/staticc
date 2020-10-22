@@ -1,24 +1,25 @@
-const fs = require("fs");
-const pathLib = require("path");
-
-const readFileFromDisk = (filepath) => {
+import * as fs from 'fs';
+import * as pathLib from 'path';
+import trycatch from './trycatch.js';
+export const readFileFromDisk = (filepath) => {
     //read file from disk
-    return fs.readFileSync(filepath, {
-        encoding: "utf8",
-    });
+    const [readFileError, content] = trycatch(fs.readFileSync, filepath, { encoding: "utf8" });
+    if (readFileError)
+        throw new Error("Could not read file: " + filepath);
+    return content;
 };
-  
-const saveFileToDisk = (filepath, content) => {
+export const saveFileToDisk = (filepath, content) => {
     //save file to disk (+ create folders if neccesary)
     const folderpath = pathLib.join(...(filepath.split("/").splice(0, filepath.split("/").length - 1)));
-    if (folderpath) fs.mkdirSync(folderpath, { recursive: true });
-    fs.writeFileSync(filepath, content);
+    if (folderpath) {
+        const [mkdirError] = trycatch(fs.mkdirSync, folderpath, { recursive: true });
+        if (mkdirError)
+            throw new Error("Could not create a new folder: " + folderpath);
+    }
+    const [writeFileError] = trycatch(fs.writeFileSync, filepath, content);
+    if (writeFileError)
+        throw new Error("Could not write to file: " + filepath);
 };
-  
-const fileExists = (filepath) => {
-    return fs.existsSync(filepath)
-}
-
-exports.readFileFromDisk = readFileFromDisk;
-exports.saveFileToDisk = saveFileToDisk;
-exports.fileExists = fileExists;
+export const fileExists = (filepath) => {
+    return fs.existsSync(filepath);
+};
