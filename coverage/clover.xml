@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1603292958156" clover="3.2.0">
-  <project timestamp="1603292958156" name="All files">
+<coverage generated="1603352379528" clover="3.2.0">
+  <project timestamp="1603352379528" name="All files">
     <metrics statements="181" coveredstatements="181" conditionals="41" coveredconditionals="39" methods="26" coveredmethods="26" elements="248" coveredelements="246" complexity="0" loc="181" ncloc="181" packages="1" files="1" classes="1"/>
     <file name="lib.js" path="C:\Users\Luis\Desktop\staticc\lib.js">
       <metrics statements="181" coveredstatements="181" conditionals="41" coveredconditionals="39" methods="26" coveredmethods="26"/>
