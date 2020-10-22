@@ -113,13 +113,13 @@ export const resolvePrefabSnippet = (snippet_string : string, data : any) : {res
     const jsFile = readFileFromDisk(pathLib.join(prefab_path, "prefab.js"));
     //parse the js code
     
-    // eval(jsFile);
+     eval(jsFile);
 
-    // const args = decodePrefabArgs(snippet_string_parts, data)
-    // //@ts-ignore
-    // const resolvedSnippet = render(...args)
-    // const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
-    return {resolvedSnippet: "", prefab_path}
+    const args = decodePrefabArgs(snippet_string_parts, data)
+    //@ts-ignore
+    const resolvedSnippet = render(...args)
+    const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
+    return {resolvedSnippet: noramlizedSnippet, prefab_path}
   }else{
     //ERROR with prefab => No prefab file found
     throw new Error("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")");
