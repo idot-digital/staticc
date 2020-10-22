@@ -1,20 +1,44 @@
-import * as sass from 'sass';
-import * as pathLib from 'path';
-import { fileExists, readFileFromDisk } from './read_write_lib.js';
-import trycatch from './trycatch.js';
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.surpress_console_logs = exports.getCurrentSnippet = exports.getImportedImages = exports.getImportedFiles = exports.cleanComments = exports.importImg = exports.importJs = exports.importSass = exports.importCss = exports.importSvg = exports.decodePrefabArgs = exports.noramlizeJsReturns = exports.resolveDataSnippet = exports.resolveCmdSnippet = exports.resolvePrefabSnippet = exports.resolveJsSnippet = exports.resolveSnippets = exports.cutString = exports.occurrences = exports.seperateSnippets = exports._transpile = exports.transpile = void 0;
+const sass = __importStar(require("sass"));
+const pathLib = __importStar(require("path"));
+const read_write_lib_js_1 = require("./read_write_lib.js");
+const trycatch_js_1 = __importDefault(require("./trycatch.js"));
 const importedFiles = [];
 const importedImages = [];
 let currentSnippet = "";
 let surpress_logs = false;
-export const transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
-    return _transpile(input_string, data, snippetPrefix, path);
+exports.transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
+    return exports._transpile(input_string, data, snippetPrefix, path);
 };
-export const _transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
-    input_string = cleanComments(input_string);
+exports._transpile = (input_string, data, snippetPrefix = "", path = "src/") => {
+    input_string = exports.cleanComments(input_string);
     //splits text into normal html code and code snippets
-    const [plainHTMLSnippets, codeSnippets] = seperateSnippets(input_string, "{{", "}}");
+    const [plainHTMLSnippets, codeSnippets] = exports.seperateSnippets(input_string, "{{", "}}");
     //convertes code snippets to actual value
-    const [resolvingError, resolvedSnippets] = trycatch(resolveSnippets, codeSnippets, data, snippetPrefix, path);
+    const [resolvingError, resolvedSnippets] = trycatch_js_1.default(exports.resolveSnippets, codeSnippets, data, snippetPrefix, path);
     if (resolvingError)
         console.log(resolvingError);
     //const resolvedSnippets = resolveSnippets(codeSnippets, data, snippetPrefix, path);
@@ -25,14 +49,14 @@ export const _transpile = (input_string, data, snippetPrefix = "", path = "src/"
     result += plainHTMLSnippets[plainHTMLSnippets.length - 1];
     return result;
 };
-export const seperateSnippets = (input_string, start_seperator, end_seperator) => {
+exports.seperateSnippets = (input_string, start_seperator, end_seperator) => {
     //count number of {{ => number of code blocks
-    const oc = occurrences(input_string, start_seperator);
+    const oc = exports.occurrences(input_string, start_seperator);
     const plainHTMLSnippets = [];
     const codeSnippets = [];
     //for every code block, get the plain html and the code block and add it to the lists
     for (let i = 0; i < oc; i++) {
-        const [firstPart, middlePart, lastPart] = cutString(input_string, start_seperator, end_seperator);
+        const [firstPart, middlePart, lastPart] = exports.cutString(input_string, start_seperator, end_seperator);
         plainHTMLSnippets.push(firstPart);
         codeSnippets.push(middlePart);
         input_string = lastPart;
@@ -40,10 +64,10 @@ export const seperateSnippets = (input_string, start_seperator, end_seperator) =
     plainHTMLSnippets.push(input_string);
     return [plainHTMLSnippets, codeSnippets];
 };
-export const occurrences = (string, subString) => {
+exports.occurrences = (string, subString) => {
     return string.split(subString).length - 1;
 };
-export const cutString = (input_string, start_seperator, end_seperator) => {
+exports.cutString = (input_string, start_seperator, end_seperator) => {
     const openingIndex = input_string.indexOf(start_seperator);
     const cloringIndex = input_string.indexOf(end_seperator);
     const firstPart = input_string.slice(0, openingIndex);
@@ -51,7 +75,7 @@ export const cutString = (input_string, start_seperator, end_seperator) => {
     const lastPart = input_string.slice(cloringIndex + 2);
     return [firstPart, middlePart, lastPart];
 };
-export const resolveSnippets = (jsSnippets_array, data, snippetPrefix, path) => {
+exports.resolveSnippets = (jsSnippets_array, data, snippetPrefix, path) => {
     return jsSnippets_array.map((snippet, index) => {
         index = index + 1;
         if (!surpress_logs)
@@ -61,34 +85,34 @@ export const resolveSnippets = (jsSnippets_array, data, snippetPrefix, path) => 
         const prefab = snippet.indexOf("!");
         const cmd = snippet.indexOf("?");
         if (js != -1) {
-            const resolvedSnippet = resolveJsSnippet(snippet, data);
-            return _transpile(resolvedSnippet, data, snippetPrefix + index + ".");
+            const resolvedSnippet = exports.resolveJsSnippet(snippet, data);
+            return exports._transpile(resolvedSnippet, data, snippetPrefix + index + ".");
         }
         else if (prefab != -1) {
-            const { resolvedSnippet, prefab_path } = resolvePrefabSnippet(snippet, data);
-            return _transpile(resolvedSnippet, data, snippetPrefix + index + ".", prefab_path);
+            const { resolvedSnippet, prefab_path } = exports.resolvePrefabSnippet(snippet, data);
+            return exports._transpile(resolvedSnippet, data, snippetPrefix + index + ".", prefab_path);
         }
         else if (cmd != -1) {
-            return resolveCmdSnippet(snippet, path);
+            return exports.resolveCmdSnippet(snippet, path);
         }
         else {
-            return resolveDataSnippet(snippet, data);
+            return exports.resolveDataSnippet(snippet, data);
         }
     });
 };
-export const resolveJsSnippet = (snippet_string, data) => {
+exports.resolveJsSnippet = (snippet_string, data) => {
     //remove spaces and the #
     snippet_string = snippet_string.trim().replace("#", "");
     //run the js code and convert string array to array
     try {
         const evaluated_snippet = eval(snippet_string);
-        return noramlizeJsReturns(evaluated_snippet);
+        return exports.noramlizeJsReturns(evaluated_snippet);
     }
     catch (executionError) {
         throw new Error("Could not execute js-snippet! Javascript-Error: " + executionError);
     }
 };
-export const resolvePrefabSnippet = (snippet_string, data) => {
+exports.resolvePrefabSnippet = (snippet_string, data) => {
     //remove spaces and first !
     snippet_string = snippet_string.trim().replace("!", "");
     //seperate the path of the snippet from the args
@@ -98,16 +122,16 @@ export const resolvePrefabSnippet = (snippet_string, data) => {
         throw new Error("You need to provide a path to the snippet!");
     //check if its a js or html prefab
     const prefab_path = pathLib.join("prefabs", snippet_path);
-    if (fileExists(pathLib.join(prefab_path, "prefab.html"))) {
+    if (read_write_lib_js_1.fileExists(pathLib.join(prefab_path, "prefab.html"))) {
         //=> HTML snippet
         //read in html file from disk and return it
         importedFiles.push(pathLib.join(prefab_path, "prefab.html"));
-        return { resolvedSnippet: readFileFromDisk(pathLib.join(prefab_path, "prefab.html")), prefab_path };
+        return { resolvedSnippet: read_write_lib_js_1.readFileFromDisk(pathLib.join(prefab_path, "prefab.html")), prefab_path };
     }
-    else if (fileExists(pathLib.join(prefab_path, "prefab.js"))) {
+    else if (read_write_lib_js_1.fileExists(pathLib.join(prefab_path, "prefab.js"))) {
         //=> JS snippet
         //read in the file
-        const jsFile = readFileFromDisk(pathLib.join(prefab_path, "prefab.js"));
+        const jsFile = read_write_lib_js_1.readFileFromDisk(pathLib.join(prefab_path, "prefab.js"));
         //parse the js code
         // eval(jsFile);
         // const args = decodePrefabArgs(snippet_string_parts, data)
@@ -121,30 +145,30 @@ export const resolvePrefabSnippet = (snippet_string, data) => {
         throw new Error("ERROR: Could not find prefab file (Prefab: " + snippet_path + ")");
     }
 };
-export const resolveCmdSnippet = (snippet_string, path) => {
+exports.resolveCmdSnippet = (snippet_string, path) => {
     //remove spaces and ?
     let snippet_string_parts = snippet_string.trim().replace("?", "").split(" ");
     const snippet_cmd = snippet_string_parts.shift();
     if (snippet_cmd === "svg") {
-        return importSvg(snippet_string_parts, path);
+        return exports.importSvg(snippet_string_parts, path);
     }
     else if (snippet_cmd === "css") {
-        return importCss(snippet_string_parts, path);
+        return exports.importCss(snippet_string_parts, path);
     }
     else if (snippet_cmd === "sass" || snippet_cmd === "scss") {
-        return importSass(snippet_string_parts, path);
+        return exports.importSass(snippet_string_parts, path);
     }
     else if (snippet_cmd === "js") {
-        return importJs(snippet_string_parts, path);
+        return exports.importJs(snippet_string_parts, path);
     }
     else if (snippet_cmd === "img") {
-        return importImg(snippet_string_parts, path);
+        return exports.importImg(snippet_string_parts, path);
     }
     else {
         throw new Error("Could not resolve file-snippet! The given filetype is not supported!");
     }
 };
-export const resolveDataSnippet = (snippet_string, data) => {
+exports.resolveDataSnippet = (snippet_string, data) => {
     let value = data;
     const snippetParts = snippet_string.replace(/\s/g, "").split(".");
     try {
@@ -159,7 +183,7 @@ export const resolveDataSnippet = (snippet_string, data) => {
     }
     return value;
 };
-export const noramlizeJsReturns = (evaluated_snippet) => {
+exports.noramlizeJsReturns = (evaluated_snippet) => {
     //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
     if (!evaluated_snippet) {
         return "";
@@ -176,7 +200,7 @@ export const noramlizeJsReturns = (evaluated_snippet) => {
         throw new Error("Prefab could not be resolved! Only strings or array of strings are allowed as return values!");
     }
 };
-export const decodePrefabArgs = (args, data) => {
+exports.decodePrefabArgs = (args, data) => {
     args = args.map((arg) => {
         if (arg == "")
             return "";
@@ -192,25 +216,25 @@ export const decodePrefabArgs = (args, data) => {
     });
     return args;
 };
-export const importSvg = (args, path) => {
+exports.importSvg = (args, path) => {
     let resolvedSnippet = "";
     for (let i = 0; i < args.length; i++) {
         const filepath = pathLib.join(path, args[i]);
         importedFiles.push(filepath);
-        resolvedSnippet += readFileFromDisk(filepath);
+        resolvedSnippet += read_write_lib_js_1.readFileFromDisk(filepath);
     }
     return resolvedSnippet;
 };
-export const importCss = (args, path) => {
+exports.importCss = (args, path) => {
     let stylesheet = "";
     for (let i = 0; i < args.length; i++) {
         const filepath = pathLib.join(path, args[i]);
         importedFiles.push(filepath);
-        stylesheet += readFileFromDisk(filepath);
+        stylesheet += read_write_lib_js_1.readFileFromDisk(filepath);
     }
     return `<style>${stylesheet}</style>`;
 };
-export const importSass = (args, path) => {
+exports.importSass = (args, path) => {
     let stylesheet = "";
     for (let i = 0; i < args.length; i++) {
         const filepath = pathLib.join(path, args[i]);
@@ -219,16 +243,16 @@ export const importSass = (args, path) => {
     }
     return `<style>${stylesheet}</style>`;
 };
-export const importJs = (args, path) => {
+exports.importJs = (args, path) => {
     let script = "";
     for (let i = 0; i < args.length; i++) {
         const filepath = pathLib.join(path, args[i]);
         importedFiles.push(filepath);
-        script += readFileFromDisk(filepath);
+        script += read_write_lib_js_1.readFileFromDisk(filepath);
     }
     return `<script>${script}</script>`;
 };
-export const importImg = (args, path, onlyWebP = false) => {
+exports.importImg = (args, path, onlyWebP = false) => {
     const [filepath, alt_text, id, className] = args;
     const imgPath = pathLib.join(path, filepath);
     importedImages.push(imgPath);
@@ -242,25 +266,25 @@ export const importImg = (args, path, onlyWebP = false) => {
         return `<picture class="${className}" id="${id}"><source srcset="${imagepathWithoutExt}.webp" type="image/webp"><source srcset="${imagepathWithoutExt}.jp2" type="image/jp2"><img srcset="${imgPath}" alt="${alt_text}"></picture>`;
     }
 };
-export const cleanComments = (input_string) => {
-    const [nonCommentSnippets] = seperateSnippets(input_string, "{#", "#}");
+exports.cleanComments = (input_string) => {
+    const [nonCommentSnippets] = exports.seperateSnippets(input_string, "{#", "#}");
     const result = nonCommentSnippets.reduce((total, currentValue) => {
         return total + currentValue;
     }, "");
     return result;
 };
-export const getImportedFiles = () => {
+exports.getImportedFiles = () => {
     //@ts-ignore
     return [...new Set(importedFiles)];
 };
-export const getImportedImages = () => {
+exports.getImportedImages = () => {
     //@ts-ignore
     return [...new Set(importedImages)];
 };
-export const getCurrentSnippet = () => {
+exports.getCurrentSnippet = () => {
     return currentSnippet;
 };
-export const surpress_console_logs = () => {
+exports.surpress_console_logs = () => {
     surpress_logs = true;
 };
 // exports.transpile = transpile;

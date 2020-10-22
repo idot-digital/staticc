@@ -2,12 +2,11 @@
   "name": "staticc",
   "version": "0.2.5",
   "main": "lib.js",
-  "type": "module",
   "bin": {
     "staticc": "cli.js"
   },
   "scripts": {
-    "test": "jest --collect-coverage",
+    "test": "jest",
     "tsc": "tsc -w"
   },
   "author": "idot digital",

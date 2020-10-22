@@ -1,4 +1,5 @@
-export default function trycatch(fn, ...args) {
+Object.defineProperty(exports, "__esModule", { value: true });
+function trycatch(fn, ...args) {
     try {
         return [null, fn(...args)];
     }
@@ -6,3 +7,4 @@ export default function trycatch(fn, ...args) {
         return [error, null];
     }
 }
+exports.default = trycatch;

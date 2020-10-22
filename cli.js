@@ -1,15 +1,19 @@
 #! /usr/bin/env node
-import { getCurrentSnippet, getImportedFiles, getImportedImages, transpile } from './lib.js';
-import { readFileFromDisk, saveFileToDisk } from './read_write_lib.js';
-import { minify } from 'html-minifier';
-import glob from 'glob';
-import imagemin from 'imagemin';
-import imageminWebp from 'imagemin-webp';
-import fs from 'fs';
-import path from 'path';
-import chokidar from 'chokidar';
-import lite_server from 'lite-server';
-import trycatch from './trycatch.js';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const lib_js_1 = require("./lib.js");
+const read_write_lib_js_1 = require("./read_write_lib.js");
+const html_minifier_1 = require("html-minifier");
+const glob_1 = __importDefault(require("glob"));
+const imagemin_1 = __importDefault(require("imagemin"));
+const imagemin_webp_1 = __importDefault(require("imagemin-webp"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const chokidar_1 = __importDefault(require("chokidar"));
+const lite_server_1 = __importDefault(require("lite-server"));
+const trycatch_js_1 = __importDefault(require("./trycatch.js"));
 const args = process.argv.slice(2);
 const help = args.indexOf("--help") >= 0 ||
     args.indexOf("-h") >= 0 ||
@@ -57,7 +61,7 @@ else if (init) {
     console.log("");
     const example_project = require("./example_project.json");
     Object.keys(example_project).forEach((filepath) => {
-        saveFileToDisk(filepath, example_project[filepath]);
+        read_write_lib_js_1.saveFileToDisk(filepath, example_project[filepath]);
     });
     console.log("Finished!");
 }
@@ -67,12 +71,12 @@ else {
 function startServer() {
     process.title = 'lite-server';
     //@ts-ignore
-    process.argv = ['', '', '-c', path.join(require.main.path, 'bs-config.json')
+    process.argv = ['', '', '-c', path_1.default.join(require.main.path, 'bs-config.json')
     ];
-    lite_server.server();
+    lite_server_1.default.server();
     console.log("Staticc server listening on http://localhost:8888/");
     let timeoutHandler;
-    chokidar.watch('./', { ignored: /dist/ }).on('all', (event, path) => {
+    chokidar_1.default.watch('./', { ignored: /dist/ }).on('all', (event, path) => {
         clearTimeout(timeoutHandler);
         timeoutHandler = setTimeout(() => {
             //reload server
@@ -81,15 +85,15 @@ function startServer() {
     });
 }
 function build(build_prod) {
-    const data = JSON.parse(readFileFromDisk(data_json_path));
+    const data = JSON.parse(read_write_lib_js_1.readFileFromDisk(data_json_path));
     console.log("");
     console.log("starting build!");
-    const HTMLfiles = glob.sync("src/**/*.html");
+    const HTMLfiles = glob_1.default.sync("src/**/*.html");
     HTMLfiles.forEach((file) => {
         transpileFile(file, data, build_prod);
     });
-    copyAllFiles([...getImportedFiles(), ...HTMLfiles]);
-    convertAllImages(getImportedImages())
+    copyAllFiles([...lib_js_1.getImportedFiles(), ...HTMLfiles]);
+    convertAllImages(lib_js_1.getImportedImages())
         .then(() => {
         console.log("finished build!");
     })
@@ -98,9 +102,9 @@ function build(build_prod) {
 function transpileFile(file, data, build_prod) {
     console.log("Building: " + file);
     const successful = generateNewFile(file, changeFilenameFromSrcToDist(file), (content, build_prod) => {
-        let [transpilingError, transpiledCode] = trycatch(transpile, content, data);
+        let [transpilingError, transpiledCode] = trycatch_js_1.default(lib_js_1.transpile, content, data);
         if (transpilingError) {
-            throw new Error("Could not transpile snippet: " + getCurrentSnippet() + "There was the following error:" + transpilingError);
+            throw new Error("Could not transpile snippet: " + lib_js_1.getCurrentSnippet() + "There was the following error:" + transpilingError);
         }
         else {
             if (build_prod)
@@ -121,7 +125,7 @@ function transpileFile(file, data, build_prod) {
     // saveFileToDisk(changeFilenameFromSrcToDist(file), transpiledCode);
 }
 function generateNewFile(readFileName, writeFileName, fn, ...args) {
-    const [readFileError, readFileContent] = trycatch(readFileFromDisk, readFileName);
+    const [readFileError, readFileContent] = trycatch_js_1.default(read_write_lib_js_1.readFileFromDisk, readFileName);
     let writeFileContent;
     if (readFileError) {
         //error reading file
@@ -131,7 +135,7 @@ function generateNewFile(readFileName, writeFileName, fn, ...args) {
         //file read correctly
         writeFileContent = fn(readFileContent, ...args);
     }
-    const [writeFileError] = trycatch(saveFileToDisk, writeFileName, writeFileContent);
+    const [writeFileError] = trycatch_js_1.default(read_write_lib_js_1.saveFileToDisk, writeFileName, writeFileContent);
     if (writeFileError) {
         //file could not be saved
         throw writeFileError;
@@ -142,7 +146,7 @@ function generateNewFile(readFileName, writeFileName, fn, ...args) {
     }
 }
 function minifyHTML(html_String) {
-    return minify(html_String, {
+    return html_minifier_1.minify(html_String, {
         removeComments: true,
         collapseWhitespace: true,
         minifyCSS: true,
@@ -150,7 +154,7 @@ function minifyHTML(html_String) {
     });
 }
 function copyAllFiles(filter) {
-    const allfiles = glob.sync("src/**/*.*");
+    const allfiles = glob_1.default.sync("src/**/*.*");
     allfiles.forEach((file) => {
         if (filter.includes(file))
             return;
@@ -160,17 +164,17 @@ function copyAllFiles(filter) {
             .splice(0, newFilepath.split("/").length - 1)
             .join("/");
         if (folderpath)
-            fs.mkdirSync(folderpath, { recursive: true });
-        fs.copyFileSync(file, newFilepath);
+            fs_1.default.mkdirSync(folderpath, { recursive: true });
+        fs_1.default.copyFileSync(file, newFilepath);
     });
 }
 function changeFilenameFromSrcToDist(file) {
     return "dist" + file.substring(3);
 }
 async function convertAllImages(filepaths) {
-    await imagemin(filepaths, {
+    await imagemin_1.default(filepaths, {
         destination: "dist/",
-        plugins: [imageminWebp({ quality: 50 })],
+        plugins: [imagemin_webp_1.default({ quality: 50 })],
     });
     console.log("Images optimized");
 }
