@@ -120,10 +120,8 @@ Staticc (index.html)
 prefab.html
 
 ```html
-    function render(){
-        const year = new Date().getFullYear() 
-        return `<h1>Copyright (c) ${year} ${data.company_name}</h1>` 
-    }
+    const year = new Date().getFullYear()    
+    render(`<h1>Copyright (c) ${year} ${data.company_name}</h1>`)
 ```
 
 HTML
