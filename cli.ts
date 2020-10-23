@@ -10,6 +10,8 @@ import path from 'path';
 import chokidar from 'chokidar';
 import lite_server  from 'lite-server';
 import trycatch from './trycatch.js'
+import { execSync } from 'child_process';
+import { spawn } from 'cross-spawn';
 
 const args = process.argv.slice(2);
 
@@ -64,7 +66,24 @@ if (version) {
   Object.keys(example_project).forEach((filepath) => {
     saveFileToDisk(filepath, example_project[filepath]);
   });
-  console.log("Finished!");
+  const [yarnNotInstalled] = trycatch(execSync, "yarn -v")
+  let error, child;
+   if(yarnNotInstalled){
+     [error, child] = trycatch(spawn, "npm", ["install"])
+   }else{
+    
+     [error, child] = trycatch(spawn, "yarn", ["install"])
+   }
+  if(error) console.error("Could not install babel and its packages.")
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', (chunk : any) => {
+    console.log(chunk)
+  });
+  child.on('close', ()=>{
+    console.log("Finished!");
+  })
+  
+  
 } else {
   console.log("Use -h or --help for help!");
 }

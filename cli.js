@@ -14,6 +14,8 @@ const path_1 = __importDefault(require("path"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const lite_server_1 = __importDefault(require("lite-server"));
 const trycatch_js_1 = __importDefault(require("./trycatch.js"));
+const child_process_1 = require("child_process");
+const cross_spawn_1 = require("cross-spawn");
 const args = process.argv.slice(2);
 const help = args.indexOf("--help") >= 0 ||
     args.indexOf("-h") >= 0 ||
@@ -63,7 +65,23 @@ else if (init) {
     Object.keys(example_project).forEach((filepath) => {
         read_write_lib_js_1.saveFileToDisk(filepath, example_project[filepath]);
     });
-    console.log("Finished!");
+    const [yarnNotInstalled] = trycatch_js_1.default(child_process_1.execSync, "yarn -v");
+    let error, child;
+    if (yarnNotInstalled) {
+        [error, child] = trycatch_js_1.default(cross_spawn_1.spawn, "npm", ["install"]);
+    }
+    else {
+        [error, child] = trycatch_js_1.default(cross_spawn_1.spawn, "yarn", ["install"]);
+    }
+    if (error)
+        console.error("Could not install babel and its packages.");
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => {
+        console.log(chunk);
+    });
+    child.on('close', () => {
+        console.log("Finished!");
+    });
 }
 else {
     console.log("Use -h or --help for help!");

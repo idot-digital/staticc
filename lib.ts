@@ -2,6 +2,8 @@ import * as sass from 'sass';
 import * as pathLib from 'path'
 import { fileExists, readFileFromDisk } from './read_write_lib.js';
 import trycatch from './trycatch.js';
+import JsInterpreter from 'js-interpreter';
+import * as babel from '@babel/core';
 
 
 const importedFiles : string[] = [];
@@ -86,8 +88,13 @@ export const resolveJsSnippet = (snippet_string : string, data : any) : string =
   snippet_string = snippet_string.trim().replace("#", "");
   //run the js code and convert string array to array
   try {
-    const evaluated_snippet  = eval(snippet_string)
-    return noramlizeJsReturns(evaluated_snippet);
+    const preparationCode = "var data = JSON.parse(_data);"
+    //const code = bundleModules(babelTranspile(snippet_string))
+    const interpreter = new JsInterpreter(preparationCode + babelTranspile(snippet_string), jsInterpretInitFn)
+    interpreter.setProperty(interpreter.globalObject, '_data', JSON.stringify(data));
+    interpreter.run()
+    //const evaluated_snippet  = eval(snippet_string)
+    return noramlizeJsReturns(interpreter.value);
   } catch (executionError) {
     throw new Error("Could not execute js-snippet! Javascript-Error: " + executionError)
   }
@@ -112,12 +119,13 @@ export const resolvePrefabSnippet = (snippet_string : string, data : any) : {res
     //read in the file
     const jsFile = readFileFromDisk(pathLib.join(prefab_path, "prefab.js"));
     //parse the js code
-    
-     eval(jsFile);
-
-    const args = decodePrefabArgs(snippet_string_parts, data)
-    //@ts-ignore
-    const resolvedSnippet = render(...args)
+    const preparationCode = "var data = JSON.parse(_data); var args = JSON.parse(_args); function render(arg){_render(JSON.stringify(arg))}"
+    const code = preparationCode + babelTranspile(jsFile)
+    const interpreter = new JsInterpreter(code, jsInterpretInitFn)
+    interpreter.setProperty(interpreter.globalObject, '_data', JSON.stringify(data));
+    interpreter.setProperty(interpreter.globalObject, '_args', JSON.stringify(decodePrefabArgs(snippet_string_parts, data)));
+    interpreter.run()
+    const resolvedSnippet = JSON.parse(interpreter.globalObject.renderedContent)
     const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
     return {resolvedSnippet: noramlizedSnippet, prefab_path}
   }else{
@@ -159,16 +167,22 @@ export const resolveDataSnippet = (snippet_string : string, data : any) : string
   return value;
 };
 
-export const noramlizeJsReturns = (evaluated_snippet : any) : string => {
+export const noramlizeJsReturns = (interpreterResult : any) : string => {
   //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
-  if(!evaluated_snippet){
+  if(!interpreterResult){
     return ""
-  }else if (evaluated_snippet.constructor === String) {
-    return evaluated_snippet as string;
-  } else if (evaluated_snippet.constructor === Array) {
-    return evaluated_snippet.reduce((total, current) => {
+  }else if (interpreterResult.constructor === String) {
+    return interpreterResult as string;
+  } else if (interpreterResult.class === "Array") {
+    //@ts-ignore
+    return Object.values(interpreterResult.properties).reduce((total : string, current : string) => {
       return total + current;
-    });
+    }, "");
+  } else if (interpreterResult.constructor === Array) {
+    //@ts-ignore
+    return interpreterResult.reduce((total : string, current : string) => {
+      return total + current;
+    }, "");
   } else {
     throw new Error("Prefab could not be resolved! Only strings or array of strings are allowed as return values!");
   }
@@ -267,6 +281,52 @@ export const getCurrentSnippet = () : string => {
 
 export const surpress_console_logs = () : void => {
   surpress_logs = true
+};
+
+const jsInterpretInitFn = (interpreter : any, globalObject : any) =>{
+  const _render = (content : any)=>{
+    globalObject.renderedContent = content
+  }
+  const log = (something : any)=>{
+    console.log(something)
+  }
+  interpreter.setProperty(globalObject, '_render',interpreter.createNativeFunction(_render));
+  interpreter.setProperty(globalObject, 'log',interpreter.createNativeFunction(log));
+}
+
+const babelTranspile = (code: string): string => {
+  try {
+    const babelObj = babel.transform(code, {
+      presets: [
+        [
+          "@babel/env",
+          { targets: { chrome: 5 }, useBuiltIns: "entry", corejs: 3 },
+        ],
+      ],
+      plugins: [
+        // ["@babel/plugin-transform-runtime", { corejs: 3 }],
+        "@babel/plugin-transform-shorthand-properties",
+        "@babel/plugin-transform-spread",
+        "@babel/plugin-transform-exponentiation-operator",
+        "@babel/plugin-transform-typeof-symbol",
+        "@babel/plugin-transform-instanceof",
+        "@babel/plugin-transform-sticky-regex",
+        "@babel/plugin-transform-template-literals",
+        "@babel/plugin-transform-for-of",
+        "@babel/plugin-transform-literals",
+      ],
+    });
+    const transpiledCode = babelObj?.code;
+    if (!transpiledCode)
+      throw new Error(
+        "Parsing of javascript returned null! Check if your code is valid!"
+      );
+    return transpiledCode;
+  } catch (error) {
+    throw new Error(
+      "Parsing of javascript failed! Check if your code is valid! Error: " + error
+    );
+  }
 };
 
 
