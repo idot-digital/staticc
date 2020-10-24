@@ -41,6 +41,18 @@
     "@types/imagemin-webp": "^5.1.1",
     "@types/sass": "^1.16.0",
     "jest": "^26.6.0",
-    "typescript": "^4.0.3"
+    "typescript": "^4.0.3",
+    "@babel/core": "^7.12.3",
+    "@babel/plugin-transform-exponentiation-operator": "^7.12.1",
+    "@babel/plugin-transform-for-of": "^7.12.1",
+    "@babel/plugin-transform-instanceof": "^7.12.1",
+    "@babel/plugin-transform-literals": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/plugin-transform-shorthand-properties": "^7.12.1",
+    "@babel/plugin-transform-spread": "^7.12.1",
+    "@babel/plugin-transform-sticky-regex": "^7.12.1",
+    "@babel/plugin-transform-template-literals": "^7.12.1",
+    "@babel/plugin-transform-typeof-symbol": "^7.12.1",
+    "@babel/preset-env": "^7.12.1"
   }
 }

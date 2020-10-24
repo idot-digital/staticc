@@ -12,7 +12,7 @@ const MOCK_FILE_INFO = {
 };
 
 MOCK_FILE_INFO[pathLib.join("prefabs", "html", "prefab.html")] = "<h5>Hello, World!</h5>"
-MOCK_FILE_INFO[pathLib.join("prefabs", "javascript", "prefab.js")] = "function render(){return 'test'}"
+MOCK_FILE_INFO[pathLib.join("prefabs", "javascript", "prefab.js")] = 'render("test");'
 
 
 beforeAll(() => {
@@ -117,13 +117,13 @@ describe('Resolver Functions', () => {
 
     test('resolvePrefabSnippet html', () => {
         const {resolvePrefabSnippet} = require('../lib');
-        const {resolvedSnippet} = resolvePrefabSnippet("!html")
+        const {resolvedSnippet} = resolvePrefabSnippet("!html", {})
         expect(resolvedSnippet).toBe("<h5>Hello, World!</h5>");
     });
 
     test('resolvePrefabSnippet js', () => {
         const {resolvePrefabSnippet} = require('../lib');
-        const {resolvedSnippet} = resolvePrefabSnippet("!javascript")
+        const {resolvedSnippet} = resolvePrefabSnippet("!javascript", {})
         expect(resolvedSnippet).toBe("test");
     });
 
