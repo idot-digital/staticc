@@ -1,25 +1,20 @@
-const mod = jest.createMockFromModule('./read_write_lib');
+const mod = jest.createMockFromModule('./read_write')
 let mockfiles = []
 
 const readFileFromDisk = (filepath) => {
-    return mockfiles[filepath];
-};
-  
+    return mockfiles[filepath]
+}
+
 const saveFileToDisk = (filepath, content) => {
-    return;
-};
-  
-const fileExists = (filepath) => {
-    return mockfiles[filepath] != null
+    return
 }
 
 const __setMockFiles = (new_mockfiles) => {
-    mockfiles = new_mockfiles;
+    mockfiles = new_mockfiles
 }
 
 mod.readFileFromDisk = readFileFromDisk
 mod.saveFileToDisk = saveFileToDisk
-mod.fileExists = fileExists
 mod.__setMockFiles = __setMockFiles
 
 module.exports = mod

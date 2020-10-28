@@ -17,33 +17,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fileExists = exports.saveFileToDisk = exports.readFileFromDisk = void 0;
+exports.saveFileToDisk = exports.readFileFromDisk = void 0;
 const fs = __importStar(require("fs"));
 const pathLib = __importStar(require("path"));
-const trycatch_js_1 = __importDefault(require("./trycatch.js"));
-exports.readFileFromDisk = (filepath) => {
+const trycatch_1 = require("./trycatch");
+exports.readFileFromDisk = async (filepath) => {
     //read file from disk
-    const [readFileError, content] = trycatch_js_1.default(fs.readFileSync, filepath, { encoding: "utf8" });
+    const [readFileError, content] = await trycatch_1.trycatchasync(fs.promises.readFile, filepath, { encoding: 'utf8' });
     if (readFileError)
-        throw new Error("Could not read file: " + filepath);
+        throw new Error('Could not read file: ' + filepath);
     return content;
 };
-exports.saveFileToDisk = (filepath, content) => {
+exports.saveFileToDisk = async (filepath, content) => {
     //save file to disk (+ create folders if neccesary)
-    const folderpath = pathLib.join(...(filepath.split("/").splice(0, filepath.split("/").length - 1)));
+    const folderpath = pathLib.join(...filepath.split('/').splice(0, filepath.split('/').length - 1));
     if (folderpath) {
-        const [mkdirError] = trycatch_js_1.default(fs.mkdirSync, folderpath, { recursive: true });
+        const [mkdirError] = await trycatch_1.trycatchasync(fs.promises.mkdir, folderpath, { recursive: true });
         if (mkdirError)
-            throw new Error("Could not create a new folder: " + folderpath);
+            throw new Error('Could not create a new folder: ' + folderpath);
     }
-    const [writeFileError] = trycatch_js_1.default(fs.writeFileSync, filepath, content);
+    const [writeFileError] = await trycatch_1.trycatchasync(fs.promises.writeFile, filepath, content);
     if (writeFileError)
-        throw new Error("Could not write to file: " + filepath);
-};
-exports.fileExists = (filepath) => {
-    return fs.existsSync(filepath);
+        throw new Error('Could not write to file: ' + filepath);
 };
