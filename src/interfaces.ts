@@ -1,13 +1,9 @@
 export interface snippet {
-    id: string
     type: snippet_type
     value?: string
-    resolvedValue?: string
     path?: string[]
     args?: string[]
 }
-
-import { v4 as uuid } from 'uuid'
 
 export interface fileSnippet extends snippet {
     path: string[]
@@ -29,9 +25,7 @@ export enum snippet_type {
     data,
 }
 
-// export class snippet {
-//     id: string
-//     constructor() {
-//         this.id = uuid()
-//     }
-// }
+export interface transpileableSnippet extends snippet {
+    value: string
+    type: snippet_type
+}

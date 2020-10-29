@@ -1,20 +1,26 @@
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._snippets2Strings = exports._resolveJsSnippets = exports._resolvePrefabSnippets = exports._resolveFileSnippets = exports._resolveDataSnippet = exports._resolveDataSnippets = exports._interpretPrefabSnippet = exports._interpretJSSnippet = exports._readSnippetFiles = exports._loadSnippetsFromDisk = exports._interpretSnippets = exports._groupSnippets = exports.resolve = void 0;
+exports._snippets2Strings = exports._transpileSnippetString = exports._resolveFileSnippets = exports._resolveDataSnippet = exports._resolveDataSnippets = exports._interpretPrefabSnippet = exports._interpretJSSnippet = exports._readSnippetFiles = exports._loadSnippetsFromDisk = exports._interpretSnippets = exports._groupSnippets = exports.resolve = void 0;
 const worker_threads_1 = require("worker_threads");
-const uuid_1 = require("uuid");
 const read_write_1 = require("./read_write");
 const interfaces_1 = require("./interfaces");
+const transpile_1 = require("./transpile");
+const path_1 = __importDefault(require("path"));
 exports.resolve = async (codeSnippets, data) => {
     const groupedSnippets = exports._groupSnippets(codeSnippets);
     const loadedSnippets = await exports._loadSnippetsFromDisk(groupedSnippets);
     const interpretedSnippets = await exports._interpretSnippets(loadedSnippets, data);
-    const resolvedSnippets = pipe(exports._resolveFileSnippets, exports._resolveDataSnippets, exports._resolvePrefabSnippets, exports._resolveJsSnippets)(interpretedSnippets, data);
+    const transpiledContentOfSnippets = await exports._transpileSnippetString(interpretedSnippets, data);
+    const resolvedSnippets = pipe(exports._resolveFileSnippets, exports._resolveDataSnippets)(transpiledContentOfSnippets, data);
     return exports._snippets2Strings(resolvedSnippets);
 };
 exports._groupSnippets = (codeSnippets) => {
-    return codeSnippets.map((snippet_string) => {
+    return codeSnippets.map((snippet_string, index) => {
+        console.log('Grouping Snippet: ' + (index + 1));
         const snippet = {
-            id: uuid_1.v4(),
+            //id: uuid(),
             type: interfaces_1.snippet_type.data,
         };
         snippet_string = snippet_string.trim();
@@ -30,13 +36,13 @@ exports._groupSnippets = (codeSnippets) => {
                 throw new Error('Cloud not resolve js-prefab! No filepath given!');
             //js prefab
             snippet.type = interfaces_1.snippet_type.prefab_js;
-            snippet.path = [snippet_path];
+            snippet.path = [path_1.default.join('prefabs', snippet_path, 'prefab.js')];
             snippet.args = args;
         }
         else if (snippet_string.indexOf('!') != -1) {
             //html prefab
             snippet.type = interfaces_1.snippet_type.prefab_html;
-            snippet.path = [snippet_string.replace('!', '')];
+            snippet.path = [path_1.default.join('prefabs', snippet_string.replace('!', ''), 'prefab.html')];
         }
         else if (snippet_string.indexOf('?') != -1) {
             //file snippet
@@ -45,6 +51,9 @@ exports._groupSnippets = (codeSnippets) => {
             if (!snippet_cmd)
                 throw new Error('Could not resolve file-snippet! The given filetype is not supported!');
             snippet.type = interfaces_1.snippet_type.file;
+            snippet.path = args.map((filepath) => {
+                return path_1.default.join('src', filepath);
+            });
             snippet.path = args;
             snippet.args = [snippet_cmd];
         }
@@ -56,7 +65,8 @@ exports._groupSnippets = (codeSnippets) => {
     });
 };
 exports._interpretSnippets = async (snippets, data) => {
-    return Promise.all(snippets.map(async (snippet) => {
+    return Promise.all(snippets.map(async (snippet, index) => {
+        console.log('Interpreting Snippet: ' + (index + 1));
         if (snippet.type == interfaces_1.snippet_type.prefab_js) {
             //@ts-ignore
             return exports._interpretPrefabSnippet(snippet, data, snippet.args);
@@ -70,7 +80,8 @@ exports._interpretSnippets = async (snippets, data) => {
     }));
 };
 exports._loadSnippetsFromDisk = async (snippets) => {
-    return Promise.all(snippets.map(async (snippet) => {
+    return Promise.all(snippets.map(async (snippet, index) => {
+        console.log('Loading Snippet Files: ' + (index + 1));
         if (snippet.type == interfaces_1.snippet_type.file || snippet.type == interfaces_1.snippet_type.prefab_js || snippet.type == interfaces_1.snippet_type.prefab_html) {
             return exports._readSnippetFiles(snippet);
         }
@@ -83,7 +94,9 @@ exports._readSnippetFiles = async (snippet) => {
     const fileContents = await Promise.all(snippet.path.map((path) => {
         return read_write_1.readFileFromDisk(path);
     }));
-    const value = fileContents.join(' ');
+    let value = fileContents.join(' ');
+    if (fileContents.length === 1)
+        value = fileContents[0];
     snippet.value = value;
     return snippet;
 };
@@ -110,7 +123,8 @@ exports._interpretPrefabSnippet = async (snippet, data, args) => {
     });
 };
 exports._resolveDataSnippets = (snipepts, data) => {
-    return snipepts.map((snippet) => {
+    return snipepts.map((snippet, index) => {
+        console.log('Resolving Snippet Data: ' + (index + 1));
         if (snippet.type == interfaces_1.snippet_type.data) {
             return exports._resolveDataSnippet(snippet, data);
         }
@@ -133,24 +147,25 @@ exports._resolveDataSnippet = (snippet, data) => {
     catch (error) {
         throw Error('Could not resolve data-snippet. The requested value is undefined!');
     }
-    return { resolvedValue: value, ...snippet };
+    return { ...snippet, value: value };
 };
 exports._resolveFileSnippets = (snippets) => {
-    return snippets.map((snippet) => {
+    return snippets.map((snippet, index) => {
         var _a, _b, _c, _d, _e;
+        console.log('Inligning Snippet: ' + (index + 1));
         if (snippet.type == interfaces_1.snippet_type.file) {
             if ((_a = snippet.args) === null || _a === void 0 ? void 0 : _a.includes('css')) {
-                return { resolvedValue: `<style>${snippet.value}</style>`, ...snippet };
+                return { ...snippet, value: `<style>${snippet.value}</style>` };
             }
             else if (((_b = snippet.args) === null || _b === void 0 ? void 0 : _b.includes('sass')) || ((_c = snippet.args) === null || _c === void 0 ? void 0 : _c.includes('scss'))) {
                 //resovle Sass
-                return { resolvedValue: `<style>${snippet.value}</style>`, ...snippet };
+                return { ...snippet, value: `<style>${snippet.value}</style>` };
             }
             else if ((_d = snippet.args) === null || _d === void 0 ? void 0 : _d.includes('svg')) {
-                return { resolvedValue: snippet.value, ...snippet };
+                return snippet;
             }
             else if ((_e = snippet.args) === null || _e === void 0 ? void 0 : _e.includes('js')) {
-                return { resolvedValue: `<script>${snippet.value}</script>`, ...snippet };
+                return { ...snippet, value: `<script>${snippet.value}</script>` };
             }
             else {
                 throw new Error('Could not resolve file-snippet! The given filetype is not supported!');
@@ -161,29 +176,18 @@ exports._resolveFileSnippets = (snippets) => {
         }
     });
 };
-exports._resolvePrefabSnippets = (snippets) => {
-    return snippets.map((snippet) => {
-        if (snippet.type == interfaces_1.snippet_type.prefab_html || snippet.type == interfaces_1.snippet_type.prefab_js) {
-            return { resolvedValue: snippet.value, ...snippet };
+exports._transpileSnippetString = async (snippets, data) => {
+    return await Promise.all(snippets.map(async (snippet, index) => {
+        if (snippet.type === interfaces_1.snippet_type.js || snippet.type === interfaces_1.snippet_type.prefab_js || snippet.type === interfaces_1.snippet_type.prefab_html) {
+            const path = (snippet.path || [])[0] || '';
+            return { ...snippet, value: await transpile_1._transpile(snippet.value, data, index.toString(), path) };
         }
-        else {
-            return snippet;
-        }
-    });
-};
-exports._resolveJsSnippets = (snippets) => {
-    return snippets.map((snippet) => {
-        if (snippet.type == interfaces_1.snippet_type.js) {
-            return { resolvedValue: snippet.value, ...snippet };
-        }
-        else {
-            return snippet;
-        }
-    });
+        return snippet;
+    }));
 };
 exports._snippets2Strings = (snippets) => {
     return snippets.map((snippet) => {
-        return snippet.resolvedValue;
+        return snippet.value;
     });
 };
 const pipe = (...fns) => (x, ...args) => fns.reduce((v, f) => f(v, ...args), x);

@@ -1,18 +1,18 @@
 import JsInterpreter from 'js-interpreter'
 import { workerData, parentPort } from 'worker_threads'
+import { noramlizeJsReturns, babelTranspile } from './interpreter_libs'
 
 const { snippet, data, args } = workerData
 
 const preparationCode = 'var data = JSON.parse(_data); var args = JSON.parse(_args); function render(arg){_render(JSON.stringify(arg))}'
 //babel transpilation
-const code = preparationCode + snippet.value
+const code = babelTranspile(preparationCode + snippet.value)
 const interpreter = new JsInterpreter(code, jsInterpretInitFn)
 interpreter.setProperty(interpreter.globalObject, '_data', JSON.stringify(data))
 interpreter.setProperty(interpreter.globalObject, '_args', JSON.stringify(decodePrefabArgs(args, data)))
 interpreter.run()
 const resolvedSnippet = JSON.parse(interpreter.globalObject.renderedContent)
 const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
-console.log(noramlizedSnippet)
 snippet.value = noramlizedSnippet
 parentPort?.postMessage(snippet)
 
@@ -39,25 +39,4 @@ export function decodePrefabArgs(args: string[], data: any): string[] {
         }
     })
     return args
-}
-
-export function noramlizeJsReturns(interpreterResult: any): string {
-    //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
-    if (!interpreterResult) {
-        return ''
-    } else if (interpreterResult.constructor === String) {
-        return interpreterResult as string
-    } else if (interpreterResult.class === 'Array') {
-        //@ts-ignore
-        return Object.values(interpreterResult.properties).reduce((total: string, current: string) => {
-            return total + current
-        }, '')
-    } else if (interpreterResult.constructor === Array) {
-        //@ts-ignore
-        return interpreterResult.reduce((total: string, current: string) => {
-            return total + current
-        }, '')
-    } else {
-        throw new Error('Prefab could not be resolved! Only strings or array of strings are allowed as return values!')
-    }
 }

@@ -8,9 +8,3 @@ var snippet_type;
     snippet_type[snippet_type["file"] = 3] = "file";
     snippet_type[snippet_type["data"] = 4] = "data";
 })(snippet_type = exports.snippet_type || (exports.snippet_type = {}));
-// export class snippet {
-//     id: string
-//     constructor() {
-//         this.id = uuid()
-//     }
-// }
