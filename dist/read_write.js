@@ -31,7 +31,7 @@ exports.readFileFromDisk = async (filepath) => {
 };
 exports.saveFileToDisk = async (filepath, content) => {
     //save file to disk (+ create folders if neccesary)
-    const folderpath = pathLib.join(...filepath.split('/').splice(0, filepath.split('/').length - 1));
+    const folderpath = pathLib.dirname(filepath);
     if (folderpath) {
         const [mkdirError] = await trycatch_1.trycatchasync(fs.promises.mkdir, folderpath, { recursive: true });
         if (mkdirError)

@@ -10,6 +10,8 @@ import { minify } from 'html-minifier'
 import lite_server from 'lite-server'
 import chokidar from 'chokidar'
 
+import pathLib from 'path'
+
 const args = process.argv.slice(2)
 
 //check which args have been given
@@ -29,7 +31,7 @@ if (data_json_override) {
 }
 
 if (version) {
-    const package_info = require('./package.json')
+    const package_info = require('../package.json')
     console.log(package_info.version)
 } else if (help) {
     const helpString =
@@ -48,8 +50,12 @@ if (version) {
     ;(async () => {
         console.log('\n\nInitializing staticc project!\n\n')
         const example_project = require('./example_project')
-        Object.keys(example_project).forEach(async (filepath) => {
-            await saveFileToDisk(filepath, example_project[filepath])
+        Object.keys(example_project.files).forEach(async (filepath) => {
+            try {
+                await saveFileToDisk(filepath, example_project.files[filepath])
+            } catch (error) {
+                console.log(error)
+            }
         })
         let child
         try {
@@ -90,7 +96,7 @@ async function build(build_prod: boolean) {
 function startDevServer() {
     process.title = 'lite-server'
     //@ts-ignore
-    process.argv = ['', '', '-c', path.join(require.main.path, 'bs-config.json')]
+    process.argv = ['', '', '-c', pathLib.join(require.main.path.replace('dist', ''), 'bs-config.json')]
     lite_server.server()
     console.log('Staticc server listening on http://localhost:8888/')
     let timeoutHandler: NodeJS.Timeout

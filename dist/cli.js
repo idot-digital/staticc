@@ -12,6 +12,7 @@ const transpile_1 = require("./transpile");
 const html_minifier_1 = require("html-minifier");
 const lite_server_1 = __importDefault(require("lite-server"));
 const chokidar_1 = __importDefault(require("chokidar"));
+const path_1 = __importDefault(require("path"));
 const args = process.argv.slice(2);
 //check which args have been given
 const help = args.indexOf('--help') >= 0 || args.indexOf('-h') >= 0 || args.indexOf('help') >= 0;
@@ -28,7 +29,7 @@ if (data_json_override) {
     data_json_path = args[index + 1];
 }
 if (version) {
-    const package_info = require('./package.json');
+    const package_info = require('../package.json');
     console.log(package_info.version);
 }
 else if (help) {
@@ -52,8 +53,13 @@ else if (init) {
     (async () => {
         console.log('\n\nInitializing staticc project!\n\n');
         const example_project = require('./example_project');
-        Object.keys(example_project).forEach(async (filepath) => {
-            await read_write_1.saveFileToDisk(filepath, example_project[filepath]);
+        Object.keys(example_project.files).forEach(async (filepath) => {
+            try {
+                await read_write_1.saveFileToDisk(filepath, example_project.files[filepath]);
+            }
+            catch (error) {
+                console.log(error);
+            }
         });
         let child;
         try {
@@ -96,7 +102,7 @@ async function build(build_prod) {
 function startDevServer() {
     process.title = 'lite-server';
     //@ts-ignore
-    process.argv = ['', '', '-c', path.join(require.main.path, 'bs-config.json')];
+    process.argv = ['', '', '-c', path_1.default.join(require.main.path.replace('dist', ''), 'bs-config.json')];
     lite_server_1.default.server();
     console.log('Staticc server listening on http://localhost:8888/');
     let timeoutHandler;

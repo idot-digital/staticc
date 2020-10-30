@@ -5,6 +5,10 @@ export interface snippet {
     args?: string[]
 }
 
+export interface loadedSnippet extends snippet {
+    value: string
+}
+
 export interface fileSnippet extends snippet {
     path: string[]
 }

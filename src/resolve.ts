@@ -1,9 +1,10 @@
 import { Worker } from 'worker_threads'
-import { v4 as uuid } from 'uuid'
+//import { v4 as uuid } from 'uuid'
 import { readFileFromDisk } from './read_write'
-import { snippet_type, snippet, fileSnippet, dataSnippet, jsPrefabSnippet, transpileableSnippet } from './interfaces'
+import { snippet_type, snippet, fileSnippet, dataSnippet, jsPrefabSnippet, transpileableSnippet, loadedSnippet } from './interfaces'
 import { _transpile } from './transpile'
 import path from 'path'
+import sass from 'node-sass'
 
 export const resolve = async (codeSnippets: string[], data: any): Promise<string[]> => {
     const groupedSnippets = _groupSnippets(codeSnippets)
@@ -14,6 +15,9 @@ export const resolve = async (codeSnippets: string[], data: any): Promise<string
 
     return _snippets2Strings(resolvedSnippets)
 }
+
+//@ts-ignore
+const modulePath: string = require.main.path
 
 export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
     return codeSnippets.map(
@@ -76,14 +80,14 @@ export const _interpretSnippets = async (snippets: snippet[], data: any): Promis
     )
 }
 
-export const _loadSnippetsFromDisk = async (snippets: snippet[]): Promise<snippet[]> => {
+export const _loadSnippetsFromDisk = async (snippets: snippet[]): Promise<loadedSnippet[]> => {
     return Promise.all(
         snippets.map(async (snippet, index) => {
             console.log('Loading Snippet Files: ' + (index + 1))
             if (snippet.type == snippet_type.file || snippet.type == snippet_type.prefab_js || snippet.type == snippet_type.prefab_html) {
-                return _readSnippetFiles(snippet as fileSnippet)
+                return _readSnippetFiles(snippet as fileSnippet) as Promise<loadedSnippet>
             } else {
-                return snippet
+                return snippet as loadedSnippet
             }
         })
     )
@@ -103,7 +107,7 @@ export const _readSnippetFiles = async (snippet: fileSnippet): Promise<snippet> 
 
 export const _interpretJSSnippet = async (snippet: snippet, data: any): Promise<snippet> => {
     return new Promise((resolve, reject) => {
-        const worker = new Worker('./dist/interpreter/js_interpreter.js', { workerData: { snippet, data } })
+        const worker = new Worker(path.join(modulePath, 'interpreter', 'js_interpreter.js'), { workerData: { snippet, data } })
         worker.on('message', resolve)
         worker.on('error', reject)
         worker.on('exit', (code) => {
@@ -113,7 +117,7 @@ export const _interpretJSSnippet = async (snippet: snippet, data: any): Promise<
 }
 export const _interpretPrefabSnippet = async (snippet: snippet, data: any, args: string[]): Promise<snippet> => {
     return new Promise((resolve, reject) => {
-        const worker = new Worker('./dist/interpreter/prefab_interpreter.js', { workerData: { snippet, data, args } })
+        const worker = new Worker(path.join(modulePath, 'interpreter', 'prefab_interpreter.js'), { workerData: { snippet, data, args } })
         worker.on('message', resolve)
         worker.on('error', reject)
         worker.on('exit', (code) => {
@@ -155,6 +159,8 @@ export const _resolveFileSnippets = (snippets: snippet[]): snippet[] => {
                 return { ...snippet, value: `<style>${snippet.value}</style>` }
             } else if (snippet.args?.includes('sass') || snippet.args?.includes('scss')) {
                 //resovle Sass
+                let css = ''
+                if (snippet.value) css = renderSass(snippet.value)
                 return { ...snippet, value: `<style>${snippet.value}</style>` }
             } else if (snippet.args?.includes('svg')) {
                 return snippet
@@ -188,3 +194,7 @@ export const _snippets2Strings = (snippets: snippet[]): string[] => {
 }
 
 const pipe = (...fns: Function[]) => (x: snippet[], ...args: any[]) => fns.reduce((v, f) => f(v, ...args), x)
+
+const renderSass = (str: string): string => {
+    return sass.renderSync({ data: str }).css.toString()
+}

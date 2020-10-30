@@ -4,10 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._snippets2Strings = exports._transpileSnippetString = exports._resolveFileSnippets = exports._resolveDataSnippet = exports._resolveDataSnippets = exports._interpretPrefabSnippet = exports._interpretJSSnippet = exports._readSnippetFiles = exports._loadSnippetsFromDisk = exports._interpretSnippets = exports._groupSnippets = exports.resolve = void 0;
 const worker_threads_1 = require("worker_threads");
+//import { v4 as uuid } from 'uuid'
 const read_write_1 = require("./read_write");
 const interfaces_1 = require("./interfaces");
 const transpile_1 = require("./transpile");
 const path_1 = __importDefault(require("path"));
+const node_sass_1 = __importDefault(require("node-sass"));
 exports.resolve = async (codeSnippets, data) => {
     const groupedSnippets = exports._groupSnippets(codeSnippets);
     const loadedSnippets = await exports._loadSnippetsFromDisk(groupedSnippets);
@@ -16,6 +18,8 @@ exports.resolve = async (codeSnippets, data) => {
     const resolvedSnippets = pipe(exports._resolveFileSnippets, exports._resolveDataSnippets)(transpiledContentOfSnippets, data);
     return exports._snippets2Strings(resolvedSnippets);
 };
+//@ts-ignore
+const modulePath = require.main.path;
 exports._groupSnippets = (codeSnippets) => {
     return codeSnippets.map((snippet_string, index) => {
         console.log('Grouping Snippet: ' + (index + 1));
@@ -102,7 +106,7 @@ exports._readSnippetFiles = async (snippet) => {
 };
 exports._interpretJSSnippet = async (snippet, data) => {
     return new Promise((resolve, reject) => {
-        const worker = new worker_threads_1.Worker('./dist/interpreter/js_interpreter.js', { workerData: { snippet, data } });
+        const worker = new worker_threads_1.Worker(path_1.default.join(modulePath, 'interpreter', 'js_interpreter.js'), { workerData: { snippet, data } });
         worker.on('message', resolve);
         worker.on('error', reject);
         worker.on('exit', (code) => {
@@ -113,7 +117,7 @@ exports._interpretJSSnippet = async (snippet, data) => {
 };
 exports._interpretPrefabSnippet = async (snippet, data, args) => {
     return new Promise((resolve, reject) => {
-        const worker = new worker_threads_1.Worker('./dist/interpreter/prefab_interpreter.js', { workerData: { snippet, data, args } });
+        const worker = new worker_threads_1.Worker(path_1.default.join(modulePath, 'interpreter', 'prefab_interpreter.js'), { workerData: { snippet, data, args } });
         worker.on('message', resolve);
         worker.on('error', reject);
         worker.on('exit', (code) => {
@@ -159,6 +163,9 @@ exports._resolveFileSnippets = (snippets) => {
             }
             else if (((_b = snippet.args) === null || _b === void 0 ? void 0 : _b.includes('sass')) || ((_c = snippet.args) === null || _c === void 0 ? void 0 : _c.includes('scss'))) {
                 //resovle Sass
+                let css = '';
+                if (snippet.value)
+                    css = renderSass(snippet.value);
                 return { ...snippet, value: `<style>${snippet.value}</style>` };
             }
             else if ((_d = snippet.args) === null || _d === void 0 ? void 0 : _d.includes('svg')) {
@@ -191,3 +198,6 @@ exports._snippets2Strings = (snippets) => {
     });
 };
 const pipe = (...fns) => (x, ...args) => fns.reduce((v, f) => f(v, ...args), x);
+const renderSass = (str) => {
+    return node_sass_1.default.renderSync({ data: str }).css.toString();
+};

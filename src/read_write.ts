@@ -11,8 +11,7 @@ export const readFileFromDisk = async (filepath: string): Promise<string> => {
 
 export const saveFileToDisk = async (filepath: string, content: string): Promise<void> => {
     //save file to disk (+ create folders if neccesary)
-    const folderpath: string = pathLib.join(...filepath.split('/').splice(0, filepath.split('/').length - 1))
-
+    const folderpath: string = pathLib.dirname(filepath)
     if (folderpath) {
         const [mkdirError] = await trycatchasync(fs.promises.mkdir, folderpath, { recursive: true })
         if (mkdirError) throw new Error('Could not create a new folder: ' + folderpath)
