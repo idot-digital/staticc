@@ -9,6 +9,7 @@ const MOCK_FILE_INFO = {
     'style.css': 'body{background-color: blue}',
 }
 
+
 MOCK_FILE_INFO[pathLib.join('prefabs', 'hello_world', 'prefab.html')] = '<h5>Hello, World!</h5> {{?css style.css}}'
 MOCK_FILE_INFO[pathLib.join('prefabs', 'count_to_3', 'prefab.js')] = 'const arr = [];for(let i=0; i<4; i++){arr.push(i)};render(arr);'
 MOCK_FILE_INFO[pathLib.join('prefabs', 'hello_world', 'style.css')] = 'body{background-color: blue}'
@@ -17,6 +18,7 @@ beforeAll(() => {
     // Set up some mocked out file info before each test
     require('../dist/read_write.js').__setMockFiles(MOCK_FILE_INFO)
 })
+
 
 describe('preprocess', () => {
     test('preprocess', () => {
