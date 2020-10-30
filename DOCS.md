@@ -22,7 +22,7 @@ data.json
 
 ```json
 {
-  "price": "5$"
+    "price": "5$"
 }
 ```
 
@@ -34,11 +34,9 @@ Staticc
 
 ```html
 <p>You can select from these Products</p>
-{{ 
-    # data.shop_items.map((item)=>{
-        return `<h2>${item}</h2>` 
-    }) 
-}}
+{{ # data.shop_items.map((item)=>{ return `
+<h2>${item}</h2>
+` }) }}
 ```
 
 HTML
@@ -54,7 +52,7 @@ data.json
 
 ```json
 {
-  "shop_items": ["Item 1", "Item 2", "Item 3"]
+    "shop_items": ["Item 1", "Item 2", "Item 3"]
 }
 ```
 
@@ -114,14 +112,15 @@ Staticc (index.html)
 
 ```html
 <p>Welcome to my Testpage:</p>
-{{ !my_js_prefab }}
+{{ !!my_js_prefab }}
 ```
 
 prefab.html
 
 ```html
-    const year = new Date().getFullYear()    
-    render(`<h1>Copyright (c) ${year} ${data.company_name}</h1>`)
+const year = new Date().getFullYear() render(`
+<h1>Copyright (c) ${year} ${data.company_name}</h1>
+`)
 ```
 
 HTML
@@ -135,7 +134,7 @@ data.json
 
 ```json
 {
-  "company_name": "iDot digital"
+    "company_name": "iDot digital"
 }
 ```
 
@@ -143,10 +142,10 @@ data.json
 
 In order to reduce the amount of network requests, it can be usefull to inline stylesheets or scripts. While this is nice for loadtimes, it is not very clean in the development process. Therefore staticc has the feature to import some of these files for you. So that you can write them like they were seperate files, but at the end they get injected in the HTML. Supported Filetypes are:
 
-- svg
-- css
-- scss/sass
-- js
+-   svg
+-   css
+-   scss/sass
+-   js
 
 Folder-Structure
 
@@ -168,7 +167,7 @@ style.css
 
 ```css
 body {
-  background-color: blue;
+    background-color: blue;
 }
 ```
 
@@ -177,9 +176,9 @@ HTML
 ```html
 <p>Some text</p>
 <style>
-  body {
-    background-color: blue;
-  }
+    body {
+        background-color: blue;
+    }
 </style>
 ```
 
@@ -206,7 +205,7 @@ style.css
 
 ```css
 body {
-  background-color: blue;
+    background-color: blue;
 }
 ```
 
@@ -214,7 +213,7 @@ style2.css
 
 ```css
 h1 {
-  color: red;
+    color: red;
 }
 ```
 
@@ -223,18 +222,18 @@ HTML
 ```html
 <p>Some text</p>
 <style>
-  body {
-    background-color: blue;
-  }
+    body {
+        background-color: blue;
+    }
 </style>
 <style>
-  h1 {
-    color: red;
-  }
+    h1 {
+        color: red;
+    }
 </style>
 ```
 
-## Image conversion
+## Image conversion (deprecated)
 
 In order to get the best results out of your images, it is recomendet use next-gen formats like webp and jp2. To help you with this, staticc can import images and convert them into webp and generate the needed picture tag. Due to licensing issues, we can only convert your images into webp and you have to create the jp2 images yourself.
 
@@ -259,9 +258,9 @@ HTML
 ```html
 <p>Some text</p>
 <picture>
-  <source srcset="image.webp" type="image/webp" />
-  <source srcset="image.jp2" type="image/jp2" />
-  <img srcset="image.png" alt="a picture" />
+    <source srcset="image.webp" type="image/webp" />
+    <source srcset="image.jp2" type="image/jp2" />
+    <img srcset="image.png" alt="a picture" />
 </picture>
 ```
 
@@ -272,7 +271,7 @@ HTML
 ```html
 <p>Some text</p>
 <picture>
-  <source srcset="image.webp" type="image/webp" />
-  <img srcset="image.png" alt="a picture" />
+    <source srcset="image.webp" type="image/webp" />
+    <img srcset="image.png" alt="a picture" />
 </picture>
 ```
