@@ -131,7 +131,7 @@ describe('resolve', () => {
         const { _resolveFileSnippets } = require('../dist/resolve')
         const snippets = await _resolveFileSnippets(
             [
-                { id: '123', type: snippet_type.file, value: 'test', args: ['sass'] },
+                { id: '123', type: snippet_type.file, value: 'body{background-color: blue}', args: ['sass'] },
                 { id: '123', type: snippet_type.file, value: 'test', args: ['css'] },
                 { id: '123', type: snippet_type.file, value: 'test', args: ['svg'] },
                 { id: '456', type: snippet_type.js, value: 'leave it be' },
@@ -140,7 +140,7 @@ describe('resolve', () => {
             { test: 'lol', test2: { test3: 'lol' } }
         )
         expect(snippets).toEqual([
-            { id: '123', type: snippet_type.file, value: '<style>test</style>', args: ['sass'] },
+            { id: '123', type: snippet_type.file, value: '<style>body{background-color: blue}</style>', args: ['sass'] },
             { id: '123', type: snippet_type.file, value: '<style>test</style>', args: ['css'] },
             { id: '123', type: snippet_type.file, value: 'test', args: ['svg'] },
             { id: '456', type: snippet_type.js, value: 'leave it be' },

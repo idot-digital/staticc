@@ -1,4 +1,3 @@
-import { snippet_type } from './interfaces'
 import { preprocess } from './preprocess'
 import { recombine } from './recombine'
 import { resolve, _interpretSnippets } from './resolve'

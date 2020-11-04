@@ -18,8 +18,9 @@ exports.resolve = async (codeSnippets, data) => {
     const resolvedSnippets = pipe(exports._resolveFileSnippets, exports._resolveDataSnippets)(transpiledContentOfSnippets, data);
     return exports._snippets2Strings(resolvedSnippets);
 };
-//@ts-ignore
-const modulePath = require.main.path;
+//@ts-ignore 
+let modulePath = require.main.path;
+modulePath = modulePath.replace("__tests__", "dist");
 exports._groupSnippets = (codeSnippets) => {
     return codeSnippets.map((snippet_string, index) => {
         console.log('Grouping Snippet: ' + (index + 1));

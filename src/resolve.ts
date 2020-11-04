@@ -16,8 +16,10 @@ export const resolve = async (codeSnippets: string[], data: any): Promise<string
     return _snippets2Strings(resolvedSnippets)
 }
 
-//@ts-ignore
-const modulePath: string = require.main.path
+//@ts-ignore 
+let modulePath: string = require.main.path
+modulePath = modulePath.replace("__tests__", "dist")
+
 
 export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
     return codeSnippets.map(
