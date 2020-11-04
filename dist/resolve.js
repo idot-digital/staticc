@@ -2,7 +2,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._snippets2Strings = exports._transpileSnippetString = exports._resolveFileSnippets = exports._resolveDataSnippet = exports._resolveDataSnippets = exports._interpretPrefabSnippet = exports._interpretJSSnippet = exports._readSnippetFiles = exports._loadSnippetsFromDisk = exports._interpretSnippets = exports._groupSnippets = exports.resolve = void 0;
+exports._getLoadedFiles = exports._snippets2Strings = exports._transpileSnippetString = exports._resolveFileSnippets = exports._resolveDataSnippet = exports._resolveDataSnippets = exports._interpretPrefabSnippet = exports._interpretJSSnippet = exports._readSnippetFiles = exports._loadSnippetsFromDisk = exports._interpretSnippets = exports._groupSnippets = exports.resolve = void 0;
 const worker_threads_1 = require("worker_threads");
 //import { v4 as uuid } from 'uuid'
 const read_write_1 = require("./read_write");
@@ -16,7 +16,8 @@ exports.resolve = async (codeSnippets, data) => {
     const interpretedSnippets = await exports._interpretSnippets(loadedSnippets, data);
     const transpiledContentOfSnippets = await exports._transpileSnippetString(interpretedSnippets, data);
     const resolvedSnippets = pipe(exports._resolveFileSnippets, exports._resolveDataSnippets)(transpiledContentOfSnippets, data);
-    return exports._snippets2Strings(resolvedSnippets);
+    const loadedFiles = exports._getLoadedFiles(resolvedSnippets);
+    return { resolvedSnippets: exports._snippets2Strings(resolvedSnippets), loadedFiles: loadedFiles };
 };
 //@ts-ignore 
 let modulePath = require.main.path;
@@ -188,7 +189,10 @@ exports._transpileSnippetString = async (snippets, data) => {
     return await Promise.all(snippets.map(async (snippet, index) => {
         if (snippet.type === interfaces_1.snippet_type.js || snippet.type === interfaces_1.snippet_type.prefab_js || snippet.type === interfaces_1.snippet_type.prefab_html) {
             const path = (snippet.path || [])[0] || '';
-            return { ...snippet, value: await transpile_1._transpile(snippet.value, data, index.toString(), path) };
+            const { htmlString, loadedFiles } = await transpile_1._transpile(snippet.value, data, index.toString());
+            snippet.value = htmlString;
+            snippet.path = [path, ...loadedFiles];
+            return snippet;
         }
         return snippet;
     }));
@@ -201,4 +205,16 @@ exports._snippets2Strings = (snippets) => {
 const pipe = (...fns) => (x, ...args) => fns.reduce((v, f) => f(v, ...args), x);
 const renderSass = (str) => {
     return node_sass_1.default.renderSync({ data: str }).css.toString();
+};
+exports._getLoadedFiles = (snippets) => {
+    //@ts-ignore
+    let paths = snippets.map((snippet) => {
+        if (snippet.type == interfaces_1.snippet_type.file || snippet.type == interfaces_1.snippet_type.prefab_js || snippet.type == interfaces_1.snippet_type.prefab_html) {
+            return snippet.path;
+        }
+        return undefined;
+    });
+    paths = paths.filter(e => e);
+    //@ts-ignore
+    return paths.flat();
 };

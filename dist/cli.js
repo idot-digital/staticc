@@ -28,6 +28,7 @@ if (data_json_override) {
     const index = args.indexOf('-d') !== -1 ? args.indexOf('-d') : args.indexOf('-data');
     data_json_path = args[index + 1];
 }
+let alreadyLoadedFiles;
 if (version) {
     const package_info = require('../package.json');
     console.log(package_info.version);
@@ -97,7 +98,8 @@ async function build(build_prod) {
         await transpileFile(file, data, build_prod);
     });
     //exclude already imported files
-    copyAllFiles([...HTMLfiles]);
+    const inlinedFiles = alreadyLoadedFiles;
+    copyAllFiles([...HTMLfiles, ...inlinedFiles]);
 }
 function startDevServer() {
     process.title = 'lite-server';
@@ -117,7 +119,8 @@ function startDevServer() {
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        let transpiledCode = await transpile_1._transpile(content, data);
+        let { htmlString: transpiledCode, loadedFiles } = await transpile_1._transpile(content, data);
+        alreadyLoadedFiles = loadedFiles;
         if (build_prod)
             transpiledCode = minifyHTML(transpiledCode);
         return transpiledCode;

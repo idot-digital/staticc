@@ -10,9 +10,9 @@ export const _transpile = async (staticcString: string, data: any, snippetPrefix
     const [plainHTMLSnippets, codeSnippets] = seperate(staticcString, start_seperator, end_seperator)
 
     //RESOLVER ENGINE
-    const resolvedSnippets = await resolve(codeSnippets, data)
+    const {resolvedSnippets, loadedFiles} = await resolve(codeSnippets, data)
 
     //RECOMBINATOR ENGINE
     const htmlString = recombine(plainHTMLSnippets, resolvedSnippets)
-    return htmlString
+    return {htmlString, loadedFiles}
 }

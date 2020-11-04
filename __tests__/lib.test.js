@@ -98,8 +98,8 @@ describe('resolve', () => {
     })
     test('_interpretJSSnippet', async () => {
         const { _interpretJSSnippet } = require('../dist/resolve')
-        const snippets = await _interpretJSSnippet({ id: '789', type: snippet_type.js, value: 'data.title.map(elmt=>elmt)' }, { title: ['test', 'test2'] })
-        expect(snippets).toEqual({ id: '789', type: snippet_type.js, value: 'testtest2' })
+        const snippets = await _interpretJSSnippet({ id: '789', type: snippet_type.js, value: 'data.title.map(elmt=>elmt)' }, { title: ['test', 'test2', 'test3'] })
+        expect(snippets).toEqual({ id: '789', type: snippet_type.js, value: 'testtest2test3' })
     })
     test('_interpretPrefabSnippet', async () => {
         const { _interpretPrefabSnippet } = require('../dist/resolve')
@@ -174,8 +174,8 @@ describe('transpile', () => {
             '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{!!count_to_3}} </body></html>',
             { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' }
         )
-        expect(snippets).toBe(
-            '<!DOCTYPE html><html><head><title>STATICC Webpage</title></head><body><h1>STATICC Webpage</h1><h2>Item 1</h2><h2>Item 2</h2><h2>Item 3</h2> <h5>Hello, World!</h5> <style>body{background-color: blue}</style> 0123 </body></html>'
+        expect(snippets).toEqual(
+            {htmlString: "<!DOCTYPE html><html><head><title>STATICC Webpage</title></head><body><h1>STATICC Webpage</h1><h2>Item 1</h2><h2>Item 2</h2><h2>Item 3</h2> <h5>Hello, World!</h5> <style>body{background-color: blue}</style> 0123 </body></html>", loadedFiles: ["prefabs\\hello_world\\prefab.html","style.css", "prefabs\\count_to_3\\prefab.js"]}
         )
     })
 })

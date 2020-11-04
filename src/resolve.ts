@@ -6,14 +6,16 @@ import { _transpile } from './transpile'
 import path from 'path'
 import sass from 'node-sass'
 
-export const resolve = async (codeSnippets: string[], data: any): Promise<string[]> => {
+export const resolve = async (codeSnippets: string[], data: any): Promise<{resolvedSnippets: string[], loadedFiles: string[]}> => {
     const groupedSnippets = _groupSnippets(codeSnippets)
     const loadedSnippets = await _loadSnippetsFromDisk(groupedSnippets)
     const interpretedSnippets = await _interpretSnippets(loadedSnippets, data)
     const transpiledContentOfSnippets = await _transpileSnippetString(interpretedSnippets as transpileableSnippet[], data)
     const resolvedSnippets = pipe(_resolveFileSnippets, _resolveDataSnippets)(transpiledContentOfSnippets, data)
 
-    return _snippets2Strings(resolvedSnippets)
+    const loadedFiles = _getLoadedFiles(resolvedSnippets)
+
+    return {resolvedSnippets: _snippets2Strings(resolvedSnippets), loadedFiles: loadedFiles}
 }
 
 //@ts-ignore 
@@ -182,7 +184,10 @@ export const _transpileSnippetString = async (snippets: transpileableSnippet[], 
         snippets.map(async (snippet, index) => {
             if (snippet.type === snippet_type.js || snippet.type === snippet_type.prefab_js || snippet.type === snippet_type.prefab_html) {
                 const path = (snippet.path || [])[0] || ''
-                return { ...snippet, value: await _transpile(snippet.value, data, index.toString(), path) }
+                const {htmlString, loadedFiles} = await _transpile(snippet.value, data, index.toString())
+                snippet.value = htmlString
+                snippet.path = [path, ...loadedFiles]
+                return snippet;
             }
             return snippet
         })
@@ -200,3 +205,17 @@ const pipe = (...fns: Function[]) => (x: snippet[], ...args: any[]) => fns.reduc
 const renderSass = (str: string): string => {
     return sass.renderSync({ data: str }).css.toString()
 }
+
+export const _getLoadedFiles = (snippets: snippet[]): string[] => {
+    //@ts-ignore
+    let paths =  snippets.map((snippet) => {
+        if(snippet.type == snippet_type.file || snippet.type == snippet_type.prefab_js || snippet.type == snippet_type.prefab_html){
+                return snippet.path
+        }
+        return undefined
+    })
+    paths = paths.filter(e => e)
+    //@ts-ignore
+    return paths.flat()
+}
+
