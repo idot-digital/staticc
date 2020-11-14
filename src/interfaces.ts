@@ -1,23 +1,23 @@
-export interface snippet {
+export interface snippetType {
     type: snippet_type
     value?: string
     path?: string[]
     args?: string[]
 }
 
-export interface loadedSnippet extends snippet {
+export interface loadedSnippet extends snippetType {
     value: string
 }
 
-export interface fileSnippet extends snippet {
+export interface fileSnippet extends snippetType {
     path: string[]
 }
 
-export interface jsPrefabSnippet extends snippet {
+export interface jsPrefabSnippet extends snippetType {
     args: string[]
 }
 
-export interface dataSnippet extends snippet {
+export interface dataSnippet extends snippetType {
     value: string
 }
 
@@ -29,7 +29,7 @@ export enum snippet_type {
     data,
 }
 
-export interface transpileableSnippet extends snippet {
+export interface transpileableSnippet extends snippetType {
     value: string
     type: snippet_type
 }

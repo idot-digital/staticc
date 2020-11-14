@@ -107,24 +107,24 @@ exports._readSnippetFiles = async (snippet) => {
     return snippet;
 };
 exports._interpretJSSnippet = async (snippet, data) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((res, rej) => {
         const worker = new worker_threads_1.Worker(path_1.default.join(modulePath, 'interpreter', 'js_interpreter.js'), { workerData: { snippet, data } });
-        worker.on('message', resolve);
-        worker.on('error', reject);
+        worker.on('message', res);
+        worker.on('error', rej);
         worker.on('exit', (code) => {
             if (code !== 0)
-                reject(new Error(`Worker stopped with exit code ${code}`));
+                rej(new Error(`Worker stopped with exit code ${code}`));
         });
     });
 };
 exports._interpretPrefabSnippet = async (snippet, data, args) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((res, rej) => {
         const worker = new worker_threads_1.Worker(path_1.default.join(modulePath, 'interpreter', 'prefab_interpreter.js'), { workerData: { snippet, data, args } });
-        worker.on('message', resolve);
-        worker.on('error', reject);
+        worker.on('message', res);
+        worker.on('error', rej);
         worker.on('exit', (code) => {
             if (code !== 0)
-                reject(new Error(`Worker stopped with exit code ${code}`));
+                rej(new Error(`Worker stopped with exit code ${code}`));
         });
     });
 };
@@ -168,7 +168,7 @@ exports._resolveFileSnippets = (snippets) => {
                 let css = '';
                 if (snippet.value)
                     css = renderSass(snippet.value);
-                return { ...snippet, value: `<style>${snippet.value}</style>` };
+                return { ...snippet, value: `<style>${css}</style>` };
             }
             else if ((_d = snippet.args) === null || _d === void 0 ? void 0 : _d.includes('svg')) {
                 return snippet;

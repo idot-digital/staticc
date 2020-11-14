@@ -1,9 +1,9 @@
 import { Worker } from 'worker_threads'
 //import { v4 as uuid } from 'uuid'
 import { readFileFromDisk } from './read_write'
-import { snippet_type, snippet, fileSnippet, dataSnippet, jsPrefabSnippet, transpileableSnippet, loadedSnippet } from './interfaces'
+import { snippet_type, snippetType, fileSnippet, dataSnippet, jsPrefabSnippet, transpileableSnippet, loadedSnippet } from './interfaces'
 import { _transpile } from './transpile'
-import path from 'path'
+import pathLib from 'path'
 import sass from 'node-sass'
 
 export const resolve = async (codeSnippets: string[], data: any): Promise<{resolvedSnippets: string[], loadedFiles: string[]}> => {
@@ -23,9 +23,9 @@ let modulePath: string = require.main.path
 modulePath = modulePath.replace("__tests__", "dist")
 
 
-export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
+export const _groupSnippets = (codeSnippets: string[]): snippetType[] => {
     return codeSnippets.map(
-        (snippet_string: string, index): snippet => {
+        (snippet_string: string, index): snippetType => {
             console.log('Grouping Snippet: ' + (index + 1))
             const snippet: any = {
                 //id: uuid(),
@@ -42,12 +42,12 @@ export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
                 if (!snippet_path) throw new Error('Cloud not resolve js-prefab! No filepath given!')
                 //js prefab
                 snippet.type = snippet_type.prefab_js
-                snippet.path = [path.join('prefabs', snippet_path, 'prefab.js')]
+                snippet.path = [pathLib.join('prefabs', snippet_path, 'prefab.js')]
                 snippet.args = args
             } else if (snippet_string.indexOf('!') != -1) {
                 //html prefab
                 snippet.type = snippet_type.prefab_html
-                snippet.path = [path.join('prefabs', snippet_string.replace('!', ''), 'prefab.html')]
+                snippet.path = [pathLib.join('prefabs', snippet_string.replace('!', ''), 'prefab.html')]
             } else if (snippet_string.indexOf('?') != -1) {
                 //file snippet
                 const args = snippet_string.replace('?', '').split(' ')
@@ -55,7 +55,7 @@ export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
                 if (!snippet_cmd) throw new Error('Could not resolve file-snippet! The given filetype is not supported!')
                 snippet.type = snippet_type.file
                 snippet.path = args.map((filepath) => {
-                    return path.join('src', filepath)
+                    return pathLib.join('src', filepath)
                 })
                 snippet.path = args
                 snippet.args = [snippet_cmd]
@@ -68,7 +68,7 @@ export const _groupSnippets = (codeSnippets: string[]): snippet[] => {
     )
 }
 
-export const _interpretSnippets = async (snippets: snippet[], data: any): Promise<snippet[]> => {
+export const _interpretSnippets = async (snippets: snippetType[], data: any): Promise<snippetType[]> => {
     return Promise.all(
         snippets.map(async (snippet, index) => {
             console.log('Interpreting Snippet: ' + (index + 1))
@@ -84,7 +84,7 @@ export const _interpretSnippets = async (snippets: snippet[], data: any): Promis
     )
 }
 
-export const _loadSnippetsFromDisk = async (snippets: snippet[]): Promise<loadedSnippet[]> => {
+export const _loadSnippetsFromDisk = async (snippets: snippetType[]): Promise<loadedSnippet[]> => {
     return Promise.all(
         snippets.map(async (snippet, index) => {
             console.log('Loading Snippet Files: ' + (index + 1))
@@ -97,7 +97,7 @@ export const _loadSnippetsFromDisk = async (snippets: snippet[]): Promise<loaded
     )
 }
 
-export const _readSnippetFiles = async (snippet: fileSnippet): Promise<snippet> => {
+export const _readSnippetFiles = async (snippet: fileSnippet): Promise<snippetType> => {
     const fileContents = await Promise.all(
         snippet.path.map((path) => {
             return readFileFromDisk(path)
@@ -109,28 +109,28 @@ export const _readSnippetFiles = async (snippet: fileSnippet): Promise<snippet> 
     return snippet
 }
 
-export const _interpretJSSnippet = async (snippet: snippet, data: any): Promise<snippet> => {
-    return new Promise((resolve, reject) => {
-        const worker = new Worker(path.join(modulePath, 'interpreter', 'js_interpreter.js'), { workerData: { snippet, data } })
-        worker.on('message', resolve)
-        worker.on('error', reject)
+export const _interpretJSSnippet = async (snippet: snippetType, data: any): Promise<snippetType> => {
+    return new Promise((res, rej) => {
+        const worker = new Worker(pathLib.join(modulePath, 'interpreter', 'js_interpreter.js'), { workerData: { snippet, data } })
+        worker.on('message', res)
+        worker.on('error', rej)
         worker.on('exit', (code) => {
-            if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`))
+            if (code !== 0) rej(new Error(`Worker stopped with exit code ${code}`))
         })
     })
 }
-export const _interpretPrefabSnippet = async (snippet: snippet, data: any, args: string[]): Promise<snippet> => {
-    return new Promise((resolve, reject) => {
-        const worker = new Worker(path.join(modulePath, 'interpreter', 'prefab_interpreter.js'), { workerData: { snippet, data, args } })
-        worker.on('message', resolve)
-        worker.on('error', reject)
+export const _interpretPrefabSnippet = async (snippet: snippetType, data: any, args: string[]): Promise<snippetType> => {
+    return new Promise((res, rej) => {
+        const worker = new Worker(pathLib.join(modulePath, 'interpreter', 'prefab_interpreter.js'), { workerData: { snippet, data, args } })
+        worker.on('message', res)
+        worker.on('error', rej)
         worker.on('exit', (code) => {
-            if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`))
+            if (code !== 0) rej(new Error(`Worker stopped with exit code ${code}`))
         })
     })
 }
 
-export const _resolveDataSnippets = (snipepts: snippet[], data: any): snippet[] => {
+export const _resolveDataSnippets = (snipepts: snippetType[], data: any): snippetType[] => {
     return snipepts.map((snippet, index) => {
         console.log('Resolving Snippet Data: ' + (index + 1))
         if (snippet.type == snippet_type.data) {
@@ -141,7 +141,7 @@ export const _resolveDataSnippets = (snipepts: snippet[], data: any): snippet[] 
     })
 }
 
-export const _resolveDataSnippet = (snippet: dataSnippet, data: any): snippet => {
+export const _resolveDataSnippet = (snippet: dataSnippet, data: any): snippetType => {
     let value = data
     const snippetParts = snippet.value?.split('.')
     try {
@@ -155,7 +155,7 @@ export const _resolveDataSnippet = (snippet: dataSnippet, data: any): snippet =>
     return { ...snippet, value: value }
 }
 
-export const _resolveFileSnippets = (snippets: snippet[]): snippet[] => {
+export const _resolveFileSnippets = (snippets: snippetType[]): snippetType[] => {
     return snippets.map((snippet, index) => {
         console.log('Inligning Snippet: ' + (index + 1))
         if (snippet.type == snippet_type.file) {
@@ -165,7 +165,7 @@ export const _resolveFileSnippets = (snippets: snippet[]): snippet[] => {
                 //resovle Sass
                 let css = ''
                 if (snippet.value) css = renderSass(snippet.value)
-                return { ...snippet, value: `<style>${snippet.value}</style>` }
+                return { ...snippet, value: `<style>${css}</style>` }
             } else if (snippet.args?.includes('svg')) {
                 return snippet
             } else if (snippet.args?.includes('js')) {
@@ -179,7 +179,7 @@ export const _resolveFileSnippets = (snippets: snippet[]): snippet[] => {
     })
 }
 
-export const _transpileSnippetString = async (snippets: transpileableSnippet[], data: any): Promise<snippet[]> => {
+export const _transpileSnippetString = async (snippets: transpileableSnippet[], data: any): Promise<snippetType[]> => {
     return await Promise.all(
         snippets.map(async (snippet, index) => {
             if (snippet.type === snippet_type.js || snippet.type === snippet_type.prefab_js || snippet.type === snippet_type.prefab_html) {
@@ -194,19 +194,19 @@ export const _transpileSnippetString = async (snippets: transpileableSnippet[], 
     )
 }
 
-export const _snippets2Strings = (snippets: snippet[]): string[] => {
+export const _snippets2Strings = (snippets: snippetType[]): string[] => {
     return snippets.map((snippet) => {
         return snippet.value as string
     })
 }
 
-const pipe = (...fns: Function[]) => (x: snippet[], ...args: any[]) => fns.reduce((v, f) => f(v, ...args), x)
+const pipe = (...fns: Function[]) => (x: snippetType[], ...args: any[]) => fns.reduce((v, f) => f(v, ...args), x)
 
 const renderSass = (str: string): string => {
     return sass.renderSync({ data: str }).css.toString()
 }
 
-export const _getLoadedFiles = (snippets: snippet[]): string[] => {
+export const _getLoadedFiles = (snippets: snippetType[]): string[] => {
     //@ts-ignore
     let paths =  snippets.map((snippet) => {
         if(snippet.type == snippet_type.file || snippet.type == snippet_type.prefab_js || snippet.type == snippet_type.prefab_html){

@@ -88,9 +88,9 @@ async function build(build_prod: boolean) {
     const data = JSON.parse(await readFileFromDisk(data_json_path))
     console.log('\nstarting build!')
     const HTMLfiles = glob.sync('src/**/*.html')
-    HTMLfiles.forEach(async (file) => {
+    await Promise.all(HTMLfiles.map(async (file) => {
         await transpileFile(file, data, build_prod)
-    })
+    }))
     //exclude already imported files
     const inlinedFiles : string[] = alreadyLoadedFiles;
     copyAllFiles([...HTMLfiles, ...inlinedFiles])
