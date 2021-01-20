@@ -18,9 +18,9 @@ exports._occurrences = (string, subString) => {
 };
 exports._cutString = (input_string, start_seperator, end_seperator) => {
     const openingIndex = input_string.indexOf(start_seperator);
-    const cloringIndex = input_string.indexOf(end_seperator);
+    const closingIndex = input_string.indexOf(end_seperator);
     const firstPart = input_string.slice(0, openingIndex);
-    const middlePart = input_string.slice(openingIndex + 2, cloringIndex);
-    const lastPart = input_string.slice(cloringIndex + 2);
+    const middlePart = input_string.slice(openingIndex + start_seperator.length, closingIndex);
+    const lastPart = input_string.slice(closingIndex + end_seperator.length);
     return [firstPart, middlePart, lastPart];
 };

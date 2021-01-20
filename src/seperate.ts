@@ -18,9 +18,9 @@ export const _occurrences = (string: string, subString: string): number => {
 
 export const _cutString = (input_string: string, start_seperator: string, end_seperator: string): string[] => {
     const openingIndex: number = input_string.indexOf(start_seperator)
-    const cloringIndex: number = input_string.indexOf(end_seperator)
+    const closingIndex: number = input_string.indexOf(end_seperator)
     const firstPart: string = input_string.slice(0, openingIndex)
-    const middlePart: string = input_string.slice(openingIndex + 2, cloringIndex)
-    const lastPart: string = input_string.slice(cloringIndex + 2)
+    const middlePart: string = input_string.slice(openingIndex + start_seperator.length, closingIndex)
+    const lastPart: string = input_string.slice(closingIndex + end_seperator.length)
     return [firstPart, middlePart, lastPart]
 }

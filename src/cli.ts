@@ -30,7 +30,7 @@ if (data_json_override) {
     data_json_path = args[index + 1]
 }
 
-let alreadyLoadedFiles: string[];
+let alreadyLoadedFiles: string[]
 
 if (version) {
     const package_info = require('../package.json')
@@ -88,11 +88,13 @@ async function build(build_prod: boolean) {
     const data = JSON.parse(await readFileFromDisk(data_json_path))
     console.log('\nstarting build!')
     const HTMLfiles = glob.sync('src/**/*.html')
-    await Promise.all(HTMLfiles.map(async (file) => {
-        await transpileFile(file, data, build_prod)
-    }))
+    await Promise.all(
+        HTMLfiles.map(async (file) => {
+            await transpileFile(file, data, build_prod)
+        })
+    )
     //exclude already imported files
-    const inlinedFiles : string[] = alreadyLoadedFiles;
+    const inlinedFiles: string[] = alreadyLoadedFiles
     copyAllFiles([...HTMLfiles, ...inlinedFiles])
 }
 
@@ -118,7 +120,7 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            let {htmlString: transpiledCode, loadedFiles} = await _transpile(content, data)
+            let { htmlString: transpiledCode, loadedFiles } = await _transpile(content, data)
             alreadyLoadedFiles = loadedFiles
             if (build_prod) transpiledCode = minifyHTML(transpiledCode)
             return transpiledCode
