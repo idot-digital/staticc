@@ -7,11 +7,10 @@ const node_sass_1 = __importDefault(require("node-sass"));
 const path_1 = __importDefault(require("path"));
 const read_write_1 = require("../read_write");
 class FileInlineSnippet extends Snippet_1.default {
-    constructor(input_string, path) {
-        super(input_string);
+    constructor(input_string, lineNumber, path) {
+        super(input_string, lineNumber, path);
         this.fileContents = '';
         this.fileIdentifier = '';
-        this.referencePath = path;
     }
     async resolve(data) {
         await this.readFile();
@@ -31,7 +30,7 @@ class FileInlineSnippet extends Snippet_1.default {
         this.fileIdentifier = snippet_parts.shift();
         this.filepaths = snippet_parts;
         await Promise.all(this.filepaths.map(async (filepath) => {
-            this.fileContents += ' ' + (await read_write_1.readFileFromDisk(path_1.default.join(this.referencePath, filepath)));
+            this.fileContents += ' ' + (await read_write_1.readFileFromDisk(path_1.default.join(path_1.default.dirname(this.referencePath), filepath)));
         }));
     }
 }

@@ -7,8 +7,8 @@ let modulePath: string = require.main.path
 modulePath = modulePath.replace('__tests__', 'dist')
 
 class JsSnippet extends Snippet {
-    constructor(input_string: string) {
-        super(input_string)
+    constructor(input_string: string, lineNumber: Number, path: string) {
+        super(input_string, lineNumber, path)
     }
     async resolve(data: any): Promise<void> {
         this.result = await this.interpret(data)

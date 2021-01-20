@@ -6,12 +6,10 @@ import { readFileFromDisk } from '../read_write'
 class FileInlineSnippet extends Snippet {
     fileContents: string
     fileIdentifier: string
-    referencePath: string
-    constructor(input_string: string, path: string) {
-        super(input_string)
+    constructor(input_string: string, lineNumber: Number, path: string) {
+        super(input_string, lineNumber, path)
         this.fileContents = ''
         this.fileIdentifier = ''
-        this.referencePath = path
     }
     async resolve(data: any): Promise<void> {
         await this.readFile()
@@ -31,8 +29,7 @@ class FileInlineSnippet extends Snippet {
         this.filepaths = snippet_parts
         await Promise.all(
             this.filepaths.map(async (filepath) => {
-                this.fileContents += ' ' + (await readFileFromDisk(pathLib.join(this.referencePath, filepath)))
-               
+                this.fileContents += ' ' + (await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath)))
             })
         )
     }

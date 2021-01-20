@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Snippet_1 = __importDefault(require("./Snippet"));
 class DataSnippet extends Snippet_1.default {
-    constructor(input_string) {
-        super(input_string);
+    constructor(input_string, lineNumber, path) {
+        super(input_string, lineNumber, path);
     }
     async resolve(data) {
         let value = data;

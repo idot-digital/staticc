@@ -9,8 +9,8 @@ const path_1 = __importDefault(require("path"));
 let modulePath = require.main.path;
 modulePath = modulePath.replace('__tests__', 'dist');
 class JsSnippet extends Snippet_1.default {
-    constructor(input_string) {
-        super(input_string);
+    constructor(input_string, lineNumber, path) {
+        super(input_string, lineNumber, path);
     }
     async resolve(data) {
         this.result = await this.interpret(data);

@@ -5,7 +5,7 @@ import { execSync } from 'child_process'
 import { readFileFromDisk, saveFileToDisk } from './read_write'
 import { glob } from 'glob'
 import fs from 'fs'
-import { _transpile } from './transpile'
+import { transpile } from './transpile'
 import { minify } from 'html-minifier'
 import lite_server from 'lite-server'
 import chokidar from 'chokidar'
@@ -120,7 +120,7 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            let { htmlString: transpiledCode, loadedFiles } = await _transpile(content, data)
+            let { htmlString: transpiledCode, loadedFiles } = await transpile(content, data, file)
             alreadyLoadedFiles = loadedFiles
             if (build_prod) transpiledCode = minifyHTML(transpiledCode)
             return transpiledCode

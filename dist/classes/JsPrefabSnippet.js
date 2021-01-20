@@ -9,8 +9,8 @@ const path_1 = __importDefault(require("path"));
 let modulePath = require.main.path;
 modulePath = modulePath.replace('__tests__', 'dist');
 class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
-    constructor(input_string) {
-        super(input_string, PrefabSnippet_1.PrefabType.JsPrefabSnippet);
+    constructor(input_string, lineNumber, path) {
+        super(input_string, PrefabSnippet_1.PrefabType.JsPrefabSnippet, lineNumber, path);
     }
     async resolve(data) {
         await super.readFile();

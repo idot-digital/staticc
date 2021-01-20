@@ -1,19 +1,16 @@
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const transpile_1 = require("../transpile");
-const path_1 = __importDefault(require("path"));
-const wait_1 = __importDefault(require("../wait"));
 class Snippet {
-    constructor(input_string) {
+    constructor(input_string, lineNumber, path) {
         this.input_string = input_string;
         this.result = '';
         this.filepaths = [];
+        this.lineNumber = lineNumber;
+        this.referencePath = path;
         this.cleanSnippetString();
     }
     async resolve(_) {
-        await wait_1.default();
+        await wait();
     }
     toString() {
         return this.result;
@@ -22,10 +19,10 @@ class Snippet {
         return this.filepaths;
     }
     cleanSnippetString() {
-        this.input_string = replaceAll(this.input_string, "\n", "");
+        this.input_string = replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
-        const { htmlString, loadedFiles } = await transpile_1._transpile(this.result, data, "", path_1.default.dirname(this.filepaths[0] || "src"));
+        const { htmlString, loadedFiles } = await transpile_1.transpile(this.result, data, this.filepaths[0] || 'src');
         this.filepaths = [...this.filepaths, ...loadedFiles];
         this.result = htmlString;
         return;
@@ -36,5 +33,12 @@ const replaceAll = (string, searchValue, replaceValue) => {
         string = string.replace(searchValue, replaceValue);
     }
     return string;
+};
+const wait = async () => {
+    return new Promise((resolve, _) => {
+        setTimeout(() => {
+            resolve();
+        }, 0);
+    });
 };
 exports.default = Snippet;

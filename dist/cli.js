@@ -119,7 +119,7 @@ function startDevServer() {
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        let { htmlString: transpiledCode, loadedFiles } = await transpile_1._transpile(content, data);
+        let { htmlString: transpiledCode, loadedFiles } = await transpile_1.transpile(content, data, file);
         alreadyLoadedFiles = loadedFiles;
         if (build_prod)
             transpiledCode = minifyHTML(transpiledCode);

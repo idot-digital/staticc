@@ -1,5 +1,4 @@
 const pathLib = require('path')
-const { snippet_type } = require('../dist/interfaces')
 jest.mock('../dist/read_write')
 //jest.mock('sass')
 
@@ -28,20 +27,20 @@ describe('preprocess', () => {
 })
 
 describe('seperate', () => {
-    test('seperate', () => {
-        const { seperate } = require('../dist/seperate')
-        const [plainHTMLSnippets, codeSnippets] = seperate('{{lol}}test{{test}}', '{{', '}}')
-        expect(plainHTMLSnippets).toEqual(['', 'test', ''])
-        expect(codeSnippets).toEqual(['lol', 'test'])
-    })
-    test('_occurrences', () => {
-        const { _occurrences } = require('../dist/seperate')
-        const result = _occurrences('Hello World! Hello Internet!', 'Hello')
+    // test('seperate', () => {
+    //     const { seperate } = require('../dist/seperate')
+    //     const [plainHTMLSnippets, codeSnippets] = seperate('{{lol}}test{{test}}', '{{', '}}')
+    //     expect(plainHTMLSnippets).toEqual(['', 'test', ''])
+    //     expect(codeSnippets).toEqual([new DataSnippet('lol'), new DataSnippet('test')])
+    // })
+    test('occurrences', () => {
+        const { occurrences } = require('../dist/seperate')
+        const result = occurrences('Hello World! Hello Internet!', 'Hello')
         expect(result).toBe(2)
     })
-    test('_cutString', () => {
-        const { _cutString } = require('../dist/seperate')
-        const result = _cutString('Hello World{{this is a test}}lol', '{{', '}}')
+    test('cutString', () => {
+        const { cutString } = require('../dist/seperate')
+        const result = cutString('Hello World{{this is a test}}lol', '{{', '}}')
         expect(result).toEqual(['Hello World', 'this is a test', 'lol'])
     })
 })
@@ -57,9 +56,9 @@ describe('recombine', () => {
 })
 
 describe('transpile', () => {
-    test('_transpile', async () => {
-        const { _transpile } = require('../dist/transpile')
-        const snippets = await _transpile(
+    test('transpile', async () => {
+        const { transpile } = require('../dist/transpile')
+        const snippets = await transpile(
             '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{!!count_to_3}} </body></html>',
             { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' }
         )

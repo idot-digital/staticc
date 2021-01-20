@@ -1,4 +1,4 @@
-import { _cutString, _occurrences } from "./seperate"
+import { cutString, occurrences } from "./seperate"
 
 export const preprocess = (input_string: string): string => {
     //cleanComments
@@ -7,10 +7,10 @@ export const preprocess = (input_string: string): string => {
 }
 
 const cleanComments = (inputString: string) =>{
-    const oc = _occurrences(inputString, '{{$')
+    const oc = occurrences(inputString, '{{$')
     let cleanedString = ""
     for (let i = 0; i < oc; i++) {
-        const [firstPart, _, lastPart] = _cutString(inputString, "{{$", "$}}")
+        const [firstPart, _, lastPart] = cutString(inputString, "{{$", "$}}")
         cleanedString += firstPart
         inputString = lastPart
     }

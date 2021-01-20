@@ -1,8 +1,8 @@
 import Snippet from './Snippet'
 
 class DataSnippet extends Snippet {
-    constructor(input_string: string) {
-        super(input_string)
+    constructor(input_string: string, lineNumber: Number, path: string) {
+        super(input_string, lineNumber, path)
     }
     async resolve(data: any): Promise<void> {
         let value = data
