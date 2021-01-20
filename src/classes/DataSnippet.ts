@@ -15,6 +15,11 @@ class DataSnippet extends Snippet {
         } catch (error) {
             throw Error('Could not resolve data-snippet. The requested value is undefined!')
         }
+        if(value.constructor === Object){
+            throw Error('Could not resolve data-snippet. The requested value is an object!')
+        }else if(value.constructor === Array){
+            throw Error('Could not resolve data-snippet. The requested value is an array!')
+        }
         this.result = value
         await this.postProcess(data)
     }

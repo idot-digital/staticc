@@ -35,19 +35,19 @@ exports.cutString = (input_string, start_seperator, end_seperator) => {
 };
 exports.classifySnippet = (snippet_string, path, lineNumber) => {
     if (snippet_string.indexOf('#') != -1) {
-        return new JsSnippet_1.default(snippet_string.replace('#', ''), lineNumber, path);
+        return new JsSnippet_1.default(snippet_string.replace('#', '').trim(), lineNumber, path);
     }
     else if (snippet_string.indexOf('!!') != -1) {
-        return new JsPrefabSnippet_1.default(snippet_string.replace('!!', ''), lineNumber, path);
+        return new JsPrefabSnippet_1.default(snippet_string.replace('!!', '').trim(), lineNumber, path);
     }
     else if (snippet_string.indexOf('!') != -1) {
-        return new HtmlPrefabSnippet_1.default(snippet_string.replace('!', ''), lineNumber, path);
+        return new HtmlPrefabSnippet_1.default(snippet_string.replace('!', '').trim(), lineNumber, path);
     }
     else if (snippet_string.indexOf('?') != -1) {
-        return new FileInlineSnippet_1.default(snippet_string.replace('?', ''), lineNumber, path);
+        return new FileInlineSnippet_1.default(snippet_string.replace('?', '').trim(), lineNumber, path);
     }
     else {
-        return new DataSnippet_1.default(snippet_string, lineNumber, path);
+        return new DataSnippet_1.default(snippet_string.trim(), lineNumber, path);
     }
 };
 exports.calculateLineNumber = (totalNumberOfLines, middlePart, lastPart) => {

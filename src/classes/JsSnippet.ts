@@ -11,7 +11,11 @@ class JsSnippet extends Snippet {
         super(input_string, lineNumber, path)
     }
     async resolve(data: any): Promise<void> {
-        this.result = await this.interpret(data)
+        try {
+            this.result = await this.interpret(data)
+        } catch (error) {
+            throw new Error(`JS-Interpreter exited with ${error}`)
+        }
         await this.postProcess(data)
     }
 

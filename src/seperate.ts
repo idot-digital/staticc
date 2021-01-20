@@ -43,15 +43,15 @@ export const cutString = (input_string: string, start_seperator: string, end_sep
 
 export const classifySnippet = (snippet_string: string, path: string, lineNumber: number): Snippet => {
     if (snippet_string.indexOf('#') != -1) {
-        return new JsSnippet(snippet_string.replace('#', ''), lineNumber, path)
+        return new JsSnippet(snippet_string.replace('#', '').trim(), lineNumber, path)
     } else if (snippet_string.indexOf('!!') != -1) {
-        return new JsPrefabSnippet(snippet_string.replace('!!', ''), lineNumber, path)
+        return new JsPrefabSnippet(snippet_string.replace('!!', '').trim(), lineNumber, path)
     } else if (snippet_string.indexOf('!') != -1) {
-        return new HtmlPrefabSnippet(snippet_string.replace('!', ''), lineNumber, path)
+        return new HtmlPrefabSnippet(snippet_string.replace('!', '').trim(), lineNumber, path)
     } else if (snippet_string.indexOf('?') != -1) {
-        return new FileInlineSnippet(snippet_string.replace('?', ''), lineNumber, path)
+        return new FileInlineSnippet(snippet_string.replace('?', '').trim(), lineNumber, path)
     } else {
-        return new DataSnippet(snippet_string, lineNumber, path)
+        return new DataSnippet(snippet_string.trim(), lineNumber, path)
     }
 }
 

@@ -14,8 +14,13 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
     }
     async resolve(data) {
         await super.readFile();
-        const result = await this.interpret(data);
-        this.result = result;
+        try {
+            const result = await this.interpret(data);
+            this.result = result;
+        }
+        catch (error) {
+            throw new Error(`JS-Interpreter exited with ${error}`);
+        }
         await this.postProcess(data);
     }
     async interpret(data) {

@@ -13,7 +13,12 @@ class JsSnippet extends Snippet_1.default {
         super(input_string, lineNumber, path);
     }
     async resolve(data) {
-        this.result = await this.interpret(data);
+        try {
+            this.result = await this.interpret(data);
+        }
+        catch (error) {
+            throw new Error(`JS-Interpreter exited with ${error}`);
+        }
         await this.postProcess(data);
     }
     async interpret(data) {

@@ -13,11 +13,18 @@ class FileInlineSnippet extends Snippet {
     }
     async resolve(data: any): Promise<void> {
         await this.readFile()
+        let resolved = false;
         SupportedFileTypes.forEach((filetype) => {
             if (this.fileIdentifier == filetype.fileIdentifier) {
-                this.result = filetype.resolve(this.fileContents)
+                try {
+                    this.result = filetype.resolve(this.fileContents)
+                } catch (error) {
+                    throw new Error(`Filehandler exited with ${error}`)
+                }
+                resolved = true
             }
         })
+        if(!resolved) throw new Error(`There is no filehandler for ${this.fileIdentifier}!`)
         await this.postProcess(data)
     }
     async readFile() {
@@ -29,7 +36,8 @@ class FileInlineSnippet extends Snippet {
         this.filepaths = snippet_parts
         await Promise.all(
             this.filepaths.map(async (filepath) => {
-                this.fileContents += ' ' + (await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath)))
+                const content = (await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath)))
+                this.fileContents += ' ' + content
             })
         )
     }

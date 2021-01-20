@@ -22,10 +22,10 @@ export const resolve = async (snippets: Snippet[], data: any): Promise<{ resolve
             try {
                 await snippet.resolve(data)
             } catch (error) {
-                const referencePath = snippet.referencePath === 'src' ? snippet.referencePath : snippet.referencePath
                 console.log(`Error in Line ${snippet.lineNumber} in ${snippet.referencePath}\n`)
                 console.log(snippet.input_string)
                 console.log(`\n${error.message}\n`)
+                //console.error(error)
             }
         })
     )
