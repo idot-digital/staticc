@@ -2,7 +2,7 @@
 
 import { spawn } from 'cross-spawn'
 import { execSync } from 'child_process'
-import { readFileFromDisk, saveFileToDisk } from './read_write'
+import { readFileFromDisk, saveFileToDisk } from './lib'
 import { glob } from 'glob'
 import fs from 'fs'
 import { transpile } from './transpile'

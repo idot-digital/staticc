@@ -1,6 +1,22 @@
 import * as fs from 'fs'
 import * as pathLib from 'path'
-import { trycatchasync } from './trycatch'
+
+export function trycatch(fn: Function, ...args: any): [null | Error, any] {
+    try {
+        return [null, fn(...args)]
+    } catch (error) {
+        return [error, null]
+    }
+}
+
+export async function trycatchasync(fn: Function, ...args: any): Promise<[null | Error, any]> {
+    try {
+        const result = await fn(...args)
+        return [null, result]
+    } catch (error) {
+        return [error, null]
+    }
+}
 
 export const readFileFromDisk = async (filepath: string): Promise<string> => {
     //read file from disk
@@ -18,4 +34,11 @@ export const saveFileToDisk = async (filepath: string, content: string): Promise
     }
     const [writeFileError] = await trycatchasync(fs.promises.writeFile, filepath, content)
     if (writeFileError) throw new Error('Could not write to file: ' + filepath)
+}
+
+export const replaceAll = (string: string, searchValue: string, replaceValue: string) => {
+    while (string.indexOf(searchValue) !== -1) {
+        string = string.replace(searchValue, replaceValue)
+    }
+    return string
 }

@@ -5,16 +5,7 @@ class DataSnippet extends Snippet {
         super(input_string, lineNumber, path)
     }
     async resolve(data: any): Promise<void> {
-        let value = data
-        const snippetParts = this.input_string.split('.')
-        try {
-            snippetParts.forEach((snippetPart) => {
-                value = value[snippetPart]
-                if (!value) throw new Error()
-            })
-        } catch (error) {
-            throw Error('Could not resolve data-snippet. The requested value is undefined!')
-        }
+        const value = dataLookup(data, this.input_string)
         if(value.constructor === Object){
             throw Error('Could not resolve data-snippet. The requested value is an object!')
         }else if(value.constructor === Array){
@@ -25,4 +16,20 @@ class DataSnippet extends Snippet {
     }
 }
 
-export default DataSnippet
+const dataLookup = (data: any, selector: string) => {
+    const snippetParts = selector.split('.')
+    try {
+        snippetParts.forEach((snippetPart) => {
+            data = data[snippetPart]
+            if (!data) throw new Error()
+        })
+    } catch (error) {
+        throw Error('Could not resolve data-snippet. The requested value is undefined!')
+    }
+    return data
+}
+
+export {
+    DataSnippet,
+    dataLookup
+}

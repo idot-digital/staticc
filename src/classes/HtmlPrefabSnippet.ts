@@ -1,3 +1,4 @@
+import { dataLookup } from './DataSnippet'
 import { PrefabSnippet, PrefabType } from './PrefabSnippet'
 
 class HtmlPrefabSnippet extends PrefabSnippet {
@@ -7,7 +8,9 @@ class HtmlPrefabSnippet extends PrefabSnippet {
     async resolve(data: any): Promise<void> {
         await super.readFile()
         this.result = this.fileContent
-        await this.postProcess(data)
+        if(this.args.length > 1) throw new Error("You can only give one argument to html-prefabs!")
+        const dataSelector = (this.args.length < 1) ? data : dataLookup(data, this.args[0]);
+        await this.postProcess(dataSelector)
     }
 }
 

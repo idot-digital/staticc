@@ -1,4 +1,4 @@
-import { readFileFromDisk } from '../read_write'
+import { readFileFromDisk } from '../lib'
 import Snippet from './Snippet'
 import pathLib from 'path'
 

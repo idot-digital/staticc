@@ -1,5 +1,5 @@
 import { transpile } from '../transpile'
-import pathLib from 'path'
+import { replaceAll } from '../lib'
 class Snippet {
     input_string: string
     result: string
@@ -32,13 +32,6 @@ class Snippet {
         this.result = htmlString
         return
     }
-}
-
-const replaceAll = (string: string, searchValue: string, replaceValue: string) => {
-    while (string.indexOf(searchValue) !== -1) {
-        string = string.replace(searchValue, replaceValue)
-    }
-    return string
 }
 
 const wait = async (): Promise<void> => {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrefabType = exports.PrefabSnippet = void 0;
-const read_write_1 = require("../read_write");
+const lib_1 = require("../lib");
 const Snippet_1 = __importDefault(require("./Snippet"));
 const path_1 = __importDefault(require("path"));
 var PrefabType;
@@ -27,7 +27,7 @@ class PrefabSnippet extends Snippet_1.default {
         //@ts-ignore
         this.filepaths = [path_1.default.join('prefabs', snippet_parts.shift(), this.type == PrefabType.JsPrefabSnippet ? 'prefab.js' : 'prefab.html')];
         this.args = snippet_parts;
-        this.fileContent = await read_write_1.readFileFromDisk(this.filepaths[0]);
+        this.fileContent = await lib_1.readFileFromDisk(this.filepaths[0]);
     }
 }
 exports.PrefabSnippet = PrefabSnippet;

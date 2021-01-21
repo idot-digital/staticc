@@ -1,7 +1,7 @@
 import Snippet from './Snippet'
 import sass from 'node-sass'
 import pathLib from 'path'
-import { readFileFromDisk } from '../read_write'
+import { readFileFromDisk } from '../lib'
 
 class FileInlineSnippet extends Snippet {
     fileContents: string

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cross_spawn_1 = require("cross-spawn");
 const child_process_1 = require("child_process");
-const read_write_1 = require("./read_write");
+const lib_1 = require("./lib");
 const glob_1 = require("glob");
 const fs_1 = __importDefault(require("fs"));
 const transpile_1 = require("./transpile");
@@ -56,7 +56,7 @@ else if (init) {
         const example_project = require('./example_project');
         Object.keys(example_project.files).forEach(async (filepath) => {
             try {
-                await read_write_1.saveFileToDisk(filepath, example_project.files[filepath]);
+                await lib_1.saveFileToDisk(filepath, example_project.files[filepath]);
             }
             catch (error) {
                 console.log(error);
@@ -91,7 +91,7 @@ else {
     console.log('Use -h or --help for help!');
 }
 async function build(build_prod) {
-    const data = JSON.parse(await read_write_1.readFileFromDisk(data_json_path));
+    const data = JSON.parse(await lib_1.readFileFromDisk(data_json_path));
     console.log('\nstarting build!');
     const HTMLfiles = glob_1.glob.sync('src/**/*.html');
     await Promise.all(HTMLfiles.map(async (file) => {
@@ -130,11 +130,11 @@ async function transpileFile(file, data, build_prod) {
     }
 }
 async function generateNewFile(readFileName, writeFileName, fn, ...args) {
-    const readFileContent = await read_write_1.readFileFromDisk(readFileName);
+    const readFileContent = await lib_1.readFileFromDisk(readFileName);
     let writeFileContent;
     //file read correctly
     writeFileContent = await fn(readFileContent, ...args);
-    await read_write_1.saveFileToDisk(writeFileName, writeFileContent);
+    await lib_1.saveFileToDisk(writeFileName, writeFileContent);
     return true;
 }
 function copyAllFiles(filter) {

@@ -1,5 +1,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const transpile_1 = require("../transpile");
+const lib_1 = require("../lib");
 class Snippet {
     constructor(input_string, lineNumber, path) {
         this.input_string = input_string;
@@ -19,7 +20,7 @@ class Snippet {
         return this.filepaths;
     }
     cleanSnippetString() {
-        this.input_string = replaceAll(this.input_string, '\n', '');
+        this.input_string = lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
         const { htmlString, loadedFiles } = await transpile_1.transpile(this.result, data, this.filepaths[0] || 'src');
@@ -28,12 +29,6 @@ class Snippet {
         return;
     }
 }
-const replaceAll = (string, searchValue, replaceValue) => {
-    while (string.indexOf(searchValue) !== -1) {
-        string = string.replace(searchValue, replaceValue);
-    }
-    return string;
-};
 const wait = async () => {
     return new Promise((resolve, _) => {
         setTimeout(() => {

@@ -1,4 +1,4 @@
-import DataSnippet from './classes/DataSnippet'
+import {DataSnippet} from './classes/DataSnippet'
 import FileInlineSnippet from './classes/FileInlineSnippet'
 import HtmlPrefabSnippet from './classes/HtmlPrefabSnippet'
 import JsPrefabSnippet from './classes/JsPrefabSnippet'

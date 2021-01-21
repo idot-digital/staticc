@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateLineNumber = exports.classifySnippet = exports.cutString = exports.occurrences = exports.seperate = void 0;
-const DataSnippet_1 = __importDefault(require("./classes/DataSnippet"));
+const DataSnippet_1 = require("./classes/DataSnippet");
 const FileInlineSnippet_1 = __importDefault(require("./classes/FileInlineSnippet"));
 const HtmlPrefabSnippet_1 = __importDefault(require("./classes/HtmlPrefabSnippet"));
 const JsPrefabSnippet_1 = __importDefault(require("./classes/JsPrefabSnippet"));
@@ -47,7 +47,7 @@ exports.classifySnippet = (snippet_string, path, lineNumber) => {
         return new FileInlineSnippet_1.default(snippet_string.replace('?', '').trim(), lineNumber, path);
     }
     else {
-        return new DataSnippet_1.default(snippet_string.trim(), lineNumber, path);
+        return new DataSnippet_1.DataSnippet(snippet_string.trim(), lineNumber, path);
     }
 };
 exports.calculateLineNumber = (totalNumberOfLines, middlePart, lastPart) => {
