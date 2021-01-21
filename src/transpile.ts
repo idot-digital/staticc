@@ -4,36 +4,48 @@ import { preprocess } from './preprocess'
 import { seperate } from './seperate'
 
 export const transpile = async (staticcString: string, data: any, path: string, start_seperator: string = '{{', end_seperator: string = '}}') => {
-    staticcString = preprocess(staticcString)
+    const { preprocessedString, filesToCopyFromThisFile } = preprocess(staticcString, path)
 
     //SEPERATOR ENGINE
-    const { plainHTMLSnippets, codeSnippets } = seperate(staticcString, start_seperator, end_seperator, path)
+    const { plainHTMLSnippets, codeSnippets } = seperate(preprocessedString, start_seperator, end_seperator, path)
 
     //RESOLVER ENGINE
-    const { resolvedSnippets, loadedFiles, errorMsg } = await resolve(codeSnippets, data)
+    const { resolvedSnippets, loadedFiles, errorMsg, filesToCopyFromSnippets } = await resolve(codeSnippets, data)
+
+    const filesToCopy = [...filesToCopyFromThisFile, ...filesToCopyFromSnippets]
 
     //RECOMBINATOR ENGINE
-    let htmlString = (errorMsg === "") ? recombine(plainHTMLSnippets, resolvedSnippets) : formatErrorToHtml(errorMsg)
-    
-    return { htmlString, loadedFiles }
+    let htmlString = errorMsg === '' ? recombine(plainHTMLSnippets, resolvedSnippets) : formatErrorToHtml(errorMsg)
+    return { htmlString, loadedFiles: [...loadedFiles, ...filesToCopy.map((fileToCopy) => fileToCopy.from)], filesToCopy }
 }
 
-export const resolve = async (snippets: Snippet[], data: any): Promise<{ resolvedSnippets: string[]; loadedFiles: string[], errorMsg: string }> => {
-    let errorMsg = "";
+export const resolve = async (
+    snippets: Snippet[],
+    data: any
+): Promise<{
+    resolvedSnippets: string[]
+    loadedFiles: string[]
+    errorMsg: string
+    filesToCopyFromSnippets: {
+        from: string
+        to: string
+    }[]
+}> => {
+    let errorMsg = ''
     await Promise.all(
-        snippets.map(async (snippet, index) => {
+        snippets.map(async (snippet) => {
             try {
                 await snippet.resolve(data)
             } catch (error) {
                 errorMsg = `Error in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`
-                console.log(errorMsg)
             }
         })
     )
     const resolvedSnippets = snippets.map((snippet) => snippet.toString())
     const loadedFiles = snippets.map((snippet) => snippet.getLoadedFiles()).flat()
+    const filesToCopyFromSnippets = snippets.map((snippet) => snippet.filesToCopy).flat()
 
-    return { resolvedSnippets, loadedFiles, errorMsg }
+    return { resolvedSnippets, loadedFiles, errorMsg, filesToCopyFromSnippets }
 }
 
 export const recombine = (plainHTMLSnippets: string[], resolvedSnippets: string[]): string => {
@@ -44,8 +56,8 @@ export const recombine = (plainHTMLSnippets: string[], resolvedSnippets: string[
     return result
 }
 
-export const formatErrorToHtml = (errorMsg: string) : string=>{
-    errorMsg = replaceAll(errorMsg, "\n", "<br>")
+export const formatErrorToHtml = (errorMsg: string): string => {
+    errorMsg = replaceAll(errorMsg, '\n', '<br>')
     errorMsg = `${errorMsg}`
     return errorMsg
 }

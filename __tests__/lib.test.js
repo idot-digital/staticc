@@ -1,5 +1,5 @@
 const pathLib = require('path')
-jest.mock('../dist/read_write')
+jest.mock('../dist/lib')
 //jest.mock('sass')
 
 const MOCK_FILE_INFO = {
@@ -15,14 +15,14 @@ MOCK_FILE_INFO[pathLib.join('src', 'style.css')] = 'body{background-color: red}'
 
 beforeAll(() => {
     // Set up some mocked out file info before each test
-    require('../dist/read_write.js').__setMockFiles(MOCK_FILE_INFO)
+    require('../dist/lib.js').__setMockFiles(MOCK_FILE_INFO)
 })
 
 describe('preprocess', () => {
     test('preprocess', () => {
         const { preprocess } = require('../dist/preprocess')
         const result = preprocess('test')
-        expect(result).toBe('test')
+        expect(result.preprocessedString).toBe('test')
     })
 })
 
@@ -59,8 +59,8 @@ describe('transpile', () => {
     test('transpile', async () => {
         const { transpile } = require('../dist/transpile')
         const snippets = await transpile(
-            '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{!!count_to_3}} </body></html>',
-            { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' }
+            '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{ !!count_to_3 }} </body></html>',
+            { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' }, "/src/index.html"
         )
         expect(snippets).toEqual({
             htmlString:

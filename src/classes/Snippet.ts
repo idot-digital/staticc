@@ -6,6 +6,7 @@ class Snippet {
     filepaths: string[]
     lineNumber: Number
     referencePath: string
+    filesToCopy: { from: string; to: string }[]
     constructor(input_string: string, lineNumber: Number, path: string) {
         this.input_string = input_string
         this.result = ''
@@ -13,6 +14,7 @@ class Snippet {
         this.lineNumber = lineNumber
         this.referencePath = path
         this.cleanSnippetString()
+        this.filesToCopy = []
     }
     async resolve(_: any): Promise<void> {
         await wait()
@@ -27,7 +29,8 @@ class Snippet {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
     async postProcess(data: any): Promise<void> {
-        const { htmlString, loadedFiles } = await transpile(this.result, data, this.filepaths[0] || 'src')
+        const { htmlString, loadedFiles, filesToCopy } = await transpile(this.result, data, this.filepaths[0] || 'src')
+        this.filesToCopy = filesToCopy
         this.filepaths = [...this.filepaths, ...loadedFiles]
         this.result = htmlString
         return

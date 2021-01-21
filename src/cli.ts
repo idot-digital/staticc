@@ -120,7 +120,8 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            let { htmlString: transpiledCode, loadedFiles } = await transpile(content, data, file)
+            let { htmlString: transpiledCode, loadedFiles, filesToCopy } = await transpile(content, data, file)
+            await copyLinkedFiles(filesToCopy)
             alreadyLoadedFiles = loadedFiles
             if (build_prod) transpiledCode = minifyHTML(transpiledCode)
             return transpiledCode
@@ -167,4 +168,13 @@ function minifyHTML(html_String: string) {
         minifyCSS: true,
         minifyJS: true,
     })
+}
+
+async function copyLinkedFiles(files: { from: string; to: string }[]) {
+    await Promise.all(
+        files.map(async (file) => {
+            fs.mkdirSync(pathLib.dirname(file.to), { recursive: true })
+            fs.promises.copyFile(file.from, file.to)
+        })
+    )
 }

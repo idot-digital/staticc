@@ -119,7 +119,8 @@ function startDevServer() {
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        let { htmlString: transpiledCode, loadedFiles } = await transpile_1.transpile(content, data, file);
+        let { htmlString: transpiledCode, loadedFiles, filesToCopy } = await transpile_1.transpile(content, data, file);
+        await copyLinkedFiles(filesToCopy);
         alreadyLoadedFiles = loadedFiles;
         if (build_prod)
             transpiledCode = minifyHTML(transpiledCode);
@@ -162,4 +163,10 @@ function minifyHTML(html_String) {
         minifyCSS: true,
         minifyJS: true,
     });
+}
+async function copyLinkedFiles(files) {
+    await Promise.all(files.map(async (file) => {
+        fs_1.default.mkdirSync(path_1.default.dirname(file.to), { recursive: true });
+        fs_1.default.promises.copyFile(file.from, file.to);
+    }));
 }

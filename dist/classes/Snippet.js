@@ -9,6 +9,7 @@ class Snippet {
         this.lineNumber = lineNumber;
         this.referencePath = path;
         this.cleanSnippetString();
+        this.filesToCopy = [];
     }
     async resolve(_) {
         await wait();
@@ -23,7 +24,8 @@ class Snippet {
         this.input_string = lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
-        const { htmlString, loadedFiles } = await transpile_1.transpile(this.result, data, this.filepaths[0] || 'src');
+        const { htmlString, loadedFiles, filesToCopy } = await transpile_1.transpile(this.result, data, this.filepaths[0] || 'src');
+        this.filesToCopy = filesToCopy;
         this.filepaths = [...this.filepaths, ...loadedFiles];
         this.result = htmlString;
         return;
