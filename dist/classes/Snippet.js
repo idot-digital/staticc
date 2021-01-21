@@ -1,6 +1,9 @@
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const transpile_1 = require("../transpile");
 const lib_1 = require("../lib");
+const Transpiler_1 = __importDefault(require("../Transpiler"));
 class Snippet {
     constructor(input_string, lineNumber, path) {
         this.input_string = input_string;
@@ -24,9 +27,10 @@ class Snippet {
         this.input_string = lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
-        const { htmlString, loadedFiles, filesToCopy } = await transpile_1.transpile(this.result, data, this.filepaths[0] || 'src');
-        this.filesToCopy = filesToCopy;
-        this.filepaths = [...this.filepaths, ...loadedFiles];
+        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src');
+        const htmlString = await transpiler.transpile();
+        this.filesToCopy = transpiler.filesToCopy;
+        this.filepaths = [...this.filepaths, ...transpiler.loadedFiles];
         this.result = htmlString;
         return;
     }

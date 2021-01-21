@@ -1,5 +1,5 @@
-import { transpile } from '../transpile'
 import { replaceAll } from '../lib'
+import Transpiler from '../Transpiler'
 class Snippet {
     input_string: string
     result: string
@@ -29,9 +29,10 @@ class Snippet {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
     async postProcess(data: any): Promise<void> {
-        const { htmlString, loadedFiles, filesToCopy } = await transpile(this.result, data, this.filepaths[0] || 'src')
-        this.filesToCopy = filesToCopy
-        this.filepaths = [...this.filepaths, ...loadedFiles]
+        const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src')
+        const htmlString = await transpiler.transpile()
+        this.filesToCopy = transpiler.filesToCopy
+        this.filepaths = [...this.filepaths, ...transpiler.loadedFiles]
         this.result = htmlString
         return
     }

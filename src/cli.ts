@@ -5,12 +5,12 @@ import { execSync } from 'child_process'
 import { readFileFromDisk, saveFileToDisk } from './lib'
 import { glob } from 'glob'
 import fs from 'fs'
-import { transpile } from './transpile'
 import { minify } from 'html-minifier'
 import lite_server from 'lite-server'
 import chokidar from 'chokidar'
 
 import pathLib from 'path'
+import Transpiler from './Transpiler'
 
 const args = process.argv.slice(2)
 
@@ -30,7 +30,8 @@ if (data_json_override) {
     data_json_path = args[index + 1]
 }
 
-let alreadyLoadedFiles: string[]
+let alreadyLoadedFiles: string[] = []
+let filesToCopy: { from: string; to: string }[] = []
 
 if (version) {
     const package_info = require('../package.json')
@@ -96,6 +97,7 @@ async function build(build_prod: boolean) {
     //exclude already imported files
     const inlinedFiles: string[] = alreadyLoadedFiles
     copyAllFiles([...HTMLfiles, ...inlinedFiles])
+    copyLinkedFiles(filesToCopy)
 }
 
 function startDevServer() {
@@ -120,9 +122,10 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            let { htmlString: transpiledCode, loadedFiles, filesToCopy } = await transpile(content, data, file)
-            await copyLinkedFiles(filesToCopy)
-            alreadyLoadedFiles = loadedFiles
+            const transpiler = new Transpiler(content, data, file)
+            let transpiledCode = await transpiler.transpile()
+            filesToCopy = [...filesToCopy, ...transpiler.filesToCopy]
+            alreadyLoadedFiles = [...alreadyLoadedFiles, ...transpiler.loadedFiles]
             if (build_prod) transpiledCode = minifyHTML(transpiledCode)
             return transpiledCode
         },

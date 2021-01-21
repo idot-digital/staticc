@@ -8,11 +8,11 @@ const child_process_1 = require("child_process");
 const lib_1 = require("./lib");
 const glob_1 = require("glob");
 const fs_1 = __importDefault(require("fs"));
-const transpile_1 = require("./transpile");
 const html_minifier_1 = require("html-minifier");
 const lite_server_1 = __importDefault(require("lite-server"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const path_1 = __importDefault(require("path"));
+const Transpiler_1 = __importDefault(require("./Transpiler"));
 const args = process.argv.slice(2);
 //check which args have been given
 const help = args.indexOf('--help') >= 0 || args.indexOf('-h') >= 0 || args.indexOf('help') >= 0;
@@ -28,7 +28,8 @@ if (data_json_override) {
     const index = args.indexOf('-d') !== -1 ? args.indexOf('-d') : args.indexOf('-data');
     data_json_path = args[index + 1];
 }
-let alreadyLoadedFiles;
+let alreadyLoadedFiles = [];
+let filesToCopy = [];
 if (version) {
     const package_info = require('../package.json');
     console.log(package_info.version);
@@ -100,6 +101,7 @@ async function build(build_prod) {
     //exclude already imported files
     const inlinedFiles = alreadyLoadedFiles;
     copyAllFiles([...HTMLfiles, ...inlinedFiles]);
+    copyLinkedFiles(filesToCopy);
 }
 function startDevServer() {
     process.title = 'lite-server';
@@ -119,9 +121,10 @@ function startDevServer() {
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        let { htmlString: transpiledCode, loadedFiles, filesToCopy } = await transpile_1.transpile(content, data, file);
-        await copyLinkedFiles(filesToCopy);
-        alreadyLoadedFiles = loadedFiles;
+        const transpiler = new Transpiler_1.default(content, data, file);
+        let transpiledCode = await transpiler.transpile();
+        filesToCopy = [...filesToCopy, ...transpiler.filesToCopy];
+        alreadyLoadedFiles = [...alreadyLoadedFiles, ...transpiler.loadedFiles];
         if (build_prod)
             transpiledCode = minifyHTML(transpiledCode);
         return transpiledCode;
