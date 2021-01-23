@@ -27,7 +27,16 @@ class Transpiler {
     }
     async transpile(): Promise<string> {
         const preprocessor = new Preprocessor(this.input_string)
-        this.input_string = preprocessor.preprocess(this.path)
+        try {
+            this.input_string = preprocessor.preprocess(this.path)
+        } catch (error) {
+            if(error.message == "link in src"){
+                this.errorMsg += `\nError in ${this.path}\nYou can't use a file-link-snippet in a src file! All files in this folder are copied anyways if they are not inlined!\n`
+            }else{
+                this.errorMsg += `\nError in ${this.path}\nYou can only use one file-link-snippet in a file!\n`
+            }
+        }
+        
 
         const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path)
         this.plainHTMLSnippets = plainHTMLSnippets
@@ -37,7 +46,8 @@ class Transpiler {
                 try {
                     await snippet.resolve(this.data)
                 } catch (error) {
-                    this.errorMsg = `Error in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`
+                    this.errorMsg += `\nError in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`
+                    
                 }
             })
         )
@@ -49,7 +59,6 @@ class Transpiler {
         this.resolvedSnippets = codeSnippets.map((snippet) => snippet.toString())
 
         this.recombine()
-        if(this.errorMsg !== "") return this.getErrorAsHtml()
         return this.input_string
     }
     getErrorAsHtml() {

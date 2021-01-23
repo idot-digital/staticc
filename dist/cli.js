@@ -11,6 +11,7 @@ const fs_1 = __importDefault(require("fs"));
 const html_minifier_1 = require("html-minifier");
 const lite_server_1 = __importDefault(require("lite-server"));
 const chokidar_1 = __importDefault(require("chokidar"));
+const node_sass_1 = __importDefault(require("node-sass"));
 const path_1 = __importDefault(require("path"));
 const Transpiler_1 = __importDefault(require("./Transpiler"));
 const args = process.argv.slice(2);
@@ -123,6 +124,10 @@ async function transpileFile(file, data, build_prod) {
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
         const transpiler = new Transpiler_1.default(content, data, file);
         let transpiledCode = await transpiler.transpile();
+        if (transpiler.errorMsg !== "") {
+            console.log(transpiler.errorMsg);
+            transpiledCode = transpiler.getErrorAsHtml();
+        }
         filesToCopy = [...filesToCopy, ...transpiler.filesToCopy];
         alreadyLoadedFiles = [...alreadyLoadedFiles, ...transpiler.loadedFiles];
         if (build_prod)
@@ -170,6 +175,21 @@ function minifyHTML(html_String) {
 async function copyLinkedFiles(files) {
     await Promise.all(files.map(async (file) => {
         fs_1.default.mkdirSync(path_1.default.dirname(file.to), { recursive: true });
-        fs_1.default.promises.copyFile(file.from, file.to);
+        if (path_1.default.extname(file.from) === ".sass" || path_1.default.extname(file.from) === ".scss") {
+            await copyAndResolveSass(file.from, file.to);
+        }
+        else {
+            await fs_1.default.promises.copyFile(file.from, file.to);
+        }
     }));
+}
+async function copyAndResolveSass(from, to) {
+    const filecontent = await fs_1.default.promises.readFile(from, { encoding: "utf-8" });
+    try {
+        const renderedSass = node_sass_1.default.renderSync({ data: filecontent }).css.toString();
+        await fs_1.default.promises.writeFile(to.replace(".sass", ".css").replace(".scss", ".css"), renderedSass, { encoding: "utf-8" });
+    }
+    catch (error) {
+        console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`);
+    }
 }

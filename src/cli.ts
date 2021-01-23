@@ -8,6 +8,7 @@ import fs from 'fs'
 import { minify } from 'html-minifier'
 import lite_server from 'lite-server'
 import chokidar from 'chokidar'
+import sass from 'node-sass'
 
 import pathLib from 'path'
 import Transpiler from './Transpiler'
@@ -124,6 +125,10 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         async (content: string, build_prod: boolean): Promise<string> => {
             const transpiler = new Transpiler(content, data, file)
             let transpiledCode = await transpiler.transpile()
+            if(transpiler.errorMsg !== ""){
+                console.log(transpiler.errorMsg)
+                transpiledCode = transpiler.getErrorAsHtml()
+            }
             filesToCopy = [...filesToCopy, ...transpiler.filesToCopy]
             alreadyLoadedFiles = [...alreadyLoadedFiles, ...transpiler.loadedFiles]
             if (build_prod) transpiledCode = minifyHTML(transpiledCode)
@@ -177,7 +182,21 @@ async function copyLinkedFiles(files: { from: string; to: string }[]) {
     await Promise.all(
         files.map(async (file) => {
             fs.mkdirSync(pathLib.dirname(file.to), { recursive: true })
-            fs.promises.copyFile(file.from, file.to)
+            if(pathLib.extname(file.from) === ".sass" || pathLib.extname(file.from) === ".scss"){
+                await copyAndResolveSass(file.from, file.to)
+            }else{
+                await fs.promises.copyFile(file.from, file.to)
+            }
         })
     )
+}
+
+async function copyAndResolveSass(from: string, to:string){
+    const filecontent = await fs.promises.readFile(from, { encoding: "utf-8"})
+    try {
+        const renderedSass = sass.renderSync({ data: filecontent }).css.toString()
+        await fs.promises.writeFile(to.replace(".sass", ".css").replace(".scss", ".css"), renderedSass, {encoding: "utf-8"})
+    } catch (error) {
+        console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`)
+    }
 }

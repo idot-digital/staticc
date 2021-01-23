@@ -31,6 +31,7 @@ class Snippet {
     async postProcess(data: any): Promise<void> {
         const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src')
         const htmlString = await transpiler.transpile()
+        if(transpiler.errorMsg !== "") throw new Error(transpiler.errorMsg)
         this.filesToCopy = transpiler.filesToCopy
         this.filepaths = [...this.filepaths, ...transpiler.loadedFiles]
         this.result = htmlString
