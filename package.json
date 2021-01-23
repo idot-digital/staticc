@@ -6,7 +6,7 @@
         "staticc": "dist/cli.js"
     },
     "scripts": {
-        "test": "jest ",
+        "test": "jest --coverage=true",
         "test-watch": "jest --silent --coverage=true --watchAll",
         "tsc": "tsc -w"
     },

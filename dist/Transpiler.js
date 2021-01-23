@@ -37,6 +37,8 @@ class Transpiler {
         this.loadedFiles = [...this.loadedFiles, ...preprocessor.loadedFiles, ...loadedFiles];
         this.resolvedSnippets = codeSnippets.map((snippet) => snippet.toString());
         this.recombine();
+        if (this.errorMsg !== "")
+            return this.getErrorAsHtml();
         return this.input_string;
     }
     getErrorAsHtml() {

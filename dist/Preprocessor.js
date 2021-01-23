@@ -49,7 +49,7 @@ class Preprocessor {
             return [];
         const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'));
         this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, ``);
-        const files = linkedFileString.trim().split(' ');
+        const files = linkedFileString.trim().split(/\s+/);
         this.linkedFiles = files.map((file) => {
             const filepath = pathLib.join(pathLib.dirname(this.path), file);
             this.loadedFiles.push(filepath);
