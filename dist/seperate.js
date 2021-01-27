@@ -8,7 +8,7 @@ const FileInlineSnippet_1 = __importDefault(require("./classes/FileInlineSnippet
 const HtmlPrefabSnippet_1 = __importDefault(require("./classes/HtmlPrefabSnippet"));
 const JsPrefabSnippet_1 = __importDefault(require("./classes/JsPrefabSnippet"));
 const JsSnippet_1 = __importDefault(require("./classes/JsSnippet"));
-exports.seperate = (staticcString, start_seperator, end_seperator, path) => {
+const seperate = (staticcString, start_seperator, end_seperator, path) => {
     const numberOfLines = exports.occurrences(staticcString, /\n/) + 1;
     const oc = exports.occurrences(staticcString, start_seperator);
     const plainHTMLSnippets = [];
@@ -22,10 +22,12 @@ exports.seperate = (staticcString, start_seperator, end_seperator, path) => {
     plainHTMLSnippets.push(staticcString);
     return { plainHTMLSnippets, codeSnippets };
 };
-exports.occurrences = (string, subString) => {
+exports.seperate = seperate;
+const occurrences = (string, subString) => {
     return string.split(subString).length - 1;
 };
-exports.cutString = (input_string, start_seperator, end_seperator) => {
+exports.occurrences = occurrences;
+const cutString = (input_string, start_seperator, end_seperator) => {
     const openingIndex = input_string.indexOf(start_seperator);
     const closingIndex = input_string.indexOf(end_seperator);
     const firstPart = input_string.slice(0, openingIndex);
@@ -33,7 +35,8 @@ exports.cutString = (input_string, start_seperator, end_seperator) => {
     const lastPart = input_string.slice(closingIndex + end_seperator.length);
     return [firstPart, middlePart, lastPart];
 };
-exports.classifySnippet = (snippet_string, path, lineNumber) => {
+exports.cutString = cutString;
+const classifySnippet = (snippet_string, path, lineNumber) => {
     if (snippet_string.indexOf('#') != -1) {
         return new JsSnippet_1.default(snippet_string.replace('#', '').trim(), lineNumber, path);
     }
@@ -50,8 +53,10 @@ exports.classifySnippet = (snippet_string, path, lineNumber) => {
         return new DataSnippet_1.DataSnippet(snippet_string.trim(), lineNumber, path);
     }
 };
-exports.calculateLineNumber = (totalNumberOfLines, middlePart, lastPart) => {
+exports.classifySnippet = classifySnippet;
+const calculateLineNumber = (totalNumberOfLines, middlePart, lastPart) => {
     const linesInLastPart = exports.occurrences(lastPart, /\n/);
     const linesInMiddlePart = exports.occurrences(middlePart, /\n/);
     return totalNumberOfLines - (linesInLastPart + Math.round(linesInMiddlePart / 2));
 };
+exports.calculateLineNumber = calculateLineNumber;

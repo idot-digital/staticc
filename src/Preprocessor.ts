@@ -20,10 +20,10 @@ class Preprocessor {
     }
     cleanComments(): void {
         let input_string = this.input_string
-        const oc = occurrences(input_string, '{{$')
+        const oc = occurrences(input_string, '/~')
         let cleanedString = ''
         for (let i = 0; i < oc; i++) {
-            const [firstPart, _, lastPart] = cutString(input_string, '{{$', '$}}')
+            const [firstPart, _, lastPart] = cutString(input_string, '/~', '~/')
             cleanedString += firstPart
             input_string = lastPart
         }

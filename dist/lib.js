@@ -40,14 +40,15 @@ async function trycatchasync(fn, ...args) {
     }
 }
 exports.trycatchasync = trycatchasync;
-exports.readFileFromDisk = async (filepath) => {
+const readFileFromDisk = async (filepath) => {
     //read file from disk
     const [readFileError, content] = await trycatchasync(fs.promises.readFile, filepath, { encoding: 'utf8' });
     if (readFileError)
         throw new Error('Could not read file: ' + filepath);
     return content;
 };
-exports.saveFileToDisk = async (filepath, content) => {
+exports.readFileFromDisk = readFileFromDisk;
+const saveFileToDisk = async (filepath, content) => {
     //save file to disk (+ create folders if neccesary)
     const folderpath = pathLib.dirname(filepath);
     if (folderpath) {
@@ -59,9 +60,11 @@ exports.saveFileToDisk = async (filepath, content) => {
     if (writeFileError)
         throw new Error('Could not write to file: ' + filepath);
 };
-exports.replaceAll = (string, searchValue, replaceValue) => {
+exports.saveFileToDisk = saveFileToDisk;
+const replaceAll = (string, searchValue, replaceValue) => {
     while (string.indexOf(searchValue) !== -1) {
         string = string.replace(searchValue, replaceValue);
     }
     return string;
 };
+exports.replaceAll = replaceAll;
