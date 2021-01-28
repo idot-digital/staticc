@@ -1,4 +1,4 @@
-# Staticc Basics
+{% raw %}# Staticc Basics
 
 What is Staticc ?
 
@@ -124,7 +124,7 @@ HTML
 ```html
 <p>Welcome to my Testpage:</p>
 <h2>Hello, World!</h2>
-<h5>This snippet has {{ limited }} access to the data.json</h5>
+<h5>This snippet has limited access to the data.json</h5>
 ```
 
 
@@ -308,3 +308,4 @@ Folder-Structure (after transpiling)
     |       +-- style.css
     |   +-- index.html
 ```
+{% endraw %}
