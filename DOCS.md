@@ -9,7 +9,7 @@ Variables are a simple way to inject a Information in the HTML code.
 Staticc
 
 ```html
-<p>You can get access to the whole Library for only {{ price }}</p>
+<p>You can get access to the whole Library for only \{\{ price \}\}</p>
 ```
 
 HTML
