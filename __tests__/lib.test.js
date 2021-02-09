@@ -22,19 +22,19 @@ describe('Preprocessor', () => {
     const { default: Preprocessor } = require('../dist/Preprocessor')
     describe('cleanComments', () => {
         test('simple', () => {
-            const p = new Preprocessor('{{$ Yeet $}}Hello{{$ Hui $}}, World!{{$ LOL $}}')
+            const p = new Preprocessor('/~ Yeet ~/Hello/~ Hui ~/, World!/~ LOL ~/')
             p.cleanComments()
             expect(p.input_string).toBe('Hello, World!')
         })
         test('multiline', () => {
-            const p = new Preprocessor(`{{$ Yeet $}}Hello{{$ Hui 
+            const p = new Preprocessor(`/~ Yeet ~/Hello/~ Hui 
                 this is to nice
-                $}}, World!{{$ LOL $}}`)
+                ~/, World!/~ LOL ~/`)
             p.cleanComments()
             expect(p.input_string).toBe('Hello, World!')
         })
         test('complex', () => {
-            const p = new Preprocessor(`{{* test.txt {{$ Yeet $}} test2.css test3.gif *}}Hello{{$ Hui $}}, World!{{$ LOL $}}`)
+            const p = new Preprocessor(`{{* test.txt /~ Yeet ~/ test2.css test3.gif *}}Hello/~ Hui ~/, World!/~ LOL ~/`)
             p.cleanComments()
             expect(p.input_string).toBe('{{* test.txt  test2.css test3.gif *}}Hello, World!')
         })
@@ -92,7 +92,7 @@ describe('Preprocessor', () => {
     })
     describe('preprocess', () => {
         test('simple', () => {
-            const p = new Preprocessor('{{* test.txt  {{$ Yeet $}} test2.css    test3.gif *}}Hello{{$ Hui $}}, World!{{$ LOL $}}')
+            const p = new Preprocessor('{{* test.txt  /~ Yeet ~/ test2.css    test3.gif *}}Hello/~ Hui ~/, World!/~ LOL ~/')
             p.preprocess('prefabs/helloWorld')
             expect(p.linkedFiles).toEqual([
                 { from: pathLib.join('prefabs', 'test.txt'), to: pathLib.join('dist', 'test.txt') },

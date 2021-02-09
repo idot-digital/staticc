@@ -1,12 +1,12 @@
 {
     "name": "staticc",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "main": "cli.js",
     "bin": {
         "staticc": "dist/cli.js"
     },
     "scripts": {
-        "test": "jest --coverage=true",
+        "test": "jest",
         "test-watch": "jest --silent --coverage=true --watchAll",
         "tsc": "tsc -w"
     },

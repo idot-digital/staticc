@@ -31,11 +31,11 @@ class Preprocessor {
     }
     extractLinkedFiles() {
         if (this.input_string.indexOf('{{*') === -1 || this.input_string.indexOf('*}}') === -1) return []
-        if(this.path.indexOf("src") !== -1) throw new Error("link in src")
+        if (this.path.indexOf('src') !== -1) throw new Error('link in src')
 
         const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'))
         this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, ``)
-        if(this.input_string.indexOf('{{*') === -1) throw new Error("multi-links")
+        //if (this.input_string.indexOf('{{*') === -1) throw new Error('multi-links')
 
         const files = linkedFileString.trim().split(/\s+/)
 
