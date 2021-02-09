@@ -222,7 +222,9 @@ describe('transpile', () => {
             '/src/index.html'
         )
         const snippets = await transpiler.transpile()
-        expect(transpiler.getErrorAsHtml()).toEqual('Error in Line 1 in /src/index.html<br>title<br>Could not resolve data-snippet. The requested value is undefined!<br>')
+        expect(transpiler.getErrorAsHtml()).toEqual(
+            '<br>Error in Line 1 in /src/index.html<br>title<br>Could not resolve data-snippet. The requested value is undefined!<br><br>Error in Line 1 in /src/index.html<br>title<br>Could not resolve data-snippet. The requested value is undefined!<br>'
+        )
     })
     test('getErrorAsHtml', async () => {
         const { default: Transpiler } = require('../dist/Transpiler')
@@ -255,7 +257,7 @@ describe('DataSnippet', () => {
         try {
             await s.resolve(undefined)
         } catch (err) {
-            expect(err.message).toEqual("Could not resolve data-snippet. The requested value is undefined!")
+            expect(err.message).toEqual('Could not resolve data-snippet. The requested value is undefined!')
             return
         }
         expect(1).toEqual(undefined)
@@ -264,9 +266,9 @@ describe('DataSnippet', () => {
         const { DataSnippet } = require('../dist/classes/DataSnippet')
         const s = new DataSnippet('lol', 0, 'src/index.html')
         try {
-            await s.resolve({lol: []})
+            await s.resolve({ lol: [] })
         } catch (err) {
-            expect(err.message).toEqual("Could not resolve data-snippet. The requested value is an array!")
+            expect(err.message).toEqual('Could not resolve data-snippet. The requested value is an array!')
             return
         }
         expect(1).toEqual(undefined)
@@ -275,24 +277,24 @@ describe('DataSnippet', () => {
         const { DataSnippet } = require('../dist/classes/DataSnippet')
         const s = new DataSnippet('lol', 0, 'src/index.html')
         try {
-            await s.resolve({lol: {}})
+            await s.resolve({ lol: {} })
         } catch (error) {
-            expect(error.message).toEqual("Could not resolve data-snippet. The requested value is an object!")
+            expect(error.message).toEqual('Could not resolve data-snippet. The requested value is an object!')
             return
         }
         expect(1).toEqual(undefined)
     })
     test('dataLookup', async () => {
         const { dataLookup } = require('../dist/classes/DataSnippet')
-        const result = dataLookup({one: {two: {three: "hello"}}}, "one.two.three")
-        expect(result).toEqual("hello")
+        const result = dataLookup({ one: { two: { three: 'hello' } } }, 'one.two.three')
+        expect(result).toEqual('hello')
     })
     test('dataLookup with error', async () => {
         const { dataLookup } = require('../dist/classes/DataSnippet')
         try {
-            dataLookup({one: {two: {three: "hello"}}}, "one.two.three.four")
+            dataLookup({ one: { two: { three: 'hello' } } }, 'one.two.three.four')
         } catch (error) {
-            expect(error.message).toEqual("Could not resolve data-snippet. The requested value is undefined!")
+            expect(error.message).toEqual('Could not resolve data-snippet. The requested value is undefined!')
             return
         }
         expect(1).toEqual(undefined)
