@@ -13,7 +13,8 @@ class Transpiler {
     errorMsg: string
     plainHTMLSnippets: string[]
     resolvedSnippets: string[]
-    constructor(input_string: string, data: any, path: string, start_seperator: string = '{{', end_seperator: string = '}}') {
+    experimental: boolean
+    constructor(input_string: string, data: any, path: string, experimental: boolean, start_seperator: string = '{{', end_seperator: string = '}}') {
         this.input_string = input_string
         this.data = data
         this.path = path
@@ -24,21 +25,21 @@ class Transpiler {
         this.errorMsg = ''
         this.plainHTMLSnippets = []
         this.resolvedSnippets = []
+        this.experimental = experimental
     }
     async transpile(): Promise<string> {
         const preprocessor = new Preprocessor(this.input_string)
         try {
             this.input_string = preprocessor.preprocess(this.path)
         } catch (error) {
-            if(error.message == "link in src"){
+            if (error.message == 'link in src') {
                 this.errorMsg += `\nError in ${this.path}\nYou can't use a file-link-snippet in a src file! All files in this folder are copied anyways if they are not inlined!\n`
-            }else{
+            } else {
                 this.errorMsg += `\nError in ${this.path}\nYou can only use one file-link-snippet in a file!\n`
             }
         }
-        
 
-        const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path)
+        const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path, this.experimental)
         this.plainHTMLSnippets = plainHTMLSnippets
 
         await Promise.all(
@@ -47,7 +48,6 @@ class Transpiler {
                     await snippet.resolve(this.data)
                 } catch (error) {
                     this.errorMsg += `\nError in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`
-                    
                 }
             })
         )

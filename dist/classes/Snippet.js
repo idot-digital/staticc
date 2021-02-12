@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../lib");
 const Transpiler_1 = __importDefault(require("../Transpiler"));
 class Snippet {
-    constructor(input_string, lineNumber, path) {
+    constructor(input_string, lineNumber, path, experimental) {
         this.input_string = input_string;
         this.result = '';
         this.filepaths = [];
@@ -13,8 +13,9 @@ class Snippet {
         this.referencePath = path;
         this.cleanSnippetString();
         this.filesToCopy = [];
+        this.experimental = experimental;
     }
-    async resolve(_) {
+    async resolve(data) {
         await wait();
     }
     toString() {
@@ -27,9 +28,9 @@ class Snippet {
         this.input_string = lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
-        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src');
+        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src', this.experimental);
         const htmlString = await transpiler.transpile();
-        if (transpiler.errorMsg !== "")
+        if (transpiler.errorMsg !== '')
             throw new Error(transpiler.errorMsg);
         this.filesToCopy = transpiler.filesToCopy;
         this.filepaths = [...this.filepaths, ...transpiler.loadedFiles];

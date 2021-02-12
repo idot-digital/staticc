@@ -6,14 +6,14 @@ import { readFileFromDisk } from '../lib'
 class FileInlineSnippet extends Snippet {
     fileContents: string
     fileIdentifier: string
-    constructor(input_string: string, lineNumber: Number, path: string) {
-        super(input_string, lineNumber, path)
+    constructor(input_string: string, lineNumber: Number, path: string, experimental: boolean) {
+        super(input_string, lineNumber, path, experimental)
         this.fileContents = ''
         this.fileIdentifier = ''
     }
     async resolve(data: any): Promise<void> {
         await this.readFile()
-        let resolved = false;
+        let resolved = false
         SupportedFileTypes.forEach((filetype) => {
             if (this.fileIdentifier == filetype.fileIdentifier) {
                 try {
@@ -24,7 +24,7 @@ class FileInlineSnippet extends Snippet {
                 resolved = true
             }
         })
-        if(!resolved) throw new Error(`There is no filehandler for ${this.fileIdentifier}!`)
+        if (!resolved) throw new Error(`There is no filehandler for ${this.fileIdentifier}!`)
         await this.postProcess(data)
     }
     async readFile() {
@@ -36,7 +36,7 @@ class FileInlineSnippet extends Snippet {
         this.filepaths = snippet_parts
         await Promise.all(
             this.filepaths.map(async (filepath) => {
-                const content = (await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath)))
+                const content = await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath))
                 this.fileContents += ' ' + content
             })
         )

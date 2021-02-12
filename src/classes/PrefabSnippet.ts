@@ -11,8 +11,8 @@ class PrefabSnippet extends Snippet {
     args: string[]
     fileContent: string
     type: PrefabType
-    constructor(input_string: string, type: PrefabType, lineNumber: Number, path: string) {
-        super(input_string, lineNumber, path)
+    constructor(input_string: string, type: PrefabType, lineNumber: Number, path: string, experimental: boolean) {
+        super(input_string, lineNumber, path, experimental)
         this.args = []
         this.fileContent = ''
         this.type = type

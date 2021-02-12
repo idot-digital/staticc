@@ -13,8 +13,8 @@ var PrefabType;
 })(PrefabType || (PrefabType = {}));
 exports.PrefabType = PrefabType;
 class PrefabSnippet extends Snippet_1.default {
-    constructor(input_string, type, lineNumber, path) {
-        super(input_string, lineNumber, path);
+    constructor(input_string, type, lineNumber, path, experimental) {
+        super(input_string, lineNumber, path, experimental);
         this.args = [];
         this.fileContent = '';
         this.type = type;

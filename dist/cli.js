@@ -22,6 +22,7 @@ const build_dev = args.indexOf('build-dev') >= 0;
 const build_prod = args.indexOf('build') >= 0;
 const serve = args.indexOf('serve') >= 0;
 const init = args.indexOf('init') >= 0;
+const experimental = args.indexOf('exp') >= 0 || args.indexOf('-exp') >= 0 || args.indexOf('experimental') >= 0 || args.indexOf('-experimental') >= 0;
 const data_json_override = args.indexOf('-data') >= 0 || args.indexOf('-d') >= 0;
 //set/ override the path of the data file
 let data_json_path = 'data.json';
@@ -122,9 +123,9 @@ function startDevServer() {
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        const transpiler = new Transpiler_1.default(content, data, file);
+        const transpiler = new Transpiler_1.default(content, data, file, experimental);
         let transpiledCode = await transpiler.transpile();
-        if (transpiler.errorMsg !== "") {
+        if (transpiler.errorMsg !== '') {
             console.log(transpiler.errorMsg);
             transpiledCode = transpiler.getErrorAsHtml();
         }
@@ -175,7 +176,7 @@ function minifyHTML(html_String) {
 async function copyLinkedFiles(files) {
     await Promise.all(files.map(async (file) => {
         fs_1.default.mkdirSync(path_1.default.dirname(file.to), { recursive: true });
-        if (path_1.default.extname(file.from) === ".sass" || path_1.default.extname(file.from) === ".scss") {
+        if (path_1.default.extname(file.from) === '.sass' || path_1.default.extname(file.from) === '.scss') {
             await copyAndResolveSass(file.from, file.to);
         }
         else {
@@ -184,10 +185,10 @@ async function copyLinkedFiles(files) {
     }));
 }
 async function copyAndResolveSass(from, to) {
-    const filecontent = await fs_1.default.promises.readFile(from, { encoding: "utf-8" });
+    const filecontent = await fs_1.default.promises.readFile(from, { encoding: 'utf-8' });
     try {
         const renderedSass = node_sass_1.default.renderSync({ data: filecontent }).css.toString();
-        await fs_1.default.promises.writeFile(to.replace(".sass", ".css").replace(".scss", ".css"), renderedSass, { encoding: "utf-8" });
+        await fs_1.default.promises.writeFile(to.replace('.sass', '.css').replace('.scss', '.css'), renderedSass, { encoding: 'utf-8' });
     }
     catch (error) {
         console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`);

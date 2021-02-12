@@ -1,5 +1,4 @@
 #! /usr/bin/env node
-
 import { spawn } from 'cross-spawn'
 import { execSync } from 'child_process'
 import { readFileFromDisk, saveFileToDisk } from './lib'
@@ -22,6 +21,7 @@ const build_dev: boolean = args.indexOf('build-dev') >= 0
 const build_prod: boolean = args.indexOf('build') >= 0
 const serve: boolean = args.indexOf('serve') >= 0
 const init: boolean = args.indexOf('init') >= 0
+const experimental: boolean = args.indexOf('exp') >= 0 || args.indexOf('-exp') >= 0 || args.indexOf('experimental') >= 0 || args.indexOf('-experimental') >= 0
 const data_json_override: boolean = args.indexOf('-data') >= 0 || args.indexOf('-d') >= 0
 
 //set/ override the path of the data file
@@ -123,9 +123,9 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            const transpiler = new Transpiler(content, data, file)
+            const transpiler = new Transpiler(content, data, file, experimental)
             let transpiledCode = await transpiler.transpile()
-            if(transpiler.errorMsg !== ""){
+            if (transpiler.errorMsg !== '') {
                 console.log(transpiler.errorMsg)
                 transpiledCode = transpiler.getErrorAsHtml()
             }
@@ -182,20 +182,20 @@ async function copyLinkedFiles(files: { from: string; to: string }[]) {
     await Promise.all(
         files.map(async (file) => {
             fs.mkdirSync(pathLib.dirname(file.to), { recursive: true })
-            if(pathLib.extname(file.from) === ".sass" || pathLib.extname(file.from) === ".scss"){
+            if (pathLib.extname(file.from) === '.sass' || pathLib.extname(file.from) === '.scss') {
                 await copyAndResolveSass(file.from, file.to)
-            }else{
+            } else {
                 await fs.promises.copyFile(file.from, file.to)
             }
         })
     )
 }
 
-async function copyAndResolveSass(from: string, to:string){
-    const filecontent = await fs.promises.readFile(from, { encoding: "utf-8"})
+async function copyAndResolveSass(from: string, to: string) {
+    const filecontent = await fs.promises.readFile(from, { encoding: 'utf-8' })
     try {
         const renderedSass = sass.renderSync({ data: filecontent }).css.toString()
-        await fs.promises.writeFile(to.replace(".sass", ".css").replace(".scss", ".css"), renderedSass, {encoding: "utf-8"})
+        await fs.promises.writeFile(to.replace('.sass', '.css').replace('.scss', '.css'), renderedSass, { encoding: 'utf-8' })
     } catch (error) {
         console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`)
     }

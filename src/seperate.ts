@@ -1,4 +1,4 @@
-import {DataSnippet} from './classes/DataSnippet'
+import { DataSnippet } from './classes/DataSnippet'
 import FileInlineSnippet from './classes/FileInlineSnippet'
 import HtmlPrefabSnippet from './classes/HtmlPrefabSnippet'
 import JsPrefabSnippet from './classes/JsPrefabSnippet'
@@ -9,7 +9,8 @@ export const seperate = (
     staticcString: string,
     start_seperator: string,
     end_seperator: string,
-    path: string
+    path: string,
+    experimental: boolean
 ): {
     plainHTMLSnippets: string[]
     codeSnippets: Snippet[]
@@ -21,7 +22,7 @@ export const seperate = (
     for (let i = 0; i < oc; i++) {
         const [firstPart, middlePart, lastPart] = cutString(staticcString, start_seperator, end_seperator)
         plainHTMLSnippets.push(firstPart)
-        codeSnippets.push(classifySnippet(middlePart, path, calculateLineNumber(numberOfLines, middlePart, lastPart)))
+        codeSnippets.push(classifySnippet(middlePart, path, calculateLineNumber(numberOfLines, middlePart, lastPart), experimental))
         staticcString = lastPart
     }
     plainHTMLSnippets.push(staticcString)
@@ -41,17 +42,17 @@ export const cutString = (input_string: string, start_seperator: string, end_sep
     return [firstPart, middlePart, lastPart]
 }
 
-export const classifySnippet = (snippet_string: string, path: string, lineNumber: number): Snippet => {
+export const classifySnippet = (snippet_string: string, path: string, lineNumber: number, experimental: boolean): Snippet => {
     if (snippet_string.indexOf('#') != -1) {
-        return new JsSnippet(snippet_string.replace('#', '').trim(), lineNumber, path)
+        return new JsSnippet(snippet_string.replace('#', '').trim(), lineNumber, path, experimental)
     } else if (snippet_string.indexOf('!!') != -1) {
-        return new JsPrefabSnippet(snippet_string.replace('!!', '').trim(), lineNumber, path)
+        return new JsPrefabSnippet(snippet_string.replace('!!', '').trim(), lineNumber, path, experimental)
     } else if (snippet_string.indexOf('!') != -1) {
-        return new HtmlPrefabSnippet(snippet_string.replace('!', '').trim(), lineNumber, path)
+        return new HtmlPrefabSnippet(snippet_string.replace('!', '').trim(), lineNumber, path, experimental)
     } else if (snippet_string.indexOf('?') != -1) {
-        return new FileInlineSnippet(snippet_string.replace('?', '').trim(), lineNumber, path)
+        return new FileInlineSnippet(snippet_string.replace('?', '').trim(), lineNumber, path, experimental)
     } else {
-        return new DataSnippet(snippet_string.trim(), lineNumber, path)
+        return new DataSnippet(snippet_string.trim(), lineNumber, path, experimental)
     }
 }
 

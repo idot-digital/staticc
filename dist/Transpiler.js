@@ -6,7 +6,7 @@ const lib_1 = require("./lib");
 const Preprocessor_1 = __importDefault(require("./Preprocessor"));
 const seperate_1 = require("./seperate");
 class Transpiler {
-    constructor(input_string, data, path, start_seperator = '{{', end_seperator = '}}') {
+    constructor(input_string, data, path, experimental, start_seperator = '{{', end_seperator = '}}') {
         this.input_string = input_string;
         this.data = data;
         this.path = path;
@@ -17,6 +17,7 @@ class Transpiler {
         this.errorMsg = '';
         this.plainHTMLSnippets = [];
         this.resolvedSnippets = [];
+        this.experimental = experimental;
     }
     async transpile() {
         const preprocessor = new Preprocessor_1.default(this.input_string);
@@ -24,14 +25,14 @@ class Transpiler {
             this.input_string = preprocessor.preprocess(this.path);
         }
         catch (error) {
-            if (error.message == "link in src") {
+            if (error.message == 'link in src') {
                 this.errorMsg += `\nError in ${this.path}\nYou can't use a file-link-snippet in a src file! All files in this folder are copied anyways if they are not inlined!\n`;
             }
             else {
                 this.errorMsg += `\nError in ${this.path}\nYou can only use one file-link-snippet in a file!\n`;
             }
         }
-        const { plainHTMLSnippets, codeSnippets } = seperate_1.seperate(this.input_string, this.start_seperator, this.end_seperator, this.path);
+        const { plainHTMLSnippets, codeSnippets } = seperate_1.seperate(this.input_string, this.start_seperator, this.end_seperator, this.path, this.experimental);
         this.plainHTMLSnippets = plainHTMLSnippets;
         await Promise.all(codeSnippets.map(async (snippet) => {
             try {

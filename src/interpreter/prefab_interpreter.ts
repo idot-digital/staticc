@@ -1,5 +1,6 @@
 import JsInterpreter from 'js-interpreter'
 import { workerData, parentPort } from 'worker_threads'
+import { decodePrefabArgs } from '../jsinterpreter'
 import { noramlizeJsReturns, babelTranspile } from './interpreter_libs'
 
 const { fileContent, data, args } = workerData
@@ -28,18 +29,4 @@ export function jsInterpretInitFn(interpreter: any, globalObject: any): void {
     }
     interpreter.setProperty(globalObject, '_render', interpreter.createNativeFunction(_render))
     interpreter.setProperty(globalObject, 'log', interpreter.createNativeFunction(log))
-}
-
-export function decodePrefabArgs(args: string[], data: any): string[] {
-    args = args.map((arg: string) => {
-        if (arg == '') return ''
-        if (arg.charAt(0) == '"') {
-            arg = arg.substring(1, arg.length - 1)
-            return arg
-        } else {
-            if (!data[arg]) throw new Error('Argument of the Prefab could not be resolved! Check if it is defined in the data-object!')
-            return data[arg] as string
-        }
-    })
-    return args
 }

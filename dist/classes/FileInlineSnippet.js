@@ -7,8 +7,8 @@ const node_sass_1 = __importDefault(require("node-sass"));
 const path_1 = __importDefault(require("path"));
 const lib_1 = require("../lib");
 class FileInlineSnippet extends Snippet_1.default {
-    constructor(input_string, lineNumber, path) {
-        super(input_string, lineNumber, path);
+    constructor(input_string, lineNumber, path, experimental) {
+        super(input_string, lineNumber, path, experimental);
         this.fileContents = '';
         this.fileIdentifier = '';
     }
@@ -39,7 +39,7 @@ class FileInlineSnippet extends Snippet_1.default {
         this.fileIdentifier = snippet_parts.shift();
         this.filepaths = snippet_parts;
         await Promise.all(this.filepaths.map(async (filepath) => {
-            const content = (await lib_1.readFileFromDisk(path_1.default.join(path_1.default.dirname(this.referencePath), filepath)));
+            const content = await lib_1.readFileFromDisk(path_1.default.join(path_1.default.dirname(this.referencePath), filepath));
             this.fileContents += ' ' + content;
         }));
     }
