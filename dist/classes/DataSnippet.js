@@ -5,8 +5,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dataLookup = exports.DataSnippet = void 0;
 const Snippet_1 = __importDefault(require("./Snippet"));
 class DataSnippet extends Snippet_1.default {
-    constructor(input_string, lineNumber, path, experimental) {
-        super(input_string, lineNumber, path, experimental);
+    constructor(input_string, lineNumber, path, transpiler) {
+        super(input_string, lineNumber, path, transpiler);
     }
     async resolve(data) {
         const value = dataLookup(data, this.input_string);

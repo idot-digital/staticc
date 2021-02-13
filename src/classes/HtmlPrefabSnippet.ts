@@ -1,9 +1,10 @@
+import Transpiler from '../Transpiler'
 import { dataLookup } from './DataSnippet'
 import { PrefabSnippet, PrefabType } from './PrefabSnippet'
 
 class HtmlPrefabSnippet extends PrefabSnippet {
-    constructor(input_string: string, lineNumber: Number, path: string, experimental: boolean) {
-        super(input_string, PrefabType.HtmlPrefabSnippet, lineNumber, path, experimental)
+    constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
+        super(input_string, PrefabType.HtmlPrefabSnippet, lineNumber, path, transpiler)
     }
     async resolve(data: any): Promise<void> {
         await super.readFile()

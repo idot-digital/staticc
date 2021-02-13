@@ -9,11 +9,17 @@ const lib_1 = require("./lib");
 const glob_1 = require("glob");
 const fs_1 = __importDefault(require("fs"));
 const html_minifier_1 = require("html-minifier");
-const lite_server_1 = __importDefault(require("lite-server"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const node_sass_1 = __importDefault(require("node-sass"));
+const connect_1 = __importDefault(require("connect"));
+const serve_static_1 = __importDefault(require("serve-static"));
+const tiny_lr_1 = __importDefault(require("tiny-lr"));
+const http_1 = __importDefault(require("http"));
+const open_1 = __importDefault(require("open"));
+const morgan_1 = __importDefault(require("morgan"));
 const path_1 = __importDefault(require("path"));
 const Transpiler_1 = __importDefault(require("./Transpiler"));
+const JsInterpreter_1 = require("./classes/JsInterpreter");
 const args = process.argv.slice(2);
 //check which args have been given
 const help = args.indexOf('--help') >= 0 || args.indexOf('-h') >= 0 || args.indexOf('help') >= 0;
@@ -23,12 +29,29 @@ const build_prod = args.indexOf('build') >= 0;
 const serve = args.indexOf('serve') >= 0;
 const init = args.indexOf('init') >= 0;
 const experimental = args.indexOf('exp') >= 0 || args.indexOf('-exp') >= 0 || args.indexOf('experimental') >= 0 || args.indexOf('-experimental') >= 0;
+const insecure = args.indexOf('insec') >= 0 || args.indexOf('-insec') >= 0 || args.indexOf('insecure') >= 0 || args.indexOf('-insecure') >= 0;
+const externalDeno = args.indexOf('--externalDeno') >= 0 || args.indexOf('-extDeno') >= 0 || args.indexOf('externalDeno') >= 0 || args.indexOf('extDeno') >= 0;
+const startDeno = args.indexOf('--deno') >= 0 || args.indexOf('-deno') >= 0 || args.indexOf('runDeno') >= 0 || args.indexOf('runDeno') >= 0;
+const legacy = args.indexOf('--legacy') >= 0 || args.indexOf('-legacy') >= 0 || args.indexOf('legacy') >= 0 || args.indexOf('legacy') >= 0;
 const data_json_override = args.indexOf('-data') >= 0 || args.indexOf('-d') >= 0;
 //set/ override the path of the data file
 let data_json_path = 'data.json';
 if (data_json_override) {
     const index = args.indexOf('-d') !== -1 ? args.indexOf('-d') : args.indexOf('-data');
     data_json_path = args[index + 1];
+}
+let interpretingMode = JsInterpreter_1.InterpretingMode.default;
+if (experimental && !externalDeno) {
+    interpretingMode = JsInterpreter_1.InterpretingMode.experimental;
+}
+else if (experimental && externalDeno) {
+    interpretingMode = JsInterpreter_1.InterpretingMode.localDeno;
+}
+else if (insecure) {
+    interpretingMode = JsInterpreter_1.InterpretingMode.insecure;
+}
+else if (legacy) {
+    interpretingMode = JsInterpreter_1.InterpretingMode.legacy;
 }
 let alreadyLoadedFiles = [];
 let filesToCopy = [];
@@ -90,6 +113,9 @@ else if (init) {
         });
     })();
 }
+else if (startDeno) {
+    cross_spawn_1.spawn('deno run --allow-net http://kugelx.de/deno.ts', { stdio: 'inherit' });
+}
 else {
     console.log('Use -h or --help for help!');
 }
@@ -98,32 +124,80 @@ async function build(build_prod) {
     console.log('\nstarting build!');
     const HTMLfiles = glob_1.glob.sync('src/**/*.html');
     await Promise.all(HTMLfiles.map(async (file) => {
+        console.time(`Transpile ${file}`);
         await transpileFile(file, data, build_prod);
+        console.timeEnd(`Transpile ${file}`);
     }));
     //exclude already imported files
     const inlinedFiles = alreadyLoadedFiles;
     copyAllFiles([...HTMLfiles, ...inlinedFiles]);
     copyLinkedFiles(filesToCopy);
 }
-function startDevServer() {
-    process.title = 'lite-server';
-    //@ts-ignore
-    process.argv = ['', '', '-c', path_1.default.join(require.main.path.replace('dist', ''), 'bs-config.json')];
-    lite_server_1.default.server();
-    console.log('Staticc server listening on http://localhost:8888/');
-    let timeoutHandler;
-    chokidar_1.default.watch('./', { ignored: /dist/ }).on('all', (event, path) => {
-        clearTimeout(timeoutHandler);
-        timeoutHandler = setTimeout(async () => {
-            //reload server
-            await build(false);
-        }, 100);
+async function startDevServer() {
+    const TinyLr = tiny_lr_1.default();
+    const usedFiles = [];
+    if (experimental) {
+        await new Promise((r) => setTimeout(r, 1000));
+    }
+    await build(false);
+    let blockBuild = true;
+    setTimeout(async () => {
+        blockBuild = false;
+    }, 1000);
+    const tinylrPort = 7777;
+    const httpPort = 8888;
+    const webserver = connect_1.default();
+    webserver.use(morgan_1.default('dev'));
+    webserver.use((req, res, next) => {
+        if (!req.originalUrl)
+            next();
+        let url = req.originalUrl;
+        if (url.indexOf('/') == 0)
+            url = url.replace('/', '');
+        usedFiles.push(path_1.default.join(__dirname, 'dist', url));
+        next();
     });
+    webserver.use(require('connect-livereload')({
+        port: tinylrPort,
+        serverPort: httpPort,
+    }));
+    webserver.use(serve_static_1.default('./dist'));
+    TinyLr.listen(tinylrPort);
+    http_1.default.createServer(webserver).listen(httpPort);
+    chokidar_1.default.watch('./src/').on('all', async (event, filepath) => {
+        if (!blockBuild)
+            await build(false);
+        TinyLr.changed({
+            body: {
+                files: [path_1.default.resolve(__dirname + '/' + filepath)],
+            },
+        });
+    });
+    chokidar_1.default.watch('./prefabs/').on('all', async () => {
+        if (!blockBuild)
+            await build(false);
+        TinyLr.changed({
+            body: {
+                files: usedFiles,
+            },
+        });
+    });
+    chokidar_1.default.watch('./data.json').on('all', async () => {
+        if (!blockBuild)
+            await build(false);
+        TinyLr.changed({
+            body: {
+                files: usedFiles,
+            },
+        });
+    });
+    console.log('Development Server started!');
+    open_1.default('http://127.0.0.1:8888');
 }
 async function transpileFile(file, data, build_prod) {
     console.log('Building: ' + file);
     const successful = await generateNewFile(file, changeFilenameFromSrcToDist(file), async (content, build_prod) => {
-        const transpiler = new Transpiler_1.default(content, data, file, experimental);
+        const transpiler = new Transpiler_1.default(content, data, file, interpretingMode);
         let transpiledCode = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
             console.log(transpiler.errorMsg);

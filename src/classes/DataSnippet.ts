@@ -1,8 +1,9 @@
+import Transpiler from '../Transpiler'
 import Snippet from './Snippet'
 
 class DataSnippet extends Snippet {
-    constructor(input_string: string, lineNumber: Number, path: string, experimental: boolean) {
-        super(input_string, lineNumber, path, experimental)
+    constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
+        super(input_string, lineNumber, path, transpiler)
     }
     async resolve(data: any): Promise<void> {
         const value = dataLookup(data, this.input_string)

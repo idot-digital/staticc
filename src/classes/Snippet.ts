@@ -7,8 +7,8 @@ class Snippet {
     lineNumber: Number
     referencePath: string
     filesToCopy: { from: string; to: string }[]
-    experimental: boolean
-    constructor(input_string: string, lineNumber: Number, path: string, experimental: boolean) {
+    transpiler: Transpiler
+    constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
         this.input_string = input_string
         this.result = ''
         this.filepaths = []
@@ -16,7 +16,7 @@ class Snippet {
         this.referencePath = path
         this.cleanSnippetString()
         this.filesToCopy = []
-        this.experimental = experimental
+        this.transpiler = transpiler
     }
     async resolve(data: any): Promise<void> {
         await wait()
@@ -31,7 +31,7 @@ class Snippet {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
     async postProcess(data: any): Promise<void> {
-        const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src', this.experimental)
+        const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator)
         const htmlString = await transpiler.transpile()
         if (transpiler.errorMsg !== '') throw new Error(transpiler.errorMsg)
         this.filesToCopy = transpiler.filesToCopy

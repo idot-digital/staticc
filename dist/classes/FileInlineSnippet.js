@@ -7,8 +7,8 @@ const node_sass_1 = __importDefault(require("node-sass"));
 const path_1 = __importDefault(require("path"));
 const lib_1 = require("../lib");
 class FileInlineSnippet extends Snippet_1.default {
-    constructor(input_string, lineNumber, path, experimental) {
-        super(input_string, lineNumber, path, experimental);
+    constructor(input_string, lineNumber, path, transpiler) {
+        super(input_string, lineNumber, path, transpiler);
         this.fileContents = '';
         this.fileIdentifier = '';
     }

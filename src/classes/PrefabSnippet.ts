@@ -1,6 +1,7 @@
 import { readFileFromDisk } from '../lib'
 import Snippet from './Snippet'
 import pathLib from 'path'
+import Transpiler from '../Transpiler'
 
 enum PrefabType {
     JsPrefabSnippet,
@@ -11,8 +12,8 @@ class PrefabSnippet extends Snippet {
     args: string[]
     fileContent: string
     type: PrefabType
-    constructor(input_string: string, type: PrefabType, lineNumber: Number, path: string, experimental: boolean) {
-        super(input_string, lineNumber, path, experimental)
+    constructor(input_string: string, type: PrefabType, lineNumber: Number, path: string, transpiler: Transpiler) {
+        super(input_string, lineNumber, path, transpiler)
         this.args = []
         this.fileContent = ''
         this.type = type

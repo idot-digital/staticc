@@ -2,12 +2,13 @@ import Snippet from './Snippet'
 import sass from 'node-sass'
 import pathLib from 'path'
 import { readFileFromDisk } from '../lib'
+import Transpiler from '../Transpiler'
 
 class FileInlineSnippet extends Snippet {
     fileContents: string
     fileIdentifier: string
-    constructor(input_string: string, lineNumber: Number, path: string, experimental: boolean) {
-        super(input_string, lineNumber, path, experimental)
+    constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
+        super(input_string, lineNumber, path, transpiler)
         this.fileContents = ''
         this.fileIdentifier = ''
     }

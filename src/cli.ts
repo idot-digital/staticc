@@ -5,12 +5,18 @@ import { readFileFromDisk, saveFileToDisk } from './lib'
 import { glob } from 'glob'
 import fs from 'fs'
 import { minify } from 'html-minifier'
-import lite_server from 'lite-server'
 import chokidar from 'chokidar'
 import sass from 'node-sass'
+import connect from 'connect'
+import serveStatic from 'serve-static'
+import tinylr from 'tiny-lr'
+import http from 'http'
+import open from 'open'
+import morgan from 'morgan'
 
 import pathLib from 'path'
 import Transpiler from './Transpiler'
+import { InterpretingMode } from './classes/JsInterpreter'
 
 const args = process.argv.slice(2)
 
@@ -22,6 +28,10 @@ const build_prod: boolean = args.indexOf('build') >= 0
 const serve: boolean = args.indexOf('serve') >= 0
 const init: boolean = args.indexOf('init') >= 0
 const experimental: boolean = args.indexOf('exp') >= 0 || args.indexOf('-exp') >= 0 || args.indexOf('experimental') >= 0 || args.indexOf('-experimental') >= 0
+const insecure: boolean = args.indexOf('insec') >= 0 || args.indexOf('-insec') >= 0 || args.indexOf('insecure') >= 0 || args.indexOf('-insecure') >= 0
+const externalDeno: boolean = args.indexOf('--externalDeno') >= 0 || args.indexOf('-extDeno') >= 0 || args.indexOf('externalDeno') >= 0 || args.indexOf('extDeno') >= 0
+const startDeno: boolean = args.indexOf('--deno') >= 0 || args.indexOf('-deno') >= 0 || args.indexOf('runDeno') >= 0 || args.indexOf('runDeno') >= 0
+const legacy: boolean = args.indexOf('--legacy') >= 0 || args.indexOf('-legacy') >= 0 || args.indexOf('legacy') >= 0 || args.indexOf('legacy') >= 0
 const data_json_override: boolean = args.indexOf('-data') >= 0 || args.indexOf('-d') >= 0
 
 //set/ override the path of the data file
@@ -29,6 +39,18 @@ let data_json_path: string = 'data.json'
 if (data_json_override) {
     const index = args.indexOf('-d') !== -1 ? args.indexOf('-d') : args.indexOf('-data')
     data_json_path = args[index + 1]
+}
+
+let interpretingMode = InterpretingMode.default
+
+if (experimental && !externalDeno) {
+    interpretingMode = InterpretingMode.experimental
+} else if (experimental && externalDeno) {
+    interpretingMode = InterpretingMode.localDeno
+} else if (insecure) {
+    interpretingMode = InterpretingMode.insecure
+} else if (legacy) {
+    interpretingMode = InterpretingMode.legacy
 }
 
 let alreadyLoadedFiles: string[] = []
@@ -82,6 +104,8 @@ if (version) {
             console.log('Finished!')
         })
     })()
+} else if (startDeno) {
+    spawn('deno run --allow-net http://kugelx.de/deno.ts', { stdio: 'inherit' })
 } else {
     console.log('Use -h or --help for help!')
 }
@@ -92,7 +116,9 @@ async function build(build_prod: boolean) {
     const HTMLfiles = glob.sync('src/**/*.html')
     await Promise.all(
         HTMLfiles.map(async (file) => {
+            console.time(`Transpile ${file}`)
             await transpileFile(file, data, build_prod)
+            console.timeEnd(`Transpile ${file}`)
         })
     )
     //exclude already imported files
@@ -101,20 +127,68 @@ async function build(build_prod: boolean) {
     copyLinkedFiles(filesToCopy)
 }
 
-function startDevServer() {
-    process.title = 'lite-server'
-    //@ts-ignore
-    process.argv = ['', '', '-c', pathLib.join(require.main.path.replace('dist', ''), 'bs-config.json')]
-    lite_server.server()
-    console.log('Staticc server listening on http://localhost:8888/')
-    let timeoutHandler: NodeJS.Timeout
-    chokidar.watch('./', { ignored: /dist/ }).on('all', (event, path) => {
-        clearTimeout(timeoutHandler)
-        timeoutHandler = setTimeout(async () => {
-            //reload server
-            await build(false)
-        }, 100)
+async function startDevServer() {
+    const TinyLr = tinylr()
+    const usedFiles: string[] = []
+
+    if (experimental) {
+        await new Promise((r) => setTimeout(r, 1000))
+    }
+    await build(false)
+
+    let blockBuild = true
+    setTimeout(async () => {
+        blockBuild = false
+    }, 1000)
+
+    const tinylrPort = 7777
+    const httpPort = 8888
+
+    const webserver = connect()
+    webserver.use(morgan('dev'))
+    webserver.use((req, res, next) => {
+        if (!req.originalUrl) next()
+        let url: string = req.originalUrl as string
+        if (url.indexOf('/') == 0) url = url.replace('/', '')
+        usedFiles.push(pathLib.join(__dirname, 'dist', url))
+        next()
     })
+    webserver.use(
+        require('connect-livereload')({
+            port: tinylrPort,
+            serverPort: httpPort,
+        })
+    )
+    webserver.use(serveStatic('./dist'))
+    TinyLr.listen(tinylrPort)
+    http.createServer(webserver).listen(httpPort)
+
+    chokidar.watch('./src/').on('all', async (event, filepath) => {
+        if (!blockBuild) await build(false)
+        TinyLr.changed({
+            body: {
+                files: [pathLib.resolve(__dirname + '/' + filepath)],
+            },
+        })
+    })
+    chokidar.watch('./prefabs/').on('all', async () => {
+        if (!blockBuild) await build(false)
+        TinyLr.changed({
+            body: {
+                files: usedFiles,
+            },
+        })
+    })
+    chokidar.watch('./data.json').on('all', async () => {
+        if (!blockBuild) await build(false)
+        TinyLr.changed({
+            body: {
+                files: usedFiles,
+            },
+        })
+    })
+    console.log('Development Server started!')
+    open('http://127.0.0.1:8888')
 }
 
 async function transpileFile(file: string, data: any, build_prod: boolean) {
@@ -123,7 +197,7 @@ async function transpileFile(file: string, data: any, build_prod: boolean) {
         file,
         changeFilenameFromSrcToDist(file),
         async (content: string, build_prod: boolean): Promise<string> => {
-            const transpiler = new Transpiler(content, data, file, experimental)
+            const transpiler = new Transpiler(content, data, file, interpretingMode)
             let transpiledCode = await transpiler.transpile()
             if (transpiler.errorMsg !== '') {
                 console.log(transpiler.errorMsg)

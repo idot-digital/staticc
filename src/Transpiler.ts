@@ -1,6 +1,7 @@
 import { replaceAll } from './lib'
 import Preprocessor from './Preprocessor'
 import { seperate } from './seperate'
+import { InterpretingMode, JsInterpreter, JsScriptInterpreter } from './classes/JsInterpreter'
 
 class Transpiler {
     input_string: string
@@ -13,8 +14,8 @@ class Transpiler {
     errorMsg: string
     plainHTMLSnippets: string[]
     resolvedSnippets: string[]
-    experimental: boolean
-    constructor(input_string: string, data: any, path: string, experimental: boolean, start_seperator: string = '{{', end_seperator: string = '}}') {
+    interpreter: JsInterpreter
+    constructor(input_string: string, data: any, path: string, interpretingMode: InterpretingMode, start_seperator: string = '{{', end_seperator: string = '}}') {
         this.input_string = input_string
         this.data = data
         this.path = path
@@ -25,7 +26,7 @@ class Transpiler {
         this.errorMsg = ''
         this.plainHTMLSnippets = []
         this.resolvedSnippets = []
-        this.experimental = experimental
+        this.interpreter = JsInterpreter.createInterpreter(interpretingMode)
     }
     async transpile(): Promise<string> {
         const preprocessor = new Preprocessor(this.input_string)
@@ -39,7 +40,7 @@ class Transpiler {
             }
         }
 
-        const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path, this.experimental)
+        const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path, this)
         this.plainHTMLSnippets = plainHTMLSnippets
 
         await Promise.all(

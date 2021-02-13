@@ -207,7 +207,8 @@ describe('transpile', () => {
         const transpiler = new Transpiler(
             '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{ !!count_to_3 }} </body></html>',
             { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' },
-            '/src/index.html'
+            '/src/index.html',
+            0
         )
         const snippets = await transpiler.transpile()
         expect(snippets).toEqual(
@@ -219,7 +220,8 @@ describe('transpile', () => {
         const transpiler = new Transpiler(
             '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{ !!count_to_3 }} </body></html>',
             { shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' },
-            '/src/index.html'
+            '/src/index.html',
+            0
         )
         const snippets = await transpiler.transpile()
         expect(transpiler.getErrorAsHtml()).toEqual(
@@ -228,14 +230,14 @@ describe('transpile', () => {
     })
     test('getErrorAsHtml', async () => {
         const { default: Transpiler } = require('../dist/Transpiler')
-        const t = new Transpiler('', {}, '/src/index.html')
+        const t = new Transpiler('', {}, '/src/index.html', 0)
         t.errorMsg = 'Error \n Occured'
         const result = t.getErrorAsHtml()
         expect(result).toEqual('Error <br> Occured')
     })
     test('recombine', async () => {
         const { default: Transpiler } = require('../dist/Transpiler')
-        const t = new Transpiler('', {}, '/src/index.html')
+        const t = new Transpiler('', {}, '/src/index.html', 0)
         t.resolvedSnippets = [', ']
         t.plainHTMLSnippets = ['Hello', 'World!']
         t.recombine()

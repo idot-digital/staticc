@@ -2,8 +2,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const DataSnippet_1 = require("./DataSnippet");
 const PrefabSnippet_1 = require("./PrefabSnippet");
 class HtmlPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
-    constructor(input_string, lineNumber, path, experimental) {
-        super(input_string, PrefabSnippet_1.PrefabType.HtmlPrefabSnippet, lineNumber, path, experimental);
+    constructor(input_string, lineNumber, path, transpiler) {
+        super(input_string, PrefabSnippet_1.PrefabType.HtmlPrefabSnippet, lineNumber, path, transpiler);
     }
     async resolve(data) {
         await super.readFile();

@@ -8,7 +8,7 @@ const FileInlineSnippet_1 = __importDefault(require("./classes/FileInlineSnippet
 const HtmlPrefabSnippet_1 = __importDefault(require("./classes/HtmlPrefabSnippet"));
 const JsPrefabSnippet_1 = __importDefault(require("./classes/JsPrefabSnippet"));
 const JsSnippet_1 = __importDefault(require("./classes/JsSnippet"));
-const seperate = (staticcString, start_seperator, end_seperator, path, experimental) => {
+const seperate = (staticcString, start_seperator, end_seperator, path, transpiler) => {
     const numberOfLines = exports.occurrences(staticcString, /\n/) + 1;
     const oc = exports.occurrences(staticcString, start_seperator);
     const plainHTMLSnippets = [];
@@ -16,7 +16,7 @@ const seperate = (staticcString, start_seperator, end_seperator, path, experimen
     for (let i = 0; i < oc; i++) {
         const [firstPart, middlePart, lastPart] = exports.cutString(staticcString, start_seperator, end_seperator);
         plainHTMLSnippets.push(firstPart);
-        codeSnippets.push(exports.classifySnippet(middlePart, path, exports.calculateLineNumber(numberOfLines, middlePart, lastPart), experimental));
+        codeSnippets.push(exports.classifySnippet(middlePart, path, exports.calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler));
         staticcString = lastPart;
     }
     plainHTMLSnippets.push(staticcString);
@@ -36,21 +36,21 @@ const cutString = (input_string, start_seperator, end_seperator) => {
     return [firstPart, middlePart, lastPart];
 };
 exports.cutString = cutString;
-const classifySnippet = (snippet_string, path, lineNumber, experimental) => {
+const classifySnippet = (snippet_string, path, lineNumber, transpiler) => {
     if (snippet_string.indexOf('#') != -1) {
-        return new JsSnippet_1.default(snippet_string.replace('#', '').trim(), lineNumber, path, experimental);
+        return new JsSnippet_1.default(snippet_string.replace('#', '').trim(), lineNumber, path, transpiler);
     }
     else if (snippet_string.indexOf('!!') != -1) {
-        return new JsPrefabSnippet_1.default(snippet_string.replace('!!', '').trim(), lineNumber, path, experimental);
+        return new JsPrefabSnippet_1.default(snippet_string.replace('!!', '').trim(), lineNumber, path, transpiler);
     }
     else if (snippet_string.indexOf('!') != -1) {
-        return new HtmlPrefabSnippet_1.default(snippet_string.replace('!', '').trim(), lineNumber, path, experimental);
+        return new HtmlPrefabSnippet_1.default(snippet_string.replace('!', '').trim(), lineNumber, path, transpiler);
     }
     else if (snippet_string.indexOf('?') != -1) {
-        return new FileInlineSnippet_1.default(snippet_string.replace('?', '').trim(), lineNumber, path, experimental);
+        return new FileInlineSnippet_1.default(snippet_string.replace('?', '').trim(), lineNumber, path, transpiler);
     }
     else {
-        return new DataSnippet_1.DataSnippet(snippet_string.trim(), lineNumber, path, experimental);
+        return new DataSnippet_1.DataSnippet(snippet_string.trim(), lineNumber, path, transpiler);
     }
 };
 exports.classifySnippet = classifySnippet;
