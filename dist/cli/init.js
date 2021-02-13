@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeProject = void 0;
-const lib_1 = require("../lib");
+const path_1 = __importDefault(require("path"));
 const cross_spawn_1 = require("cross-spawn");
+const lib_1 = require("../lib");
 const child_process_1 = require("child_process");
 async function initializeProject() {
     console.log('\n\nInitializing staticc project!\n\n');
@@ -43,7 +44,6 @@ function checkIfYarnIsInstalled() {
         return false;
     }
 }
-const path_1 = __importDefault(require("path"));
 const files = {};
 files[path_1.default.join('prefabs', 'count_to_3', 'prefab.js')] = 'const arr = []\nfor (let i = 0; i < 3; i++) {\n    arr.push("<" + args[0] + ">" + i.toString() + "</" + args[0] + ">")\n}\nrender(arr)';
 files[path_1.default.join('prefabs', 'hello_world', 'prefab.html')] = '<h5>Hello, World!</h5>';

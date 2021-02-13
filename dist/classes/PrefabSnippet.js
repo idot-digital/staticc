@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrefabType = exports.PrefabSnippet = void 0;
-const lib_1 = require("../lib");
-const Snippet_1 = __importDefault(require("./Snippet"));
 const path_1 = __importDefault(require("path"));
+const Snippet_1 = __importDefault(require("./Snippet"));
+const lib_1 = require("../lib");
 var PrefabType;
 (function (PrefabType) {
     PrefabType[PrefabType["JsPrefabSnippet"] = 0] = "JsPrefabSnippet";

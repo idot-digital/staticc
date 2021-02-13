@@ -1,12 +1,12 @@
-import chokidar from 'chokidar'
-import connect from 'connect'
-import serveStatic from 'serve-static'
-import tinylr from 'tiny-lr'
-import http from 'http'
 import open from 'open'
-import morgan from 'morgan'
+import http from 'http'
 import pathLib from 'path'
+import morgan from 'morgan'
+import tinylr from 'tiny-lr'
+import connect from 'connect'
+import chokidar from 'chokidar'
 import { build } from './build'
+import serveStatic from 'serve-static'
 import { InterpretingMode } from '../classes/JsInterpreter'
 
 export async function startDevServer(data_json_path: string, interpretingMode: InterpretingMode) {

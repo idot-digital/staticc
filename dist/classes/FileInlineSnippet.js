@@ -2,9 +2,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Snippet_1 = __importDefault(require("./Snippet"));
-const node_sass_1 = __importDefault(require("node-sass"));
 const path_1 = __importDefault(require("path"));
+const node_sass_1 = __importDefault(require("node-sass"));
+const Snippet_1 = __importDefault(require("./Snippet"));
 const lib_1 = require("../lib");
 class FileInlineSnippet extends Snippet_1.default {
     constructor(input_string, lineNumber, path, transpiler) {

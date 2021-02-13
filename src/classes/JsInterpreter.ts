@@ -1,5 +1,5 @@
-import fetch from 'node-fetch'
 import pathLib from 'path'
+import fetch from 'node-fetch'
 import { Worker } from 'worker_threads'
 
 export function decodePrefabArgs(args: string[], data: any): string[] {
@@ -18,8 +18,8 @@ export function decodePrefabArgs(args: string[], data: any): string[] {
 
 export enum InterpretingMode {
     default,
-    legacy,
     experimental,
+    legacy,
 
     remoteDeno,
     localDeno,

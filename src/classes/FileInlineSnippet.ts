@@ -1,8 +1,8 @@
-import Snippet from './Snippet'
-import sass from 'node-sass'
 import pathLib from 'path'
-import { readFileFromDisk } from '../lib'
+import sass from 'node-sass'
+import Snippet from './Snippet'
 import Transpiler from '../Transpiler'
+import { readFileFromDisk } from '../lib'
 
 class FileInlineSnippet extends Snippet {
     fileContents: string

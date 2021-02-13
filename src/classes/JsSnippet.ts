@@ -1,6 +1,4 @@
-import { Worker } from 'worker_threads'
 import Snippet from './Snippet'
-import pathLib from 'path'
 import Transpiler from '../Transpiler'
 
 //@ts-ignore

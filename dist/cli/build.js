@@ -2,16 +2,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transpileFile = exports.build = void 0;
+exports.build = void 0;
 const glob_1 = require("glob");
-const lib_1 = require("../lib");
-const Transpiler_1 = __importDefault(require("../Transpiler"));
-const FileManager_1 = require("./FileManager");
-const lib_2 = require("./lib");
 const timer_1 = require("./timer");
-function getAllBuildableFiles() {
-    return glob_1.glob.sync('src/**/*.html');
-}
+const html_minifier_1 = require("html-minifier");
+const Transpiler_1 = __importDefault(require("../Transpiler"));
+const lib_1 = require("../lib");
+const FileManager_1 = require("./FileManager");
 async function build(build_prod, data_json_path, interpretingMode, filesToBuild = []) {
     const data = JSON.parse(await lib_1.readFileFromDisk(data_json_path));
     const buildableFiles = getAllBuildableFiles();
@@ -32,7 +29,7 @@ async function build(build_prod, data_json_path, interpretingMode, filesToBuild 
 exports.build = build;
 async function transpileFile(file, data, build_prod, interpretingMode, fileManager) {
     console.log('Building: ' + file);
-    const successful = await lib_2.generateNewFile(file, lib_2.changeFilenameFromSrcToDist(file), async (content, build_prod) => {
+    const successful = await generateNewFile(file, FileManager_1.changeFilenameFromSrcToDist(file), async (content, build_prod) => {
         const transpiler = new Transpiler_1.default(content, data, file, interpretingMode);
         let transpiledCode = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
@@ -42,11 +39,29 @@ async function transpileFile(file, data, build_prod, interpretingMode, fileManag
         fileManager.copyFiles(transpiler.filesToCopy);
         fileManager.ignoreFiles(transpiler.loadedFiles);
         if (build_prod)
-            transpiledCode = lib_2.minifyHTML(transpiledCode);
+            transpiledCode = minifyHTML(transpiledCode);
         return transpiledCode;
     }, build_prod);
     if (!successful) {
         console.log(file + ' could not be transpiled!');
     }
 }
-exports.transpileFile = transpileFile;
+function minifyHTML(html_String) {
+    return html_minifier_1.minify(html_String, {
+        removeComments: true,
+        collapseWhitespace: true,
+        minifyCSS: true,
+        minifyJS: true,
+    });
+}
+async function generateNewFile(readFileName, writeFileName, fn, ...args) {
+    const readFileContent = await lib_1.readFileFromDisk(readFileName);
+    let writeFileContent;
+    //file read correctly
+    writeFileContent = await fn(readFileContent, ...args);
+    await lib_1.saveFileToDisk(writeFileName, writeFileContent);
+    return true;
+}
+function getAllBuildableFiles() {
+    return glob_1.glob.sync('src/**/*.html');
+}

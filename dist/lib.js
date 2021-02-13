@@ -18,28 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceAll = exports.saveFileToDisk = exports.readFileFromDisk = exports.trycatchasync = exports.trycatch = void 0;
+exports.replaceAll = exports.saveFileToDisk = exports.readFileFromDisk = void 0;
 const fs = __importStar(require("fs"));
 const pathLib = __importStar(require("path"));
-function trycatch(fn, ...args) {
-    try {
-        return [null, fn(...args)];
-    }
-    catch (error) {
-        return [error, null];
-    }
-}
-exports.trycatch = trycatch;
-async function trycatchasync(fn, ...args) {
-    try {
-        const result = await fn(...args);
-        return [null, result];
-    }
-    catch (error) {
-        return [error, null];
-    }
-}
-exports.trycatchasync = trycatchasync;
 const readFileFromDisk = async (filepath) => {
     //read file from disk
     const [readFileError, content] = await trycatchasync(fs.promises.readFile, filepath, { encoding: 'utf8' });
@@ -68,3 +49,12 @@ const replaceAll = (string, searchValue, replaceValue) => {
     return string;
 };
 exports.replaceAll = replaceAll;
+async function trycatchasync(fn, ...args) {
+    try {
+        const result = await fn(...args);
+        return [null, result];
+    }
+    catch (error) {
+        return [error, null];
+    }
+}

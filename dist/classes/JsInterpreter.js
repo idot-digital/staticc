@@ -22,8 +22,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.noramlizeJsReturns = exports.babelTranspile = exports.DenoInterpreter = exports.JsScriptInterpreter = exports.InsecureInterpreter = exports.JsInterpreter = exports.InterpretingMode = exports.decodePrefabArgs = void 0;
-const node_fetch_1 = __importDefault(require("node-fetch"));
 const path_1 = __importDefault(require("path"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const worker_threads_1 = require("worker_threads");
 function decodePrefabArgs(args, data) {
     args = args.map((arg) => {
@@ -45,8 +45,8 @@ exports.decodePrefabArgs = decodePrefabArgs;
 var InterpretingMode;
 (function (InterpretingMode) {
     InterpretingMode[InterpretingMode["default"] = 0] = "default";
-    InterpretingMode[InterpretingMode["legacy"] = 1] = "legacy";
-    InterpretingMode[InterpretingMode["experimental"] = 2] = "experimental";
+    InterpretingMode[InterpretingMode["experimental"] = 1] = "experimental";
+    InterpretingMode[InterpretingMode["legacy"] = 2] = "legacy";
     InterpretingMode[InterpretingMode["remoteDeno"] = 3] = "remoteDeno";
     InterpretingMode[InterpretingMode["localDeno"] = 4] = "localDeno";
     InterpretingMode[InterpretingMode["jsScript"] = 5] = "jsScript";

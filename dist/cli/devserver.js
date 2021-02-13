@@ -3,15 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startDevServer = void 0;
-const chokidar_1 = __importDefault(require("chokidar"));
-const connect_1 = __importDefault(require("connect"));
-const serve_static_1 = __importDefault(require("serve-static"));
-const tiny_lr_1 = __importDefault(require("tiny-lr"));
-const http_1 = __importDefault(require("http"));
 const open_1 = __importDefault(require("open"));
-const morgan_1 = __importDefault(require("morgan"));
+const http_1 = __importDefault(require("http"));
 const path_1 = __importDefault(require("path"));
+const morgan_1 = __importDefault(require("morgan"));
+const tiny_lr_1 = __importDefault(require("tiny-lr"));
+const connect_1 = __importDefault(require("connect"));
+const chokidar_1 = __importDefault(require("chokidar"));
 const build_1 = require("./build");
+const serve_static_1 = __importDefault(require("serve-static"));
 async function startDevServer(data_json_path, interpretingMode) {
     const TinyLr = tiny_lr_1.default();
     const usedFiles = [];

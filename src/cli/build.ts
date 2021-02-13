@@ -1,14 +1,10 @@
 import { glob } from 'glob'
-import { InterpretingMode } from '../classes/JsInterpreter'
-import { readFileFromDisk } from '../lib'
-import Transpiler from '../Transpiler'
-import { FileManager } from './FileManager'
-import { changeFilenameFromSrcToDist, generateNewFile, minifyHTML } from './lib'
 import { Timer } from './timer'
-
-function getAllBuildableFiles() {
-    return glob.sync('src/**/*.html')
-}
+import { minify } from 'html-minifier'
+import Transpiler from '../Transpiler'
+import { readFileFromDisk, saveFileToDisk } from '../lib'
+import { InterpretingMode } from '../classes/JsInterpreter'
+import { FileManager, changeFilenameFromSrcToDist } from './FileManager'
 
 export async function build(build_prod: boolean, data_json_path: string, interpretingMode: InterpretingMode, filesToBuild: string[] = []) {
     const data = JSON.parse(await readFileFromDisk(data_json_path))
@@ -32,7 +28,7 @@ export async function build(build_prod: boolean, data_json_path: string, interpr
     fileManager.execute()
 }
 
-export async function transpileFile(file: string, data: any, build_prod: boolean, interpretingMode: InterpretingMode, fileManager: FileManager) {
+async function transpileFile(file: string, data: any, build_prod: boolean, interpretingMode: InterpretingMode, fileManager: FileManager) {
     console.log('Building: ' + file)
     const successful = await generateNewFile(
         file,
@@ -55,4 +51,26 @@ export async function transpileFile(file: string, data: any, build_prod: boolean
     if (!successful) {
         console.log(file + ' could not be transpiled!')
     }
+}
+
+function minifyHTML(html_String: string) {
+    return minify(html_String, {
+        removeComments: true,
+        collapseWhitespace: true,
+        minifyCSS: true,
+        minifyJS: true,
+    })
+}
+
+async function generateNewFile(readFileName: string, writeFileName: string, fn: Function, ...args: any[]) {
+    const readFileContent = await readFileFromDisk(readFileName)
+    let writeFileContent: string
+    //file read correctly
+    writeFileContent = await fn(readFileContent, ...args)
+    await saveFileToDisk(writeFileName, writeFileContent)
+    return true
+}
+
+function getAllBuildableFiles() {
+    return glob.sync('src/**/*.html')
 }

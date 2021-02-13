@@ -2,8 +2,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const PrefabSnippet_1 = require("./PrefabSnippet");
 const Preprocessor_1 = __importDefault(require("../Preprocessor"));
+const PrefabSnippet_1 = require("./PrefabSnippet");
 //@ts-ignore
 let modulePath = require.main.path;
 modulePath = modulePath.replace('__tests__', 'dist');

@@ -1,7 +1,7 @@
 import { cutString, occurrences } from './seperate'
 import * as pathLib from 'path'
 
-class Preprocessor {
+export default class Preprocessor {
     input_string: string
     loadedFiles: string[]
     linkedFiles: { from: string; to: string }[]
@@ -49,5 +49,3 @@ class Preprocessor {
         })
     }
 }
-
-export default Preprocessor

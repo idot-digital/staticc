@@ -1,7 +1,7 @@
-import { readFileFromDisk } from '../lib'
-import Snippet from './Snippet'
 import pathLib from 'path'
+import Snippet from './Snippet'
 import Transpiler from '../Transpiler'
+import { readFileFromDisk } from '../lib'
 
 enum PrefabType {
     JsPrefabSnippet,

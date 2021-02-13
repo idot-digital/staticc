@@ -1,23 +1,6 @@
 import * as fs from 'fs'
 import * as pathLib from 'path'
 
-export function trycatch(fn: Function, ...args: any): [null | Error, any] {
-    try {
-        return [null, fn(...args)]
-    } catch (error) {
-        return [error, null]
-    }
-}
-
-export async function trycatchasync(fn: Function, ...args: any): Promise<[null | Error, any]> {
-    try {
-        const result = await fn(...args)
-        return [null, result]
-    } catch (error) {
-        return [error, null]
-    }
-}
-
 export const readFileFromDisk = async (filepath: string): Promise<string> => {
     //read file from disk
     const [readFileError, content] = await trycatchasync(fs.promises.readFile, filepath, { encoding: 'utf8' })
@@ -41,4 +24,13 @@ export const replaceAll = (string: string, searchValue: string, replaceValue: st
         string = string.replace(searchValue, replaceValue)
     }
     return string
+}
+
+async function trycatchasync(fn: Function, ...args: any): Promise<[null | Error, any]> {
+    try {
+        const result = await fn(...args)
+        return [null, result]
+    } catch (error) {
+        return [error, null]
+    }
 }

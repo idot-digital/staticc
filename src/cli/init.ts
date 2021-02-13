@@ -1,5 +1,6 @@
-import { saveFileToDisk } from '../lib'
+import path from 'path'
 import { spawn } from 'cross-spawn'
+import { saveFileToDisk } from '../lib'
 import { execSync } from 'child_process'
 
 export async function initializeProject() {
@@ -36,7 +37,6 @@ function checkIfYarnIsInstalled() {
     }
 }
 
-import path from 'path'
 const files: any = {}
 
 files[path.join('prefabs', 'count_to_3', 'prefab.js')] = 'const arr = []\nfor (let i = 0; i < 3; i++) {\n    arr.push("<" + args[0] + ">" + i.toString() + "</" + args[0] + ">")\n}\nrender(arr)'

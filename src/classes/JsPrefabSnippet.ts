@@ -1,8 +1,6 @@
-import { PrefabSnippet, PrefabType } from './PrefabSnippet'
-import { Worker } from 'worker_threads'
-import pathLib from 'path'
 import Transpiler from '../Transpiler'
 import Preprocessor from '../Preprocessor'
+import { PrefabSnippet, PrefabType } from './PrefabSnippet'
 
 //@ts-ignore
 let modulePath: string = require.main.path
