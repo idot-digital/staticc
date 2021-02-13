@@ -1,6 +1,6 @@
 {
     "name": "staticc",
-    "version": "0.5.5",
+    "version": "0.6.0",
     "main": "cli.js",
     "bin": {
         "staticc": "dist/cli.js"

@@ -1,22 +1,12 @@
 #! /usr/bin/env node
 import { spawn } from 'cross-spawn'
-import { execSync } from 'child_process'
-import { readFileFromDisk, saveFileToDisk } from './lib'
-import { glob } from 'glob'
-import fs from 'fs'
-import { minify } from 'html-minifier'
-import chokidar from 'chokidar'
-import sass from 'node-sass'
-import connect from 'connect'
-import serveStatic from 'serve-static'
-import tinylr from 'tiny-lr'
-import http from 'http'
-import open from 'open'
-import morgan from 'morgan'
 
-import pathLib from 'path'
-import Transpiler from './Transpiler'
-import { InterpretingMode } from './classes/JsInterpreter'
+import { initializeProject } from './cli/init'
+import { startDevServer } from './cli/devserver'
+
+import { printHelpText, printVersion } from './cli/help'
+import { getDataJsonPath, getInterpretingMode } from './cli/lib'
+import { build } from './cli/build'
 
 const args = process.argv.slice(2)
 
@@ -27,250 +17,26 @@ const build_dev: boolean = args.indexOf('build-dev') >= 0
 const build_prod: boolean = args.indexOf('build') >= 0
 const serve: boolean = args.indexOf('serve') >= 0
 const init: boolean = args.indexOf('init') >= 0
-const experimental: boolean = args.indexOf('exp') >= 0 || args.indexOf('-exp') >= 0 || args.indexOf('experimental') >= 0 || args.indexOf('-experimental') >= 0
-const insecure: boolean = args.indexOf('insec') >= 0 || args.indexOf('-insec') >= 0 || args.indexOf('insecure') >= 0 || args.indexOf('-insecure') >= 0
-const externalDeno: boolean = args.indexOf('--externalDeno') >= 0 || args.indexOf('-extDeno') >= 0 || args.indexOf('externalDeno') >= 0 || args.indexOf('extDeno') >= 0
 const startDeno: boolean = args.indexOf('--deno') >= 0 || args.indexOf('-deno') >= 0 || args.indexOf('runDeno') >= 0 || args.indexOf('runDeno') >= 0
-const legacy: boolean = args.indexOf('--legacy') >= 0 || args.indexOf('-legacy') >= 0 || args.indexOf('legacy') >= 0 || args.indexOf('legacy') >= 0
-const data_json_override: boolean = args.indexOf('-data') >= 0 || args.indexOf('-d') >= 0
 
-//set/ override the path of the data file
-let data_json_path: string = 'data.json'
-if (data_json_override) {
-    const index = args.indexOf('-d') !== -1 ? args.indexOf('-d') : args.indexOf('-data')
-    data_json_path = args[index + 1]
-}
-
-let interpretingMode = InterpretingMode.default
-
-if (experimental && !externalDeno) {
-    interpretingMode = InterpretingMode.experimental
-} else if (experimental && externalDeno) {
-    interpretingMode = InterpretingMode.localDeno
-} else if (insecure) {
-    interpretingMode = InterpretingMode.insecure
-} else if (legacy) {
-    interpretingMode = InterpretingMode.legacy
-}
+const data_json_path = getDataJsonPath(args)
+const interpretingMode = getInterpretingMode(args)
 
 let alreadyLoadedFiles: string[] = []
 let filesToCopy: { from: string; to: string }[] = []
 
 if (version) {
-    const package_info = require('../package.json')
-    console.log(package_info.version)
+    printVersion()
 } else if (help) {
-    const helpString =
-        '\n\nUsage: staticc <command>\n\nwhere: <command> is one of:\nv                alias for version\nversion          shows the version of the staticc-cli\nbuild            creates a production build of all html files\nbuild-dev        creates a development build of all html files\nserve            starts a development webserver\ninit             initializes a new staticc project\n\nVisit https://github.com/idot-digital/staticc to learn more about staticc.'
-    console.log(helpString)
+    printHelpText()
 } else if (build_dev || build_prod) {
-    //build
-    ;(async () => {
-        await build(build_prod)
-    })()
+    build(build_prod, data_json_path, interpretingMode)
 } else if (serve) {
-    //start server
-    startDevServer()
+    startDevServer(data_json_path, interpretingMode)
 } else if (init) {
-    //init
-    ;(async () => {
-        console.log('\n\nInitializing staticc project!\n\n')
-        const example_project = require('./example_project')
-        Object.keys(example_project.files).forEach(async (filepath) => {
-            try {
-                await saveFileToDisk(filepath, example_project.files[filepath])
-            } catch (error) {
-                console.log(error)
-            }
-        })
-        let child
-        try {
-            execSync('yarn -v')
-            child = spawn('yarn', ['install'])
-        } catch (error) {
-            //yarn not installed
-            try {
-                child = spawn('npm', ['install'])
-            } catch (error) {
-                if (error) console.error('Could not install babel and its packages.')
-                return
-            }
-        }
-        child.stdout.setEncoding('utf8')
-        child.stdout.on('data', (chunk: any) => {
-            console.log(chunk)
-        })
-        child.on('close', () => {
-            console.log('Finished!')
-        })
-    })()
+    initializeProject()
 } else if (startDeno) {
     spawn('deno run --allow-net http://kugelx.de/deno.ts', { stdio: 'inherit' })
 } else {
     console.log('Use -h or --help for help!')
-}
-
-async function build(build_prod: boolean) {
-    const data = JSON.parse(await readFileFromDisk(data_json_path))
-    console.log('\nstarting build!')
-    const HTMLfiles = glob.sync('src/**/*.html')
-    await Promise.all(
-        HTMLfiles.map(async (file) => {
-            console.time(`Transpile ${file}`)
-            await transpileFile(file, data, build_prod)
-            console.timeEnd(`Transpile ${file}`)
-        })
-    )
-    //exclude already imported files
-    const inlinedFiles: string[] = alreadyLoadedFiles
-    copyAllFiles([...HTMLfiles, ...inlinedFiles])
-    copyLinkedFiles(filesToCopy)
-}
-
-async function startDevServer() {
-    const TinyLr = tinylr()
-    const usedFiles: string[] = []
-
-    if (experimental) {
-        await new Promise((r) => setTimeout(r, 1000))
-    }
-    await build(false)
-
-    let blockBuild = true
-    setTimeout(async () => {
-        blockBuild = false
-    }, 1000)
-
-    const tinylrPort = 7777
-    const httpPort = 8888
-
-    const webserver = connect()
-    webserver.use(morgan('dev'))
-    webserver.use((req, res, next) => {
-        if (!req.originalUrl) next()
-        let url: string = req.originalUrl as string
-        if (url.indexOf('/') == 0) url = url.replace('/', '')
-        usedFiles.push(pathLib.join(__dirname, 'dist', url))
-        next()
-    })
-    webserver.use(
-        require('connect-livereload')({
-            port: tinylrPort,
-            serverPort: httpPort,
-        })
-    )
-    webserver.use(serveStatic('./dist'))
-    TinyLr.listen(tinylrPort)
-    http.createServer(webserver).listen(httpPort)
-
-    chokidar.watch('./src/').on('all', async (event, filepath) => {
-        if (!blockBuild) await build(false)
-        TinyLr.changed({
-            body: {
-                files: [pathLib.resolve(__dirname + '/' + filepath)],
-            },
-        })
-    })
-    chokidar.watch('./prefabs/').on('all', async () => {
-        if (!blockBuild) await build(false)
-        TinyLr.changed({
-            body: {
-                files: usedFiles,
-            },
-        })
-    })
-    chokidar.watch('./data.json').on('all', async () => {
-        if (!blockBuild) await build(false)
-        TinyLr.changed({
-            body: {
-                files: usedFiles,
-            },
-        })
-    })
-    console.log('Development Server started!')
-    open('http://127.0.0.1:8888')
-}
-
-async function transpileFile(file: string, data: any, build_prod: boolean) {
-    console.log('Building: ' + file)
-    const successful = await generateNewFile(
-        file,
-        changeFilenameFromSrcToDist(file),
-        async (content: string, build_prod: boolean): Promise<string> => {
-            const transpiler = new Transpiler(content, data, file, interpretingMode)
-            let transpiledCode = await transpiler.transpile()
-            if (transpiler.errorMsg !== '') {
-                console.log(transpiler.errorMsg)
-                transpiledCode = transpiler.getErrorAsHtml()
-            }
-            filesToCopy = [...filesToCopy, ...transpiler.filesToCopy]
-            alreadyLoadedFiles = [...alreadyLoadedFiles, ...transpiler.loadedFiles]
-            if (build_prod) transpiledCode = minifyHTML(transpiledCode)
-            return transpiledCode
-        },
-        build_prod
-    )
-
-    if (!successful) {
-        console.log(file + ' could not be transpiled!')
-    }
-}
-
-async function generateNewFile(readFileName: string, writeFileName: string, fn: Function, ...args: any[]) {
-    const readFileContent = await readFileFromDisk(readFileName)
-    let writeFileContent: string
-    //file read correctly
-    writeFileContent = await fn(readFileContent, ...args)
-    await saveFileToDisk(writeFileName, writeFileContent)
-    return true
-}
-
-function copyAllFiles(filter: string[]) {
-    const allfiles = glob.sync('src/**/*.*')
-    allfiles.forEach((file) => {
-        if (filter.includes(file)) return
-        const newFilepath = changeFilenameFromSrcToDist(file)
-        const folderpath = newFilepath
-            .split('/')
-            .splice(0, newFilepath.split('/').length - 1)
-            .join('/')
-        if (folderpath) fs.mkdirSync(folderpath, { recursive: true })
-        fs.copyFileSync(file, newFilepath)
-    })
-}
-
-function changeFilenameFromSrcToDist(file: string) {
-    return 'dist' + file.substring(3)
-}
-
-function minifyHTML(html_String: string) {
-    return minify(html_String, {
-        removeComments: true,
-        collapseWhitespace: true,
-        minifyCSS: true,
-        minifyJS: true,
-    })
-}
-
-async function copyLinkedFiles(files: { from: string; to: string }[]) {
-    await Promise.all(
-        files.map(async (file) => {
-            fs.mkdirSync(pathLib.dirname(file.to), { recursive: true })
-            if (pathLib.extname(file.from) === '.sass' || pathLib.extname(file.from) === '.scss') {
-                await copyAndResolveSass(file.from, file.to)
-            } else {
-                await fs.promises.copyFile(file.from, file.to)
-            }
-        })
-    )
-}
-
-async function copyAndResolveSass(from: string, to: string) {
-    const filecontent = await fs.promises.readFile(from, { encoding: 'utf-8' })
-    try {
-        const renderedSass = sass.renderSync({ data: filecontent }).css.toString()
-        await fs.promises.writeFile(to.replace('.sass', '.css').replace('.scss', '.css'), renderedSass, { encoding: 'utf-8' })
-    } catch (error) {
-        console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`)
-    }
 }

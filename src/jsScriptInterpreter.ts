@@ -1,6 +1,6 @@
 import JsInterpreter from 'js-interpreter'
 import { workerData, parentPort } from 'worker_threads'
-import { babelTranspile, decodePrefabArgs, noramlizeJsReturns } from '../classes/JsInterpreter'
+import { babelTranspile, decodePrefabArgs, noramlizeJsReturns } from './classes/JsInterpreter'
 
 const { codeString, data, args } = workerData
 
