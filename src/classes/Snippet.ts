@@ -34,7 +34,7 @@ class Snippet {
         const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator)
         const htmlString = await transpiler.transpile()
         if (transpiler.errorMsg !== '') throw new Error(transpiler.errorMsg)
-        this.filesToCopy = transpiler.filesToCopy
+        this.filesToCopy = [...this.filesToCopy, ...transpiler.filesToCopy]
         this.filepaths = [...this.filepaths, ...transpiler.loadedFiles]
         this.result = htmlString
         return

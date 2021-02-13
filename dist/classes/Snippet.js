@@ -32,7 +32,7 @@ class Snippet {
         const htmlString = await transpiler.transpile();
         if (transpiler.errorMsg !== '')
             throw new Error(transpiler.errorMsg);
-        this.filesToCopy = transpiler.filesToCopy;
+        this.filesToCopy = [...this.filesToCopy, ...transpiler.filesToCopy];
         this.filepaths = [...this.filepaths, ...transpiler.loadedFiles];
         this.result = htmlString;
         return;

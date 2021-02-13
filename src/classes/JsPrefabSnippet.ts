@@ -2,6 +2,7 @@ import { PrefabSnippet, PrefabType } from './PrefabSnippet'
 import { Worker } from 'worker_threads'
 import pathLib from 'path'
 import Transpiler from '../Transpiler'
+import Preprocessor from '../Preprocessor'
 
 //@ts-ignore
 let modulePath: string = require.main.path
@@ -13,6 +14,11 @@ class JsPrefabSnippet extends PrefabSnippet {
     }
     async resolve(data: any): Promise<void> {
         await super.readFile()
+        const preprocessor = new Preprocessor(this.fileContent)
+        preprocessor.path = this.filepaths[0]
+        preprocessor.extractLinkedFiles()
+        this.fileContent = preprocessor.input_string
+        this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles]
         try {
             const result = await this.interpret(data)
             this.result = result
