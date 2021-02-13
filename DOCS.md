@@ -1,4 +1,6 @@
-{% raw %}# Staticc Basics
+{% raw %}
+
+# Staticc Basics
 
 What is Staticc ?
 
@@ -12,18 +14,18 @@ Staticc
 <p>You can get access to the whole Library for only {{ price }}</p>
 ```
 
-HTML
-
-```html
-<p>You can get access to the whole Library for only 5$</p>
-```
-
 data.json
 
 ```json
 {
     "price": "5$"
 }
+```
+
+HTML
+
+```html
+<p>You can get access to the whole Library for only 5$</p>
 ```
 
 ## Advanced Variables
@@ -34,11 +36,17 @@ Staticc
 
 ```html
 <p>You can select from these Products</p>
-{{ 
-    # data.shop_items.map((item)=>{ return 
-    `<h2>${item}</h2>` 
-    }) 
-}}
+{{ # data.shop_items.map((item)=>{ return `
+<h2>${item}</h2>
+` }) }}
+```
+
+data.json
+
+```json
+{
+    "shop_items": ["Item 1", "Item 2", "Item 3"]
+}
 ```
 
 HTML
@@ -48,14 +56,6 @@ HTML
 <h2>Item 1</h2>
 <h2>Item 2</h2>
 <h2>Item 3</h2>
-```
-
-data.json
-
-```json
-{
-    "shop_items": ["Item 1", "Item 2", "Item 3"]
-}
 ```
 
 ## Prefabs (HTML)
@@ -109,7 +109,7 @@ data.json
 
 ```html
 <p>Welcome to my Testpage:</p>
-{{ !my_new_prefab headline  }}
+{{ !my_new_prefab headline }}
 ```
 
 prefab.html
@@ -126,7 +126,6 @@ HTML
 <h2>Hello, World!</h2>
 <h5>This snippet has limited access to the data.json</h5>
 ```
-
 
 ## Prefabs (JS)
 
@@ -158,13 +157,6 @@ const year = new Date().getFullYear() render(`
 `)
 ```
 
-HTML
-
-```html
-<p>Welcome to my Testpage:</p>
-<h1>Copyright (c) 2020 iDot digital</h1>
-```
-
 data.json
 
 ```json
@@ -173,7 +165,14 @@ data.json
 }
 ```
 
-But be aware, this javascript is run by an interpreter when the page is transpiled, so you can't access typical browser features like window or document!
+HTML
+
+```html
+<p>Welcome to my Testpage:</p>
+<h1>Copyright (c) 2020 iDot digital</h1>
+```
+
+But be aware, this javascript it is executed by a nodejs-like environment when the page is transpiled, so you can't access typical browser features like window or document!
 
 ## File inlining
 
@@ -197,7 +196,7 @@ Staticc (index.html)
 
 ```html
 <p>Some text</p>
-{{ ?sass style.css }}
+{{ ?css style.css }}
 ```
 
 style.css
@@ -235,7 +234,7 @@ Staticc (index.html)
 
 ```html
 <p>Some text</p>
-{{ ?sass style.css style2.css }}
+{{ ?cssss style.css style2.css }}
 ```
 
 style.css
@@ -289,8 +288,8 @@ Folder-Structure
 Staticc (prefab.js)
 
 ```html
+{{* style.css *}}
 <p>Some text</p>
-{{* image.png *}}
 ```
 
 Folder-Structure (after transpiling)
@@ -308,4 +307,9 @@ Folder-Structure (after transpiling)
     |       +-- style.css
     |   +-- index.html
 ```
+
+## GitHub
+
+If you want to see the source code, click [here](https://github.com/idot-digital/staticc).
+
 {% endraw %}

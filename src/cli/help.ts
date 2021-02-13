@@ -13,5 +13,5 @@ export function printHelpText() {
     console.log('build-dev        creates a development build of all html files')
     console.log('serve            starts a development webserver')
     console.log('init             initializes a new staticc project\n')
-    console.log('Visit https://github.com/idot-digital/staticc to learn more about staticc.')
+    console.log('Visit https://idot-digital.github.io/staticc/ to learn more about staticc.')
 }

@@ -42,10 +42,14 @@ $ staticc build
 
 ## Documentation
 
-If you need a simple documentation click [here](DOCS.md).
+If you need a simple documentation click [here](https://idot-digital.github.io/staticc/DOCS.html).
 
 ## License
 
 ISC or MIT
 
 Developend and maintained by iDot digital
+
+## GitHub
+
+If you want to see the source code, click [here](https://github.com/idot-digital/staticc).
