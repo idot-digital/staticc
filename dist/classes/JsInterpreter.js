@@ -115,7 +115,7 @@ class JsScriptInterpreter extends JsInterpreter {
     }
     async interpret(codeString, data, args = []) {
         return new Promise((res, rej) => {
-            const worker = new worker_threads_1.Worker(path_1.default.join(this.modulePath, 'interpreter', 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } });
+            const worker = new worker_threads_1.Worker(path_1.default.join(this.modulePath, 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } });
             worker.on('message', res);
             worker.on('error', rej);
             worker.on('exit', (code) => {

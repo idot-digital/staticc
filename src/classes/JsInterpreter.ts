@@ -90,7 +90,7 @@ export class JsScriptInterpreter extends JsInterpreter {
     }
     async interpret(codeString: string, data: any, args: any[] = []): Promise<string> {
         return new Promise((res, rej) => {
-            const worker = new Worker(pathLib.join(this.modulePath, 'interpreter', 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } })
+            const worker = new Worker(pathLib.join(this.modulePath, 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } })
             worker.on('message', res)
             worker.on('error', rej)
             worker.on('exit', (code) => {

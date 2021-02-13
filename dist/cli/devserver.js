@@ -13,8 +13,11 @@ const chokidar_1 = __importDefault(require("chokidar"));
 const build_1 = require("./build");
 const serve_static_1 = __importDefault(require("serve-static"));
 async function startDevServer(data_json_path, interpretingMode) {
+    //@ts-ignore
+    let modulePath = require.main.path;
+    modulePath = modulePath.replace('__tests__', 'dist');
     const TinyLr = tiny_lr_1.default();
-    const usedFiles = [];
+    const usedFiles = new Set([]);
     await build_1.build(false, data_json_path, interpretingMode);
     let blockBuild = true;
     setTimeout(async () => {
@@ -30,7 +33,10 @@ async function startDevServer(data_json_path, interpretingMode) {
         let url = req.originalUrl;
         if (url.indexOf('/') == 0)
             url = url.replace('/', '');
-        usedFiles.push(path_1.default.join(__dirname, 'dist', url));
+        if (path_1.default.extname(url) === '.html')
+            usedFiles.add(path_1.default.join(process.cwd(), 'dist', url));
+        if (url === '')
+            usedFiles.add(path_1.default.join(process.cwd(), 'dist', 'index.html'));
         next();
     });
     webserver.use(require('connect-livereload')({
@@ -41,12 +47,20 @@ async function startDevServer(data_json_path, interpretingMode) {
     TinyLr.listen(tinylrPort);
     http_1.default.createServer(webserver).listen(httpPort);
     chokidar_1.default.watch('./src/').on('all', async (_, filepath) => {
-        console.log(filepath);
+        let files = [];
+        let tinyLrFiles = [path_1.default.resolve(__dirname + '/' + filepath)];
+        if (path_1.default.extname(filepath) === '.html') {
+            files = [filepath];
+        }
+        else {
+            files = [...usedFiles].map((file) => file.replace('dist', 'src'));
+            tinyLrFiles = [...usedFiles];
+        }
         if (!blockBuild)
-            await await build_1.build(false, data_json_path, interpretingMode, [filepath]);
+            await await build_1.build(false, data_json_path, interpretingMode, files);
         TinyLr.changed({
             body: {
-                files: [path_1.default.resolve(__dirname + '/' + filepath)],
+                files: tinyLrFiles,
             },
         });
     });

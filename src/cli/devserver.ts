@@ -10,8 +10,11 @@ import serveStatic from 'serve-static'
 import { InterpretingMode } from '../classes/JsInterpreter'
 
 export async function startDevServer(data_json_path: string, interpretingMode: InterpretingMode) {
+    //@ts-ignore
+    let modulePath = require.main.path
+    modulePath = modulePath.replace('__tests__', 'dist')
     const TinyLr = tinylr()
-    const usedFiles: string[] = []
+    const usedFiles: Set<string> = new Set([])
 
     await build(false, data_json_path, interpretingMode)
 
@@ -29,7 +32,8 @@ export async function startDevServer(data_json_path: string, interpretingMode: I
         if (!req.originalUrl) next()
         let url: string = req.originalUrl as string
         if (url.indexOf('/') == 0) url = url.replace('/', '')
-        usedFiles.push(pathLib.join(__dirname, 'dist', url))
+        if (pathLib.extname(url) === '.html') usedFiles.add(pathLib.join(process.cwd(), 'dist', url))
+        if (url === '') usedFiles.add(pathLib.join(process.cwd(), 'dist', 'index.html'))
         next()
     })
     webserver.use(
@@ -43,11 +47,18 @@ export async function startDevServer(data_json_path: string, interpretingMode: I
     http.createServer(webserver).listen(httpPort)
 
     chokidar.watch('./src/').on('all', async (_, filepath) => {
-        console.log(filepath)
-        if (!blockBuild) await await build(false, data_json_path, interpretingMode, [filepath])
+        let files: string[] = []
+        let tinyLrFiles: string[] = [pathLib.resolve(__dirname + '/' + filepath)]
+        if (pathLib.extname(filepath) === '.html') {
+            files = [filepath]
+        } else {
+            files = [...usedFiles].map((file) => file.replace('dist', 'src'))
+            tinyLrFiles = [...usedFiles]
+        }
+        if (!blockBuild) await await build(false, data_json_path, interpretingMode, files)
         TinyLr.changed({
             body: {
-                files: [pathLib.resolve(__dirname + '/' + filepath)],
+                files: tinyLrFiles,
             },
         })
     })
