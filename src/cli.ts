@@ -65,7 +65,7 @@ function getDataJsonPath(args: string[]) {
 }
 
 export function printVersion() {
-    const package_info = require('../../package.json')
+    const package_info = require('../package.json')
     console.log(package_info.version)
 }
 

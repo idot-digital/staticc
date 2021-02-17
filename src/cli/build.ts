@@ -10,7 +10,6 @@ export async function build(build_prod: boolean, data_json_path: string, interpr
     const data = JSON.parse(await readFileFromDisk(data_json_path))
     const buildableFiles = getAllBuildableFiles()
     const fileManager = new FileManager()
-    console.log(filesToBuild)
     fileManager.ignoreFiles(buildableFiles)
     if (filesToBuild.length === 0) filesToBuild = buildableFiles
 
