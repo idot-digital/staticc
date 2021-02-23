@@ -1,7 +1,7 @@
 import fs from 'fs'
 import pathLib from 'path'
 import { glob } from 'glob'
-import sass from 'node-sass'
+import sass from 'sass'
 
 interface FileCopyObject {
     from: string

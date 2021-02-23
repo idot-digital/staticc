@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
-const node_sass_1 = __importDefault(require("node-sass"));
+const sass_1 = __importDefault(require("sass"));
 const Snippet_1 = __importDefault(require("./Snippet"));
 const lib_1 = require("../lib");
 class FileInlineSnippet extends Snippet_1.default {
@@ -56,6 +56,6 @@ class FileType {
 const Css = new FileType('css', (ctn) => `<style>${ctn}</style>`);
 const Svg = new FileType('svg', (ctn) => ctn);
 const Js = new FileType('js', (ctn) => `<script>${ctn}</script>`);
-const Sass = new FileType('sass', (ctn) => `<style>${node_sass_1.default.renderSync({ data: ctn }).css.toString()}</style>`);
+const Sass = new FileType('sass', (ctn) => `<style>${sass_1.default.renderSync({ data: ctn }).css.toString()}</style>`);
 const SupportedFileTypes = [Css, Svg, Js, Sass];
 exports.default = FileInlineSnippet;

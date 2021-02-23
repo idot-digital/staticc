@@ -1,5 +1,5 @@
 import pathLib from 'path'
-import sass from 'node-sass'
+import sass from 'sass'
 import Snippet from './Snippet'
 import Transpiler from '../Transpiler'
 import { readFileFromDisk } from '../lib'

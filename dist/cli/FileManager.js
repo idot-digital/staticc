@@ -6,7 +6,7 @@ exports.changeFilenameFromSrcToDist = exports.FileManager = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const glob_1 = require("glob");
-const node_sass_1 = __importDefault(require("node-sass"));
+const sass_1 = __importDefault(require("sass"));
 class FileManager {
     constructor() {
         this.filesToIgnore = [];
@@ -53,7 +53,7 @@ async function copyLinkedFiles(files) {
 async function copyAndResolveSass(from, to) {
     const filecontent = await fs_1.default.promises.readFile(from, { encoding: 'utf-8' });
     try {
-        const renderedSass = node_sass_1.default.renderSync({ data: filecontent }).css.toString();
+        const renderedSass = sass_1.default.renderSync({ data: filecontent }).css.toString();
         await fs_1.default.promises.writeFile(to.replace('.sass', '.css').replace('.scss', '.css'), renderedSass, { encoding: 'utf-8' });
     }
     catch (error) {
