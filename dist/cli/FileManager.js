@@ -26,10 +26,10 @@ class FileManager {
 exports.FileManager = FileManager;
 function copyAllFiles(filter) {
     const allfiles = glob_1.glob.sync('src/**/*.*');
-    allfiles.forEach((file) => {
+    allfiles.forEach(async (file) => {
         if (filter.includes(file))
             return;
-        const newFilepath = changeFilenameFromSrcToDist(file);
+        const newFilepath = await changeFilenameFromSrcToDist(file);
         const folderpath = newFilepath
             .split('/')
             .splice(0, newFilepath.split('/').length - 1)
@@ -60,7 +60,12 @@ async function copyAndResolveSass(from, to) {
         console.error(`Rendering linked sass-file: ${from} exited with ${error.message}`);
     }
 }
-function changeFilenameFromSrcToDist(file) {
-    return 'dist' + file.substring(3);
+async function changeFilenameFromSrcToDist(file, nameResolverFn = async (basename) => basename) {
+    const fileEnding = path_1.default.extname(file);
+    const basename = path_1.default.basename(file, fileEnding);
+    const dirname = path_1.default.dirname(file);
+    const newDirname = dirname.replace('src', 'dist');
+    const newBasename = await nameResolverFn(basename);
+    return path_1.default.join(newDirname, newBasename + fileEnding);
 }
 exports.changeFilenameFromSrcToDist = changeFilenameFromSrcToDist;

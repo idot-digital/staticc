@@ -6,6 +6,7 @@ const build_1 = require("./cli/build");
 const init_1 = require("./cli/init");
 const devserver_1 = require("./cli/devserver");
 const JsInterpreter_1 = require("./classes/JsInterpreter");
+const lib_1 = require("./lib");
 const args = process.argv.slice(2);
 //check which args have been given
 const help = args.indexOf('--help') >= 0 || args.indexOf('-h') >= 0 || args.indexOf('help') >= 0;
@@ -15,6 +16,7 @@ const build_prod = args.indexOf('build') >= 0;
 const serve = args.indexOf('serve') >= 0;
 const init = args.indexOf('init') >= 0;
 const startDeno = args.indexOf('--deno') >= 0 || args.indexOf('-deno') >= 0 || args.indexOf('runDeno') >= 0 || args.indexOf('runDeno') >= 0;
+const multiVersionBuild = args.indexOf('multiVersionBuild') >= 0 || args.indexOf('mvb') >= 0;
 const data_json_path = getDataJsonPath(args);
 const interpretingMode = getInterpretingMode(args);
 if (version) {
@@ -24,16 +26,23 @@ else if (help) {
     printHelpText();
 }
 else if (build_dev || build_prod) {
-    build_1.build(build_prod, data_json_path, interpretingMode);
+    build_1.readDataJson(data_json_path).then((data) => {
+        build_1.build(build_prod, data, interpretingMode);
+    });
 }
 else if (serve) {
-    devserver_1.startDevServer(data_json_path, interpretingMode);
+    build_1.readDataJson(data_json_path).then((data) => {
+        devserver_1.startDevServer(data, interpretingMode);
+    });
 }
 else if (init) {
     init_1.initializeProject();
 }
 else if (startDeno) {
     cross_spawn_1.spawn('deno run --allow-net http://kugelx.de/deno.ts', { stdio: 'inherit' });
+}
+else if (multiVersionBuild) {
+    buildMultipleVersions(data_json_path, interpretingMode);
 }
 else {
     console.log('Use -h or --help for help!');
@@ -69,7 +78,7 @@ function getDataJsonPath(args) {
     }
 }
 function printVersion() {
-    const package_info = require('../../package.json');
+    const package_info = require('../package.json');
     console.log(package_info.version);
 }
 exports.printVersion = printVersion;
@@ -86,3 +95,19 @@ function printHelpText() {
     console.log('Visit https://idot-digital.github.io/staticc/ to learn more about staticc.');
 }
 exports.printHelpText = printHelpText;
+async function buildMultipleVersions(data_json_path, interpretingMode) {
+    const singleData = await build_1.readDataJson(data_json_path);
+    const [error, multiData] = await lib_1.trycatchasync(build_1.readDataJson, 'multidata.json');
+    if (error) {
+        console.error('Could not find multidata.json.');
+        process.exit();
+    }
+    multiData.forEach((dataVersion) => {
+        const data = { ...singleData, ...dataVersion };
+        build_1.build(true, data, interpretingMode, getMultiVersionFiles());
+    });
+}
+function getMultiVersionFiles() {
+    const buildableFiles = build_1.getAllBuildableFiles();
+    return buildableFiles.filter((filename) => filename.charAt(0) === '#');
+}

@@ -9,14 +9,14 @@ import { build } from './build'
 import serveStatic from 'serve-static'
 import { InterpretingMode } from '../classes/JsInterpreter'
 
-export async function startDevServer(data_json_path: string, interpretingMode: InterpretingMode) {
+export async function startDevServer(data: any, interpretingMode: InterpretingMode) {
     //@ts-ignore
     let modulePath = require.main.path
     modulePath = modulePath.replace('__tests__', 'dist')
     const TinyLr = tinylr()
     const usedFiles: Set<string> = new Set([])
 
-    await build(false, data_json_path, interpretingMode)
+    await build(false, data, interpretingMode)
 
     let blockBuild = true
     setTimeout(async () => {
@@ -55,7 +55,7 @@ export async function startDevServer(data_json_path: string, interpretingMode: I
             files = [...usedFiles].map((file) => file.replace('dist', 'src'))
             tinyLrFiles = [...usedFiles]
         }
-        if (!blockBuild) await await build(false, data_json_path, interpretingMode, files)
+        if (!blockBuild) await await build(false, data, interpretingMode, files)
         TinyLr.changed({
             body: {
                 files: tinyLrFiles,
@@ -63,7 +63,7 @@ export async function startDevServer(data_json_path: string, interpretingMode: I
         })
     })
     chokidar.watch('./prefabs/').on('all', async () => {
-        if (!blockBuild) await await build(false, data_json_path, interpretingMode)
+        if (!blockBuild) await await build(false, data, interpretingMode)
         TinyLr.changed({
             body: {
                 files: usedFiles,
@@ -71,7 +71,7 @@ export async function startDevServer(data_json_path: string, interpretingMode: I
         })
     })
     chokidar.watch('./data.json').on('all', async () => {
-        if (!blockBuild) await await build(false, data_json_path, interpretingMode)
+        if (!blockBuild) await await build(false, data, interpretingMode)
         TinyLr.changed({
             body: {
                 files: usedFiles,

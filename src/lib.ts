@@ -26,7 +26,7 @@ export const replaceAll = (string: string, searchValue: string, replaceValue: st
     return string
 }
 
-async function trycatchasync(fn: Function, ...args: any): Promise<[null | Error, any]> {
+export async function trycatchasync(fn: Function, ...args: any): Promise<[null | Error, any]> {
     try {
         const result = await fn(...args)
         return [null, result]

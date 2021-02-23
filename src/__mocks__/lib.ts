@@ -13,14 +13,6 @@ const __setMockFiles = (new_mockfiles: any) => {
     mockfiles = new_mockfiles
 }
 
-function trycatch(fn: any, ...args: any) {
-    try {
-        return [null, fn(...args)]
-    } catch (error) {
-        return [error, null]
-    }
-}
-
 async function trycatchasync(fn: any, ...args: any) {
     try {
         const result = await fn(...args)
@@ -38,7 +30,6 @@ const replaceAll = (string: string, searchValue: string, replaceValue: string) =
 }
 
 mod.replaceAll = replaceAll
-mod.trycatch = trycatch
 mod.trycatchasync = trycatchasync
 mod.readFileFromDisk = readFileFromDisk
 mod.saveFileToDisk = saveFileToDisk

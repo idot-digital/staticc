@@ -6,8 +6,7 @@ import { readFileFromDisk, saveFileToDisk } from '../lib'
 import { InterpretingMode } from '../classes/JsInterpreter'
 import { FileManager, changeFilenameFromSrcToDist } from './FileManager'
 
-export async function build(build_prod: boolean, data_json_path: string, interpretingMode: InterpretingMode, filesToBuild: string[] = []) {
-    const data = JSON.parse(await readFileFromDisk(data_json_path))
+export async function build(build_prod: boolean, data: object, interpretingMode: InterpretingMode, filesToBuild: string[] = []) {
     const buildableFiles = getAllBuildableFiles()
     const fileManager = new FileManager()
     fileManager.ignoreFiles(buildableFiles)
@@ -31,7 +30,15 @@ async function transpileFile(file: string, data: any, build_prod: boolean, inter
     console.log('Building: ' + file)
     const successful = await generateNewFile(
         file,
-        changeFilenameFromSrcToDist(file),
+        await changeFilenameFromSrcToDist(file, async (name) => {
+            const transpiler = new Transpiler(name, data, file, interpretingMode)
+            let transpiledName = await transpiler.transpile()
+            if (transpiler.errorMsg !== '') {
+                console.log(transpiler.errorMsg)
+                return name
+            }
+            return transpiledName
+        }),
         async (content: string, build_prod: boolean): Promise<string> => {
             const transpiler = new Transpiler(content, data, file, interpretingMode)
             let transpiledCode = await transpiler.transpile()
@@ -70,6 +77,10 @@ async function generateNewFile(readFileName: string, writeFileName: string, fn: 
     return true
 }
 
-function getAllBuildableFiles() {
+export function getAllBuildableFiles() {
     return glob.sync('src/**/*.html')
+}
+
+export async function readDataJson(data_json_path: string) {
+    return JSON.parse(await readFileFromDisk(data_json_path))
 }

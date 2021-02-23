@@ -30,9 +30,9 @@ export class FileManager {
 
 function copyAllFiles(filter: string[]) {
     const allfiles = glob.sync('src/**/*.*')
-    allfiles.forEach((file) => {
+    allfiles.forEach(async (file) => {
         if (filter.includes(file)) return
-        const newFilepath = changeFilenameFromSrcToDist(file)
+        const newFilepath = await changeFilenameFromSrcToDist(file)
         const folderpath = newFilepath
             .split('/')
             .splice(0, newFilepath.split('/').length - 1)
@@ -65,6 +65,13 @@ async function copyAndResolveSass(from: string, to: string) {
     }
 }
 
-export function changeFilenameFromSrcToDist(file: string) {
-    return 'dist' + file.substring(3)
+export async function changeFilenameFromSrcToDist(file: string, nameResolverFn = async (basename: string): Promise<string> => basename) {
+    const fileEnding = pathLib.extname(file)
+    const basename = pathLib.basename(file, fileEnding)
+    const dirname = pathLib.dirname(file)
+
+    const newDirname = dirname.replace('src', 'dist')
+    const newBasename = await nameResolverFn(basename)
+
+    return pathLib.join(newDirname, newBasename + fileEnding)
 }

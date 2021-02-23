@@ -18,7 +18,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceAll = exports.saveFileToDisk = exports.readFileFromDisk = void 0;
+exports.trycatchasync = exports.replaceAll = exports.saveFileToDisk = exports.readFileFromDisk = void 0;
 const fs = __importStar(require("fs"));
 const pathLib = __importStar(require("path"));
 const readFileFromDisk = async (filepath) => {
@@ -58,3 +58,4 @@ async function trycatchasync(fn, ...args) {
         return [error, null];
     }
 }
+exports.trycatchasync = trycatchasync;

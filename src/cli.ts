@@ -1,10 +1,11 @@
 #! /usr/bin/env node
 import { spawn } from 'cross-spawn'
 
-import { build } from './cli/build'
+import { build, getAllBuildableFiles, readDataJson } from './cli/build'
 import { initializeProject } from './cli/init'
 import { startDevServer } from './cli/devserver'
 import { InterpretingMode } from './classes/JsInterpreter'
+import { trycatchasync } from './lib'
 
 const args = process.argv.slice(2)
 
@@ -17,6 +18,8 @@ const serve: boolean = args.indexOf('serve') >= 0
 const init: boolean = args.indexOf('init') >= 0
 const startDeno: boolean = args.indexOf('--deno') >= 0 || args.indexOf('-deno') >= 0 || args.indexOf('runDeno') >= 0 || args.indexOf('runDeno') >= 0
 
+const multiVersionBuild: boolean = args.indexOf('multiVersionBuild') >= 0 || args.indexOf('mvb') >= 0
+
 const data_json_path = getDataJsonPath(args)
 const interpretingMode = getInterpretingMode(args)
 
@@ -25,13 +28,19 @@ if (version) {
 } else if (help) {
     printHelpText()
 } else if (build_dev || build_prod) {
-    build(build_prod, data_json_path, interpretingMode)
+    readDataJson(data_json_path).then((data) => {
+        build(build_prod, data, interpretingMode)
+    })
 } else if (serve) {
-    startDevServer(data_json_path, interpretingMode)
+    readDataJson(data_json_path).then((data) => {
+        startDevServer(data, interpretingMode)
+    })
 } else if (init) {
     initializeProject()
 } else if (startDeno) {
     spawn('deno run --allow-net http://kugelx.de/deno.ts', { stdio: 'inherit' })
+} else if (multiVersionBuild) {
+    buildMultipleVersions(data_json_path, interpretingMode)
 } else {
     console.log('Use -h or --help for help!')
 }
@@ -80,4 +89,22 @@ export function printHelpText() {
     console.log('serve            starts a development webserver')
     console.log('init             initializes a new staticc project\n')
     console.log('Visit https://idot-digital.github.io/staticc/ to learn more about staticc.')
+}
+
+async function buildMultipleVersions(data_json_path: string, interpretingMode: InterpretingMode) {
+    const singleData = await readDataJson(data_json_path)
+    const [error, multiData] = await trycatchasync(readDataJson, 'multidata.json')
+    if (error) {
+        console.error('Could not find multidata.json.')
+        process.exit()
+    }
+    multiData.forEach((dataVersion: any) => {
+        const data = { ...singleData, ...dataVersion }
+        build(true, data, interpretingMode, getMultiVersionFiles())
+    })
+}
+
+function getMultiVersionFiles() {
+    const buildableFiles = getAllBuildableFiles()
+    return buildableFiles.filter((filename) => filename.charAt(0) === '#')
 }

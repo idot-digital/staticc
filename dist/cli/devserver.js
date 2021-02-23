@@ -12,13 +12,13 @@ const connect_1 = __importDefault(require("connect"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const build_1 = require("./build");
 const serve_static_1 = __importDefault(require("serve-static"));
-async function startDevServer(data_json_path, interpretingMode) {
+async function startDevServer(data, interpretingMode) {
     //@ts-ignore
     let modulePath = require.main.path;
     modulePath = modulePath.replace('__tests__', 'dist');
     const TinyLr = tiny_lr_1.default();
     const usedFiles = new Set([]);
-    await build_1.build(false, data_json_path, interpretingMode);
+    await build_1.build(false, data, interpretingMode);
     let blockBuild = true;
     setTimeout(async () => {
         blockBuild = false;
@@ -57,7 +57,7 @@ async function startDevServer(data_json_path, interpretingMode) {
             tinyLrFiles = [...usedFiles];
         }
         if (!blockBuild)
-            await await build_1.build(false, data_json_path, interpretingMode, files);
+            await await build_1.build(false, data, interpretingMode, files);
         TinyLr.changed({
             body: {
                 files: tinyLrFiles,
@@ -66,7 +66,7 @@ async function startDevServer(data_json_path, interpretingMode) {
     });
     chokidar_1.default.watch('./prefabs/').on('all', async () => {
         if (!blockBuild)
-            await await build_1.build(false, data_json_path, interpretingMode);
+            await await build_1.build(false, data, interpretingMode);
         TinyLr.changed({
             body: {
                 files: usedFiles,
@@ -75,7 +75,7 @@ async function startDevServer(data_json_path, interpretingMode) {
     });
     chokidar_1.default.watch('./data.json').on('all', async () => {
         if (!blockBuild)
-            await await build_1.build(false, data_json_path, interpretingMode);
+            await await build_1.build(false, data, interpretingMode);
         TinyLr.changed({
             body: {
                 files: usedFiles,
