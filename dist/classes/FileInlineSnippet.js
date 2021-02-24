@@ -56,6 +56,6 @@ class FileType {
 const Css = new FileType('css', (ctn) => `<style>${ctn}</style>`);
 const Svg = new FileType('svg', (ctn) => ctn);
 const Js = new FileType('js', (ctn) => `<script>${ctn}</script>`);
-const Sass = new FileType('sass', (ctn) => `<style>${sass_1.default.renderSync({ data: ctn }).css.toString()}</style>`);
+const Sass = new FileType('sass', (ctn) => `<style>${sass_1.default.renderSync({ data: ctn, indentedSyntax: true }).css.toString()}</style>`);
 const SupportedFileTypes = [Css, Svg, Js, Sass];
 exports.default = FileInlineSnippet;

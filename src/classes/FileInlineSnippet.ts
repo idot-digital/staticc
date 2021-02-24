@@ -59,7 +59,7 @@ class FileType {
 const Css = new FileType('css', (ctn) => `<style>${ctn}</style>`)
 const Svg = new FileType('svg', (ctn) => ctn)
 const Js = new FileType('js', (ctn) => `<script>${ctn}</script>`)
-const Sass = new FileType('sass', (ctn) => `<style>${sass.renderSync({ data: ctn }).css.toString()}</style>`)
+const Sass = new FileType('sass', (ctn) => `<style>${sass.renderSync({ data: ctn, indentedSyntax: true }).css.toString()}</style>`)
 
 const SupportedFileTypes: FileType[] = [Css, Svg, Js, Sass]
 
