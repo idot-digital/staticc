@@ -120,7 +120,7 @@ export class DenoInterpreter extends JsInterpreter {
                         args,
                     }),
                 })
-            ).json()
+            ).text()
             return noramlizeJsReturns(result)
         } catch (error) {
             throw new Error('Could not connect to interpreter! Is your Interpreter started and listening on port 9999?')
