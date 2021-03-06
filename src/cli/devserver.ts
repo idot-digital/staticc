@@ -5,16 +5,18 @@ import morgan from 'morgan'
 import tinylr from 'tiny-lr'
 import connect from 'connect'
 import chokidar from 'chokidar'
-import { build } from './build'
+import { build, readDataJson } from './build'
 import serveStatic from 'serve-static'
 import { InterpretingMode } from '../classes/JsInterpreter'
 
-export async function startDevServer(data: any, interpretingMode: InterpretingMode) {
+export async function startDevServer(data_json_path: string, interpretingMode: InterpretingMode) {
     //@ts-ignore
     let modulePath = require.main.path
     modulePath = modulePath.replace('__tests__', 'dist')
     const TinyLr = tinylr()
     const usedFiles: Set<string> = new Set([])
+
+    let data = await readDataJson(data_json_path)
 
     await build(false, data, interpretingMode)
 
@@ -66,15 +68,18 @@ export async function startDevServer(data: any, interpretingMode: InterpretingMo
         if (!blockBuild) await await build(false, data, interpretingMode)
         TinyLr.changed({
             body: {
-                files: usedFiles,
+                files: [...usedFiles],
             },
         })
     })
     chokidar.watch('./data.json').on('all', async () => {
-        if (!blockBuild) await await build(false, data, interpretingMode)
+        if (!blockBuild) {
+            data = await readDataJson(data_json_path)
+            await await build(false, data, interpretingMode)
+        }
         TinyLr.changed({
             body: {
-                files: usedFiles,
+                files: [...usedFiles],
             },
         })
     })

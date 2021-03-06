@@ -31,9 +31,7 @@ else if (build_dev || build_prod) {
     });
 }
 else if (serve) {
-    build_1.readDataJson(data_json_path).then((data) => {
-        devserver_1.startDevServer(data, interpretingMode);
-    });
+    devserver_1.startDevServer(data_json_path, interpretingMode);
 }
 else if (init) {
     init_1.initializeProject();

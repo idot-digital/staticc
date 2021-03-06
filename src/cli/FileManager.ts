@@ -30,13 +30,16 @@ export class FileManager {
 
 function copyAllFiles(filter: string[]) {
     const allfiles = glob.sync('src/**/*.*')
+
+    filter = filter.map((filterEntry) => {
+        return pathLib.join(filterEntry, '')
+    })
+
     allfiles.forEach(async (file) => {
+        file = pathLib.join(file, '')
         if (filter.includes(file)) return
         const newFilepath = await changeFilenameFromSrcToDist(file)
-        const folderpath = newFilepath
-            .split('/')
-            .splice(0, newFilepath.split('/').length - 1)
-            .join('/')
+        const folderpath = pathLib.dirname(newFilepath)
         if (folderpath) fs.mkdirSync(folderpath, { recursive: true })
         fs.copyFileSync(file, newFilepath)
     })
@@ -49,7 +52,11 @@ async function copyLinkedFiles(files: { from: string; to: string }[]) {
             if (pathLib.extname(file.from) === '.sass' || pathLib.extname(file.from) === '.scss') {
                 await copyAndResolveSass(file.from, file.to)
             } else {
-                await fs.promises.copyFile(file.from, file.to)
+                try {
+                    await fs.promises.copyFile(file.from, file.to)
+                } catch (error) {
+                    console.error('Could not copy file: ' + file.from)
+                }
             }
         })
     )

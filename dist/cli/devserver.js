@@ -12,12 +12,13 @@ const connect_1 = __importDefault(require("connect"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const build_1 = require("./build");
 const serve_static_1 = __importDefault(require("serve-static"));
-async function startDevServer(data, interpretingMode) {
+async function startDevServer(data_json_path, interpretingMode) {
     //@ts-ignore
     let modulePath = require.main.path;
     modulePath = modulePath.replace('__tests__', 'dist');
     const TinyLr = tiny_lr_1.default();
     const usedFiles = new Set([]);
+    let data = await build_1.readDataJson(data_json_path);
     await build_1.build(false, data, interpretingMode);
     let blockBuild = true;
     setTimeout(async () => {
@@ -69,16 +70,18 @@ async function startDevServer(data, interpretingMode) {
             await await build_1.build(false, data, interpretingMode);
         TinyLr.changed({
             body: {
-                files: usedFiles,
+                files: [...usedFiles],
             },
         });
     });
     chokidar_1.default.watch('./data.json').on('all', async () => {
-        if (!blockBuild)
+        if (!blockBuild) {
+            data = await build_1.readDataJson(data_json_path);
             await await build_1.build(false, data, interpretingMode);
+        }
         TinyLr.changed({
             body: {
-                files: usedFiles,
+                files: [...usedFiles],
             },
         });
     });

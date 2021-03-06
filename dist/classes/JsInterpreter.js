@@ -144,7 +144,7 @@ class DenoInterpreter extends JsInterpreter {
                     data,
                     args,
                 }),
-            })).json();
+            })).text();
             return noramlizeJsReturns(result);
         }
         catch (error) {

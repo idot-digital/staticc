@@ -22,7 +22,6 @@ export async function build(build_prod: boolean, data: object, interpretingMode:
             timer.print()
         })
     )
-
     fileManager.execute()
 }
 

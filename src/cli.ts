@@ -32,9 +32,7 @@ if (version) {
         build(build_prod, data, interpretingMode)
     })
 } else if (serve) {
-    readDataJson(data_json_path).then((data) => {
-        startDevServer(data, interpretingMode)
-    })
+    startDevServer(data_json_path, interpretingMode)
 } else if (init) {
     initializeProject()
 } else if (startDeno) {
