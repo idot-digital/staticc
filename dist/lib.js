@@ -2,13 +2,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InterpretingMode = exports.build = exports.minifyHTML = exports.Transpiler = void 0;
+exports.helper = exports.FileManager = exports.InterpretingMode = exports.build = exports.minifyHTML = exports.Transpiler = void 0;
 const path_1 = __importDefault(require("path"));
 const glob_1 = require("glob");
 const Transpiler_1 = __importDefault(require("./Transpiler"));
 exports.Transpiler = Transpiler_1.default;
 const html_minifier_1 = require("html-minifier");
 const FileManager_1 = require("./FileManager");
+Object.defineProperty(exports, "FileManager", { enumerable: true, get: function () { return FileManager_1.FileManager; } });
 const JsInterpreter_1 = require("./classes/JsInterpreter");
 Object.defineProperty(exports, "InterpretingMode", { enumerable: true, get: function () { return JsInterpreter_1.InterpretingMode; } });
 function minifyHTML(html_String) {
@@ -88,3 +89,8 @@ async function changeFilenameFromSrcToDist(file, sourceFolder, buildFolder, name
     const newBasename = await nameResolverFn(basename);
     return path_1.default.join(newDirname, newBasename + fileEnding);
 }
+const helper = {
+    getAllBuildableFiles,
+    transpileFile,
+};
+exports.helper = helper;

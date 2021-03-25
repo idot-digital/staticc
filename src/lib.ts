@@ -115,4 +115,9 @@ async function changeFilenameFromSrcToDist(file: string, sourceFolder: string, b
     return pathLib.join(newDirname, newBasename + fileEnding)
 }
 
-export { Transpiler, minifyHTML, build, InterpretingMode }
+const helper = {
+    getAllBuildableFiles,
+    transpileFile,
+}
+
+export { Transpiler, minifyHTML, build, InterpretingMode, FileManager, helper }
