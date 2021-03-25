@@ -2,7 +2,7 @@ import pathLib from 'path'
 import sass from 'sass'
 import Snippet from './Snippet'
 import Transpiler from '../Transpiler'
-import { readFileFromDisk } from '../lib'
+import { readFileFromDisk } from '../internal_lib'
 
 class FileInlineSnippet extends Snippet {
     fileContents: string

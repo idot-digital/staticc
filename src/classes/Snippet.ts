@@ -1,4 +1,4 @@
-import { replaceAll } from '../lib'
+import { replaceAll } from '../internal_lib'
 import Transpiler from '../Transpiler'
 class Snippet {
     input_string: string

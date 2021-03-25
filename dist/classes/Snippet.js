@@ -2,7 +2,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const lib_1 = require("../lib");
+const internal_lib_1 = require("../internal_lib");
 const Transpiler_1 = __importDefault(require("../Transpiler"));
 class Snippet {
     constructor(input_string, lineNumber, path, transpiler) {
@@ -25,7 +25,7 @@ class Snippet {
         return this.filepaths;
     }
     cleanSnippetString() {
-        this.input_string = lib_1.replaceAll(this.input_string, '\n', '');
+        this.input_string = internal_lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data) {
         const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator);

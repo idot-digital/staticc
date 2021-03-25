@@ -1,14 +1,14 @@
 {
     "name": "staticc",
     "version": "0.7.3",
-    "main": "cli.js",
+    "main": "dist/lib.js",
     "bin": {
-        "staticc": "dist/cli.js"
+        "staticc": "dist/lib.js"
     },
     "scripts": {
         "test": "jest",
         "test-watch": "jest --silent --coverage=true --watchAll",
-        "tsc": "tsc -w"
+        "tsc": "tsc"
     },
     "author": "idot digital",
     "license": "ISC",

@@ -1,7 +1,7 @@
-import { replaceAll } from './lib'
 import Preprocessor from './Preprocessor'
 import { seperate } from './seperate'
 import { InterpretingMode, JsInterpreter } from './classes/JsInterpreter'
+import { replaceAll } from './internal_lib'
 
 class Transpiler {
     input_string: string

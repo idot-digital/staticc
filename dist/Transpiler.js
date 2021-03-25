@@ -2,10 +2,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const lib_1 = require("./lib");
 const Preprocessor_1 = __importDefault(require("./Preprocessor"));
 const seperate_1 = require("./seperate");
 const JsInterpreter_1 = require("./classes/JsInterpreter");
+const internal_lib_1 = require("./internal_lib");
 class Transpiler {
     constructor(input_string, data, path, interpretingMode, start_seperator = '{{', end_seperator = '}}') {
         this.input_string = input_string;
@@ -52,7 +52,7 @@ class Transpiler {
         return this.input_string;
     }
     getErrorAsHtml() {
-        this.errorMsg = lib_1.replaceAll(this.errorMsg, '\n', '<br>');
+        this.errorMsg = internal_lib_1.replaceAll(this.errorMsg, '\n', '<br>');
         this.errorMsg = `${this.errorMsg}`;
         return this.errorMsg;
     }
