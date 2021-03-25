@@ -9,4 +9,4 @@ interface BuildOptions {
     sourceFolder?: string;
     buildFolder?: string;
 }
-export { Transpiler, minifyHTML, build };
+export { Transpiler, minifyHTML, build, InterpretingMode };
