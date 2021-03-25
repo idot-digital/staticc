@@ -40,6 +40,7 @@ class Transpiler {
                 await snippet.resolve(this.data);
             }
             catch (error) {
+                console.log(error);
                 this.errorMsg += `\nError in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`;
             }
         }));

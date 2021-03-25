@@ -6,8 +6,9 @@
         "staticc": "dist/lib.js"
     },
     "scripts": {
-        "test": "jest",
-        "test-watch": "jest --silent --coverage=true --watchAll",
+        "test": "jest --silent",
+        "test-coverage": "jest  --silent --coverage=true ",
+        "test-watch": "jest  --coverage=true --watchAll",
         "tsc": "tsc"
     },
     "author": "idot digital",
