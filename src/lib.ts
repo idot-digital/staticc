@@ -4,6 +4,7 @@ import Transpiler from './Transpiler'
 import { minify } from 'html-minifier'
 import { FileManager } from './FileManager'
 import { InterpretingMode } from './classes/JsInterpreter'
+import { Timer } from './classes/Timer'
 
 function minifyHTML(html_String: string) {
     return minify(html_String, {
@@ -30,7 +31,9 @@ async function build(data: object, options: BuildOptions = defaultBuildOptions) 
     await Promise.all(
         buildOptions.filesToBuild.map(async (file) => {
             console.log(file)
+            const timer = new Timer(`Finished ${file} after`)
             await transpileFile(file, data, fileManager, buildOptions)
+            timer.print()
         })
     )
     fileManager.execute()
@@ -115,9 +118,4 @@ async function changeFilenameFromSrcToDist(file: string, sourceFolder: string, b
     return pathLib.join(newDirname, newBasename + fileEnding)
 }
 
-const helper = {
-    getAllBuildableFiles,
-    transpileFile,
-}
-
-export { Transpiler, minifyHTML, build, InterpretingMode, FileManager, helper }
+export { Transpiler, minifyHTML, build, InterpretingMode, FileManager, getAllBuildableFiles }

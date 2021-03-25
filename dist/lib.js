@@ -2,7 +2,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.helper = exports.FileManager = exports.InterpretingMode = exports.build = exports.minifyHTML = exports.Transpiler = void 0;
+exports.getAllBuildableFiles = exports.FileManager = exports.InterpretingMode = exports.build = exports.minifyHTML = exports.Transpiler = void 0;
 const path_1 = __importDefault(require("path"));
 const glob_1 = require("glob");
 const Transpiler_1 = __importDefault(require("./Transpiler"));
@@ -12,6 +12,7 @@ const FileManager_1 = require("./FileManager");
 Object.defineProperty(exports, "FileManager", { enumerable: true, get: function () { return FileManager_1.FileManager; } });
 const JsInterpreter_1 = require("./classes/JsInterpreter");
 Object.defineProperty(exports, "InterpretingMode", { enumerable: true, get: function () { return JsInterpreter_1.InterpretingMode; } });
+const Timer_1 = require("./classes/Timer");
 function minifyHTML(html_String) {
     return html_minifier_1.minify(html_String, {
         removeComments: true,
@@ -24,6 +25,7 @@ exports.minifyHTML = minifyHTML;
 function getAllBuildableFiles(globPath) {
     return glob_1.glob.sync(`${globPath}/**/*.html`);
 }
+exports.getAllBuildableFiles = getAllBuildableFiles;
 async function build(data, options = defaultBuildOptions) {
     const buildOptions = { ...defaultBuildOptions, ...options };
     const buildableFiles = getAllBuildableFiles(buildOptions.sourceFolder);
@@ -34,7 +36,9 @@ async function build(data, options = defaultBuildOptions) {
     console.log('\nstarting build!');
     await Promise.all(buildOptions.filesToBuild.map(async (file) => {
         console.log(file);
+        const timer = new Timer_1.Timer(`Finished ${file} after`);
         await transpileFile(file, data, fileManager, buildOptions);
+        timer.print();
     }));
     fileManager.execute();
 }
@@ -89,8 +93,3 @@ async function changeFilenameFromSrcToDist(file, sourceFolder, buildFolder, name
     const newBasename = await nameResolverFn(basename);
     return path_1.default.join(newDirname, newBasename + fileEnding);
 }
-const helper = {
-    getAllBuildableFiles,
-    transpileFile,
-};
-exports.helper = helper;
