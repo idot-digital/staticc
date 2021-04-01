@@ -5,6 +5,7 @@ import { minify } from 'html-minifier'
 import { FileManager } from './FileManager'
 import { InterpretingMode } from './classes/JsInterpreter'
 import { Timer } from './classes/Timer'
+import { readFileFromDisk, saveFileToDisk } from './internal_lib'
 
 function minifyHTML(html_String: string) {
     return minify(html_String, {

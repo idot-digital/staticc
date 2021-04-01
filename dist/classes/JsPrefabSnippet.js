@@ -10,6 +10,7 @@ modulePath = modulePath.replace('__tests__', 'dist');
 class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
     constructor(input_string, lineNumber, path, transpiler) {
         super(input_string, PrefabSnippet_1.PrefabType.JsPrefabSnippet, lineNumber, path, transpiler);
+        this.resolvedArgs = {};
     }
     async resolve(data) {
         await super.readFile();
@@ -20,15 +21,16 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
         this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles];
         try {
             const result = await this.interpret(data);
-            this.result = result;
+            this.result = result.resultString;
+            this.resolvedArgs = result.returnArgs;
         }
         catch (error) {
             throw new Error(`JS-Interpreter exited with ${error}`);
         }
-        await this.postProcess(data);
+        await this.postProcess(data, this.resolvedArgs);
     }
     async interpret(data) {
-        return this.transpiler.interpreter.interpret(this.fileContent, data, this.args);
+        return this.transpiler.interpreter.interpret(this.fileContent, data, this.args, this.transpiler.argParams);
     }
 }
 exports.default = JsPrefabSnippet;

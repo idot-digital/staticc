@@ -18,8 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceAll = exports.trycatchasync = exports.readFileFromDisk = void 0;
+exports.saveFileToDisk = exports.replaceAll = exports.trycatchasync = exports.readFileFromDisk = void 0;
 const fs = __importStar(require("fs"));
+const pathLib = __importStar(require("path"));
 const readFileFromDisk = async (filepath) => {
     //read file from disk
     const [readFileError, content] = await trycatchasync(fs.promises.readFile, filepath, { encoding: 'utf8' });
@@ -45,3 +46,18 @@ const replaceAll = (string, searchValue, replaceValue) => {
     return string;
 };
 exports.replaceAll = replaceAll;
+const saveFileToDisk = async (filepath, content) => {
+    //save file to disk (+ create folders if neccesary)
+    const folderpath = pathLib.dirname(filepath);
+    if (folderpath) {
+        const [mkdirError] = await trycatchasync(fs.promises.mkdir, folderpath, {
+            recursive: true,
+        });
+        if (mkdirError)
+            throw new Error('Could not create a new folder: ' + folderpath);
+    }
+    const [writeFileError] = await trycatchasync(fs.promises.writeFile, filepath, content);
+    if (writeFileError)
+        throw new Error('Could not write to file: ' + filepath);
+};
+exports.saveFileToDisk = saveFileToDisk;

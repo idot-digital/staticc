@@ -7,7 +7,7 @@ const seperate_1 = require("./seperate");
 const JsInterpreter_1 = require("./classes/JsInterpreter");
 const internal_lib_1 = require("./internal_lib");
 class Transpiler {
-    constructor(input_string, data, path, interpretingMode, start_seperator = '{{', end_seperator = '}}') {
+    constructor(input_string, data, path, interpretingMode, start_seperator = '{{', end_seperator = '}}', argParams = undefined) {
         this.input_string = input_string;
         this.data = data;
         this.path = path;
@@ -19,6 +19,7 @@ class Transpiler {
         this.plainHTMLSnippets = [];
         this.resolvedSnippets = [];
         this.interpreter = JsInterpreter_1.JsInterpreter.createInterpreter(interpretingMode);
+        this.argParams = argParams;
     }
     async transpile() {
         const preprocessor = new Preprocessor_1.default(this.input_string);

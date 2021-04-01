@@ -9,7 +9,7 @@ class DataSnippet extends Snippet_1.default {
         super(input_string, lineNumber, path, transpiler);
     }
     async resolve(data) {
-        const value = dataLookup(data, this.input_string);
+        const value = exports.dataLookup(data, this.input_string);
         if (value.constructor === Object) {
             throw Error('Could not resolve data-snippet. The requested value is an object!');
         }

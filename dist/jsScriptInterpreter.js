@@ -18,11 +18,11 @@ interpreter.run();
 if (interpreter.globalObject._rendered) {
     const resolvedSnippet = JSON.parse(interpreter.globalObject.renderedContent);
     const noramlizedSnippet = JsInterpreter_1.noramlizeJsReturns(resolvedSnippet);
-    worker_threads_1.parentPort === null || worker_threads_1.parentPort === void 0 ? void 0 : worker_threads_1.parentPort.postMessage(noramlizedSnippet);
+    worker_threads_1.parentPort === null || worker_threads_1.parentPort === void 0 ? void 0 : worker_threads_1.parentPort.postMessage({ resultString: noramlizedSnippet });
 }
 else {
     const noramlizedSnippet = JsInterpreter_1.noramlizeJsReturns(interpreter.value);
-    worker_threads_1.parentPort === null || worker_threads_1.parentPort === void 0 ? void 0 : worker_threads_1.parentPort.postMessage(noramlizedSnippet);
+    worker_threads_1.parentPort === null || worker_threads_1.parentPort === void 0 ? void 0 : worker_threads_1.parentPort.postMessage({ resultString: noramlizedSnippet });
 }
 function jsInterpretInitFn(interpreter, globalObject) {
     const _render = (content) => {

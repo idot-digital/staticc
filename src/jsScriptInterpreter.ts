@@ -15,10 +15,10 @@ interpreter.run()
 if (interpreter.globalObject._rendered) {
     const resolvedSnippet = JSON.parse(interpreter.globalObject.renderedContent)
     const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
-    parentPort?.postMessage(noramlizedSnippet)
+    parentPort?.postMessage({resultString: noramlizedSnippet})
 } else {
     const noramlizedSnippet = noramlizeJsReturns(interpreter.value)
-    parentPort?.postMessage(noramlizedSnippet)
+    parentPort?.postMessage({resultString: noramlizedSnippet})
 }
 
 export function jsInterpretInitFn(interpreter: any, globalObject: any): void {

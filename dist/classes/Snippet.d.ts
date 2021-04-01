@@ -15,6 +15,6 @@ declare class Snippet {
     toString(): string;
     getLoadedFiles(): string[];
     cleanSnippetString(): void;
-    postProcess(data: any): Promise<void>;
+    postProcess(data: any, resolvedArgs?: any): Promise<void>;
 }
 export default Snippet;

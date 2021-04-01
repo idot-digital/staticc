@@ -1,7 +1,7 @@
 import Transpiler from '../Transpiler'
 import Snippet from './Snippet'
 
-class DataSnippet extends Snippet {
+export class DataSnippet extends Snippet {
     constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
         super(input_string, lineNumber, path, transpiler)
     }
@@ -17,7 +17,7 @@ class DataSnippet extends Snippet {
     }
 }
 
-const dataLookup = (data: any, selector: string) => {
+export const dataLookup = (data: any, selector: string) => {
     const snippetParts = selector.split('.')
     try {
         snippetParts.forEach((snippetPart) => {
@@ -29,5 +29,3 @@ const dataLookup = (data: any, selector: string) => {
     }
     return data
 }
-
-export { DataSnippet, dataLookup }

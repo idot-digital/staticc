@@ -15,7 +15,8 @@ class Transpiler {
     plainHTMLSnippets: string[]
     resolvedSnippets: string[]
     interpreter: JsInterpreter
-    constructor(input_string: string, data: any, path: string, interpretingMode: InterpretingMode, start_seperator: string = '{{', end_seperator: string = '}}') {
+    argParams: any
+    constructor(input_string: string, data: any, path: string, interpretingMode: InterpretingMode, start_seperator: string = '{{', end_seperator: string = '}}', argParams: any = undefined) {
         this.input_string = input_string
         this.data = data
         this.path = path
@@ -27,6 +28,7 @@ class Transpiler {
         this.plainHTMLSnippets = []
         this.resolvedSnippets = []
         this.interpreter = JsInterpreter.createInterpreter(interpretingMode)
+        this.argParams = argParams
     }
     async transpile(): Promise<string> {
         const preprocessor = new Preprocessor(this.input_string)

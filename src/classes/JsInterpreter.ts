@@ -2,17 +2,19 @@ import pathLib from 'path'
 import fetch from 'node-fetch'
 import { Worker } from 'worker_threads'
 
-export function decodePrefabArgs(args: string[], data: any): string[] {
+export function decodePrefabArgs(args: string[], data: any, argParams: any = undefined): string[] {
     args = args.map((arg: string) => {
-        if (arg == '') return ''
-        if (arg.charAt(0) == '"') {
-            arg = arg.substring(1, arg.length - 1)
-            return arg
-        } else {
-            if (!data[arg]) throw new Error('Argument of the Prefab could not be resolved! Check if it is defined in the data-object!')
-            return data[arg] as string
-        }
+        const argLowerCase = arg.toLocaleLowerCase()
+        if (arg == '') return '' //empty string
+        else if (argLowerCase === "null" || argLowerCase === "undefined") return null //null or undefined
+        else if(arg.charAt(0) === "`") return arg.substring(1, arg.length - 1) //string
+        else if(!isNaN(Number(arg))) return Number(arg) //number
+        else if(argLowerCase === "true") return true //boolean true
+        else if(argLowerCase === "false") return false //boolean false
+        //else if(arg.charAt(0) === "{" && arg.charAt(1) === "{") return dataLookup(data, arg) //datajson
+        else return argParams[arg] //arg param
     })
+    console.log("args", args)
     return args
 }
 
@@ -34,7 +36,7 @@ export class JsInterpreter {
         let Interpreter
         switch (mode) {
             case InterpretingMode.default:
-                Interpreter = new JsScriptInterpreter()
+                Interpreter = new DenoInterpreter(true)
                 Interpreter.interpretingMode = mode
                 return Interpreter
             case InterpretingMode.legacy:
@@ -42,7 +44,7 @@ export class JsInterpreter {
                 Interpreter.interpretingMode = mode
                 return Interpreter
             case InterpretingMode.experimental:
-                Interpreter = new DenoInterpreter(true)
+                Interpreter = new DenoInterpreter(false)
                 Interpreter.interpretingMode = mode
                 return Interpreter
             case InterpretingMode.remoteDeno:
@@ -63,8 +65,11 @@ export class JsInterpreter {
                 return Interpreter
         }
     }
-    async interpret(string: string, data: any, args: any[] = []): Promise<string> {
-        return ''
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+        return {
+            resultString: "",
+            returnArgs: null
+        }
     }
 }
 
@@ -72,11 +77,15 @@ export class InsecureInterpreter extends JsInterpreter {
     constructor() {
         super()
     }
-    async interpret(string: string, data: any, args: any[] = []): Promise<string> {
-        args = decodePrefabArgs(args, data)
-        const javascriptCode = 'function render(value) {return value}'
-        const res = eval(`${javascriptCode} ${string}`)
-        return noramlizeJsReturns(res)
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+        args = decodePrefabArgs(args, data, argParams)
+        const preparedJsCode = prepareJs(string)
+        console.log("preparedJSCOde", preparedJsCode)
+        const res = eval(preparedJsCode)
+        return {
+            resultString: noramlizeJsReturns(res.value),
+            returnArgs: res.resultArgs
+        }
     }
 }
 
@@ -88,7 +97,7 @@ export class JsScriptInterpreter extends JsInterpreter {
         this.modulePath = require.main.path
         this.modulePath = this.modulePath.replace('__tests__', 'dist')
     }
-    async interpret(codeString: string, data: any, args: any[] = []): Promise<string> {
+    async interpret(codeString: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
         return new Promise((res, rej) => {
             const worker = new Worker(pathLib.join(this.modulePath, 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } })
             worker.on('message', res)
@@ -105,8 +114,9 @@ export class DenoInterpreter extends JsInterpreter {
         super()
         this.url = remote ? 'http://195.90.200.109:9999' : 'http://127.0.0.1:9999'
     }
-    async interpret(string: string, data: any, args: any[] = []): Promise<string> {
-        args = decodePrefabArgs(args, data)
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+        args = decodePrefabArgs(args, data, argParams)
+        const preparedJsCode = prepareJs(string)
         try {
             const result = await (
                 await fetch(this.url, {
@@ -115,13 +125,13 @@ export class DenoInterpreter extends JsInterpreter {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        code: string,
+                        code: preparedJsCode,
                         data,
                         args,
                     }),
                 })
             ).text()
-            return noramlizeJsReturns(result)
+            return seperateArgsAndResult(result)
         } catch (error) {
             throw new Error('Could not connect to interpreter! Is your Interpreter started and listening on port 9999?')
         }
@@ -129,6 +139,8 @@ export class DenoInterpreter extends JsInterpreter {
 }
 
 import * as babel from '@babel/core'
+import { replaceAll } from '../internal_lib'
+import { dataLookup } from './DataSnippet'
 export function babelTranspile(code: string): string {
     try {
         const babelObj = babel.transform(code, {
@@ -172,5 +184,52 @@ export function noramlizeJsReturns(interpreterResult: any): string {
         }, '')
     } else {
         throw new Error('Prefab could not be resolved! Only strings or array of strings are allowed as return values!')
+    }
+}
+
+function prepareJs(scriptText:string) {
+    let argVariables = []
+    argVariables = [...findAllVariables(scriptText, "const:arg"), ...findAllVariables(scriptText, "let:arg")]
+    scriptText = replaceAll(scriptText, "const:arg", "const")
+    scriptText = replaceAll(scriptText, "let:arg", "let")
+    scriptText = scriptText.replace("render(", `const _resultArgs = {${argVariables.join(",")}};render(`)
+    console.log("prepareJS", scriptText)
+    return `${scriptText}; function render(value) {return {value, resultArgs: _resultArgs}}`
+}
+
+function findAllVariables(scriptText:string,  declarationPrefix: string) {
+    const argVariables = []
+    let returnString : string | null = scriptText
+        while (returnString !== null){
+            const [variableName, endOfScriptString] = findVariable(returnString, "const:arg")
+            returnString = endOfScriptString
+            if(variableName) argVariables.push(variableName)
+        }
+    return argVariables
+}
+
+function findVariable(scriptText:string, declarationPrefix: string) {
+    const index = scriptText.indexOf(declarationPrefix)
+    if(index !== -1){
+        const partOfScriptString = scriptText.slice(index+10)
+        const indexOfNextEquals = partOfScriptString.indexOf("=")
+        const indexOfNextBlank = partOfScriptString.indexOf(" ")
+        const indexOfNextSemicolon = partOfScriptString.indexOf(";")
+
+        let endOfVariableName = Math.min(...[indexOfNextEquals, indexOfNextBlank, indexOfNextSemicolon]);
+
+        const variableName = partOfScriptString.slice(0, endOfVariableName)
+        const endOfScriptString = partOfScriptString.slice(endOfVariableName)
+        return [variableName, endOfScriptString]
+    }
+    return [null, null]
+}
+
+function seperateArgsAndResult(resultString:string) {
+    const seperator = "-----$!seperator!$-----";
+    const result = resultString.split(seperator)
+    return {
+        resultString: noramlizeJsReturns(result[0]),
+        returnArgs: JSON.parse(result[1])
     }
 }

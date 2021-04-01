@@ -12,7 +12,8 @@ class JsSnippet extends Snippet_1.default {
     }
     async resolve(data) {
         try {
-            this.result = await this.interpret(data);
+            const result = await this.interpret(data);
+            this.result = result.resultString;
         }
         catch (error) {
             throw new Error(`JS-Interpreter exited with ${error}`);

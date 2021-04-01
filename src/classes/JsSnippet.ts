@@ -11,14 +11,15 @@ class JsSnippet extends Snippet {
     }
     async resolve(data: any): Promise<void> {
         try {
-            this.result = await this.interpret(data)
+            const result = await this.interpret(data)
+            this.result = result.resultString
         } catch (error) {
             throw new Error(`JS-Interpreter exited with ${error}`)
         }
         await this.postProcess(data)
     }
 
-    async interpret(data: any): Promise<string> {
+    async interpret(data: any): Promise<{resultString: string, returnArgs: any}> {
         return this.transpiler.interpreter.interpret(this.input_string, data)
     }
 }

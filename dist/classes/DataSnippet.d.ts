@@ -1,8 +1,7 @@
 import Transpiler from '../Transpiler';
 import Snippet from './Snippet';
-declare class DataSnippet extends Snippet {
+export declare class DataSnippet extends Snippet {
     constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler);
     resolve(data: any): Promise<void>;
 }
-declare const dataLookup: (data: any, selector: string) => any;
-export { DataSnippet, dataLookup };
+export declare const dataLookup: (data: any, selector: string) => any;

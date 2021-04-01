@@ -13,6 +13,7 @@ Object.defineProperty(exports, "FileManager", { enumerable: true, get: function 
 const JsInterpreter_1 = require("./classes/JsInterpreter");
 Object.defineProperty(exports, "InterpretingMode", { enumerable: true, get: function () { return JsInterpreter_1.InterpretingMode; } });
 const Timer_1 = require("./classes/Timer");
+const internal_lib_1 = require("./internal_lib");
 function minifyHTML(html_String) {
     return html_minifier_1.minify(html_String, {
         removeComments: true,
@@ -71,11 +72,11 @@ async function transpileFile(file, data, fileManager, buildOptions) {
     }
 }
 async function generateNewFile(readFileName, writeFileName, fn, ...args) {
-    const readFileContent = await readFileFromDisk(readFileName);
+    const readFileContent = await internal_lib_1.readFileFromDisk(readFileName);
     let writeFileContent;
     //file read correctly
     writeFileContent = await fn(readFileContent, ...args);
-    await saveFileToDisk(writeFileName, writeFileContent);
+    await internal_lib_1.saveFileToDisk(writeFileName, writeFileContent);
     return true;
 }
 const defaultBuildOptions = {

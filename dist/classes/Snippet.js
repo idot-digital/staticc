@@ -27,8 +27,8 @@ class Snippet {
     cleanSnippetString() {
         this.input_string = internal_lib_1.replaceAll(this.input_string, '\n', '');
     }
-    async postProcess(data) {
-        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator);
+    async postProcess(data, resolvedArgs = undefined) {
+        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator, resolvedArgs);
         const htmlString = await transpiler.transpile();
         if (transpiler.errorMsg !== '')
             throw new Error(transpiler.errorMsg);
