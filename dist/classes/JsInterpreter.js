@@ -113,10 +113,12 @@ class InsecureInterpreter extends JsInterpreter {
     async interpret(string, data, args = [], argParams = undefined) {
         args = decodePrefabArgs(args, data, argParams);
         const preparedJsCode = prepareJs(string);
-        const res = eval(preparedJsCode);
+        let res = eval(preparedJsCode);
+        if (res.resultArgs === undefined)
+            res = { value: res, returnArgs: [] };
         return {
             resultString: noramlizeJsReturns(res.value),
-            returnArgs: res.resultArgs
+            returnArgs: res.resultArgs,
         };
     }
 }
@@ -201,7 +203,7 @@ function babelTranspile(code) {
 exports.babelTranspile = babelTranspile;
 function noramlizeJsReturns(interpreterResult) {
     //check if the evaluated snippet is a string which can be returned or if its an array which needs to be reduced
-    if (!interpreterResult) {
+    if (interpreterResult === undefined || interpreterResult === null) {
         return '';
     }
     else if (interpreterResult.constructor === String) {
@@ -218,6 +220,10 @@ function noramlizeJsReturns(interpreterResult) {
         return interpreterResult.reduce((total, current) => {
             return total + current;
         }, '');
+    }
+    else if (interpreterResult.constructor === Boolean || interpreterResult.constructor === Number) {
+        //@ts-ignore
+        return interpreterResult.toString();
     }
     else {
         throw new Error('Prefab could not be resolved! Only strings or array of strings are allowed as return values!');

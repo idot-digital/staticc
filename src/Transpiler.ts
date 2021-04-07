@@ -54,7 +54,6 @@ class Transpiler {
                 }
             })
         )
-
         const loadedFiles = codeSnippets.map((snippet) => snippet.getLoadedFiles()).flat()
         const filesToCopyFromSnippets = codeSnippets.map((snippet) => snippet.filesToCopy).flat()
         this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles, ...filesToCopyFromSnippets]
