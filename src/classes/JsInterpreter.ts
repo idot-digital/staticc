@@ -5,16 +5,19 @@ import { Worker } from 'worker_threads'
 export function decodePrefabArgs(args: string[], data: any, argParams: any = undefined): string[] {
     args = args.map((arg: string) => {
         const argLowerCase = arg.toLocaleLowerCase()
-        if (arg == '') return '' //empty string
-        else if (argLowerCase === "null" || argLowerCase === "undefined") return null //null or undefined
-        else if(arg.charAt(0) === "`") return arg.substring(1, arg.length - 1) //string
-        else if(!isNaN(Number(arg))) return Number(arg) //number
-        else if(argLowerCase === "true") return true //boolean true
-        else if(argLowerCase === "false") return false //boolean false
-        //else if(arg.charAt(0) === "{" && arg.charAt(1) === "{") return dataLookup(data, arg) //datajson
+        if (argLowerCase === 'null' || argLowerCase === 'undefined') return null
+        //null or undefined
+        else if (arg.charAt(0) === '`') return arg.substring(1, arg.length - 1)
+        //string
+        else if (!isNaN(Number(arg))) return Number(arg)
+        //number
+        else if (argLowerCase === 'true') return true
+        //boolean true
+        else if (argLowerCase === 'false') return false
+        // boolean false
+        else if(arg.charAt(0) === "{" && arg.charAt(1) === "{") return dataLookup(data, arg.slice(2, arg.length-2)) //datajson
         else return argParams[arg] //arg param
     })
-    console.log("args", args)
     return args
 }
 
@@ -80,7 +83,6 @@ export class InsecureInterpreter extends JsInterpreter {
     async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
         args = decodePrefabArgs(args, data, argParams)
         const preparedJsCode = prepareJs(string)
-        console.log("preparedJSCOde", preparedJsCode)
         const res = eval(preparedJsCode)
         return {
             resultString: noramlizeJsReturns(res.value),
@@ -192,8 +194,7 @@ function prepareJs(scriptText:string) {
     argVariables = [...findAllVariables(scriptText, "const:arg"), ...findAllVariables(scriptText, "let:arg")]
     scriptText = replaceAll(scriptText, "const:arg", "const")
     scriptText = replaceAll(scriptText, "let:arg", "let")
-    scriptText = scriptText.replace("render(", `const _resultArgs = {${argVariables.join(",")}};render(`)
-    console.log("prepareJS", scriptText)
+    scriptText = scriptText.replace('render(', `const _resultArgs = {${argVariables.join(',')}};render(`)
     return `${scriptText}; function render(value) {return {value, resultArgs: _resultArgs}}`
 }
 
@@ -211,14 +212,15 @@ function findAllVariables(scriptText:string,  declarationPrefix: string) {
 function findVariable(scriptText:string, declarationPrefix: string) {
     const index = scriptText.indexOf(declarationPrefix)
     if(index !== -1){
-        const partOfScriptString = scriptText.slice(index+10)
-        const indexOfNextEquals = partOfScriptString.indexOf("=")
-        const indexOfNextBlank = partOfScriptString.indexOf(" ")
-        const indexOfNextSemicolon = partOfScriptString.indexOf(";")
+        const partOfScriptString = scriptText.slice(index + 10)
+        const indexOfNextEquals = partOfScriptString.indexOf('=')
+        const indexOfNextBlank = partOfScriptString.indexOf(' ')
+        const indexOfNextSemicolon = partOfScriptString.indexOf(';')
 
-        let endOfVariableName = Math.min(...[indexOfNextEquals, indexOfNextBlank, indexOfNextSemicolon]);
+        let endOfVariableName = Math.min(...[indexOfNextEquals, indexOfNextBlank, indexOfNextSemicolon])
 
         const variableName = partOfScriptString.slice(0, endOfVariableName)
+        // console.log('variableName', variableName)
         const endOfScriptString = partOfScriptString.slice(endOfVariableName)
         return [variableName, endOfScriptString]
     }

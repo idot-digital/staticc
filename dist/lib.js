@@ -34,9 +34,9 @@ async function build(data, options = defaultBuildOptions) {
     fileManager.ignoreFiles(buildableFiles);
     if (buildOptions.filesToBuild.length === 0)
         buildOptions.filesToBuild = buildableFiles;
-    console.log('\nstarting build!');
+    console.info('\nstarting build!');
     await Promise.all(buildOptions.filesToBuild.map(async (file) => {
-        console.log(file);
+        console.info(file);
         const timer = new Timer_1.Timer(`Finished ${file} after`);
         await transpileFile(file, data, fileManager, buildOptions);
         timer.print();
@@ -45,12 +45,12 @@ async function build(data, options = defaultBuildOptions) {
 }
 exports.build = build;
 async function transpileFile(file, data, fileManager, buildOptions) {
-    console.log('Building: ' + file);
+    console.info('Building: ' + file);
     const successful = await generateNewFile(file, await changeFilenameFromSrcToDist(file, buildOptions.sourceFolder, buildOptions.buildFolder, async (name) => {
         const transpiler = new Transpiler_1.default(name, data, file, buildOptions.interpretingMode);
         let transpiledName = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
-            console.log(transpiler.errorMsg);
+            console.error(transpiler.errorMsg);
             return name;
         }
         return transpiledName;
@@ -58,7 +58,7 @@ async function transpileFile(file, data, fileManager, buildOptions) {
         const transpiler = new Transpiler_1.default(content, data, file, buildOptions.interpretingMode);
         let transpiledCode = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
-            console.log(transpiler.errorMsg);
+            console.error(transpiler.errorMsg);
             transpiledCode = transpiler.getErrorAsHtml();
         }
         fileManager.copyFiles(transpiler.filesToCopy);
@@ -68,7 +68,7 @@ async function transpileFile(file, data, fileManager, buildOptions) {
         return transpiledCode;
     }, buildOptions.productive);
     if (!successful) {
-        console.log(file + ' could not be transpiled!');
+        console.error(file + ' could not be transpiled!');
     }
 }
 async function generateNewFile(readFileName, writeFileName, fn, ...args) {

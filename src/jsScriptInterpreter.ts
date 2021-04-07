@@ -27,7 +27,7 @@ export function jsInterpretInitFn(interpreter: any, globalObject: any): void {
         globalObject.renderedContent = content
     }
     const log = (something: any) => {
-        console.log('SNIPPET-LOG:', something)
+        console.info('SNIPPET-LOG:', something)
     }
     interpreter.setProperty(globalObject, '_render', interpreter.createNativeFunction(_render))
     interpreter.setProperty(globalObject, 'log', interpreter.createNativeFunction(log))

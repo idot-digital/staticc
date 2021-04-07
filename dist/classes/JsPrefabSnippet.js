@@ -14,6 +14,7 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
     }
     async resolve(data) {
         await super.readFile();
+        this.decodeArgs();
         const preprocessor = new Preprocessor_1.default(this.fileContent);
         preprocessor.path = this.filepaths[0];
         preprocessor.extractLinkedFiles();
@@ -31,6 +32,30 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
     }
     async interpret(data) {
         return this.transpiler.interpreter.interpret(this.fileContent, data, this.args, this.transpiler.argParams);
+    }
+    decodeArgs() {
+        const args = [];
+        let argString = this.args.filter((x) => x !== '').join(' ');
+        while (argString !== '') {
+            if (argString.charAt(0) === '`') {
+                const backtickIndex = argString.slice(1).indexOf('`');
+                args.push(argString.slice(0, backtickIndex + 2));
+                argString = argString.slice(backtickIndex + 3);
+            }
+            else {
+                const blankIndex = argString.indexOf(' ');
+                if (blankIndex !== -1) {
+                    args.push(argString.slice(0, blankIndex));
+                    argString = argString.slice(blankIndex + 1);
+                }
+                else if (argString !== '') {
+                    args.push(argString);
+                    argString = '';
+                }
+            }
+        }
+        console.log(args);
+        this.args = args;
     }
 }
 exports.default = JsPrefabSnippet;

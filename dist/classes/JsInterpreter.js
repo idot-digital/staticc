@@ -28,23 +28,26 @@ const worker_threads_1 = require("worker_threads");
 function decodePrefabArgs(args, data, argParams = undefined) {
     args = args.map((arg) => {
         const argLowerCase = arg.toLocaleLowerCase();
-        if (arg == '')
-            return ''; //empty string
-        else if (argLowerCase === "null" || argLowerCase === "undefined")
-            return null; //null or undefined
-        else if (arg.charAt(0) === "`")
-            return arg.substring(1, arg.length - 1); //string
+        if (argLowerCase === 'null' || argLowerCase === 'undefined')
+            return null;
+        //null or undefined
+        else if (arg.charAt(0) === '`')
+            return arg.substring(1, arg.length - 1);
+        //string
         else if (!isNaN(Number(arg)))
-            return Number(arg); //number
-        else if (argLowerCase === "true")
-            return true; //boolean true
-        else if (argLowerCase === "false")
-            return false; //boolean false
-        //else if(arg.charAt(0) === "{" && arg.charAt(1) === "{") return dataLookup(data, arg) //datajson
+            return Number(arg);
+        //number
+        else if (argLowerCase === 'true')
+            return true;
+        //boolean true
+        else if (argLowerCase === 'false')
+            return false;
+        // boolean false
+        else if (arg.charAt(0) === "{" && arg.charAt(1) === "{")
+            return DataSnippet_1.dataLookup(data, arg.slice(2, arg.length - 2)); //datajson
         else
             return argParams[arg]; //arg param
     });
-    console.log("args", args);
     return args;
 }
 exports.decodePrefabArgs = decodePrefabArgs;
@@ -110,7 +113,6 @@ class InsecureInterpreter extends JsInterpreter {
     async interpret(string, data, args = [], argParams = undefined) {
         args = decodePrefabArgs(args, data, argParams);
         const preparedJsCode = prepareJs(string);
-        console.log("preparedJSCOde", preparedJsCode);
         const res = eval(preparedJsCode);
         return {
             resultString: noramlizeJsReturns(res.value),
@@ -169,6 +171,7 @@ class DenoInterpreter extends JsInterpreter {
 exports.DenoInterpreter = DenoInterpreter;
 const babel = __importStar(require("@babel/core"));
 const internal_lib_1 = require("../internal_lib");
+const DataSnippet_1 = require("./DataSnippet");
 function babelTranspile(code) {
     try {
         const babelObj = babel.transform(code, {
@@ -226,8 +229,7 @@ function prepareJs(scriptText) {
     argVariables = [...findAllVariables(scriptText, "const:arg"), ...findAllVariables(scriptText, "let:arg")];
     scriptText = internal_lib_1.replaceAll(scriptText, "const:arg", "const");
     scriptText = internal_lib_1.replaceAll(scriptText, "let:arg", "let");
-    scriptText = scriptText.replace("render(", `const _resultArgs = {${argVariables.join(",")}};render(`);
-    console.log("prepareJS", scriptText);
+    scriptText = scriptText.replace('render(', `const _resultArgs = {${argVariables.join(',')}};render(`);
     return `${scriptText}; function render(value) {return {value, resultArgs: _resultArgs}}`;
 }
 function findAllVariables(scriptText, declarationPrefix) {
@@ -245,11 +247,12 @@ function findVariable(scriptText, declarationPrefix) {
     const index = scriptText.indexOf(declarationPrefix);
     if (index !== -1) {
         const partOfScriptString = scriptText.slice(index + 10);
-        const indexOfNextEquals = partOfScriptString.indexOf("=");
-        const indexOfNextBlank = partOfScriptString.indexOf(" ");
-        const indexOfNextSemicolon = partOfScriptString.indexOf(";");
+        const indexOfNextEquals = partOfScriptString.indexOf('=');
+        const indexOfNextBlank = partOfScriptString.indexOf(' ');
+        const indexOfNextSemicolon = partOfScriptString.indexOf(';');
         let endOfVariableName = Math.min(...[indexOfNextEquals, indexOfNextBlank, indexOfNextSemicolon]);
         const variableName = partOfScriptString.slice(0, endOfVariableName);
+        // console.log('variableName', variableName)
         const endOfScriptString = partOfScriptString.slice(endOfVariableName);
         return [variableName, endOfScriptString];
     }

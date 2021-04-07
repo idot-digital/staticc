@@ -8,5 +8,6 @@ declare class JsPrefabSnippet extends PrefabSnippet {
         resultString: string;
         returnArgs: any;
     }>;
+    decodeArgs(): void;
 }
 export default JsPrefabSnippet;

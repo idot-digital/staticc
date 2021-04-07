@@ -17,11 +17,12 @@ export const seperate = (
     codeSnippets: Snippet[]
 } => {
     const numberOfLines = occurrences(staticcString, /\n/) + 1
-    const oc: number = occurrences(staticcString, start_seperator)
     const plainHTMLSnippets: string[] = []
     const codeSnippets: Snippet[] = []
-    for (let i = 0; i < oc; i++) {
-        const [firstPart, middlePart, lastPart] = cutString(staticcString, start_seperator, end_seperator)
+    let finished = false
+    while (!finished && occurrences(staticcString, start_seperator) !== 0) {
+        const [firstPart, middlePart, lastPart, end] = cutString(staticcString, start_seperator, end_seperator)
+        finished = end === 'true'
         plainHTMLSnippets.push(firstPart)
         codeSnippets.push(classifySnippet(middlePart, path, calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler))
         staticcString = lastPart
@@ -36,11 +37,18 @@ export const occurrences = (string: string, subString: string | RegExp): number 
 
 export const cutString = (input_string: string, start_seperator: string, end_seperator: string): string[] => {
     const openingIndex: number = input_string.indexOf(start_seperator)
-    const closingIndex: number = input_string.indexOf(end_seperator)
+    let currentClosingIndex: number = input_string.indexOf(end_seperator)
+    let currentOpeningIndex: number = input_string.indexOf(start_seperator, openingIndex + 1)
+    while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
+        currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1)
+        currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1)
+    }
+    const closingIndex = currentClosingIndex
+    const end: string = openingIndex === -1 ? 'true' : 'false'
     const firstPart: string = input_string.slice(0, openingIndex)
     const middlePart: string = input_string.slice(openingIndex + start_seperator.length, closingIndex)
     const lastPart: string = input_string.slice(closingIndex + end_seperator.length)
-    return [firstPart, middlePart, lastPart]
+    return [firstPart, middlePart, lastPart, end]
 }
 
 export const classifySnippet = (snippet_string: string, path: string, lineNumber: number, transpiler: Transpiler): Snippet => {
@@ -63,3 +71,4 @@ export const calculateLineNumber = (totalNumberOfLines: number, middlePart: stri
 
     return totalNumberOfLines - (linesInLastPart + Math.round(linesInMiddlePart / 2))
 }
+

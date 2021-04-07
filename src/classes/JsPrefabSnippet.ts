@@ -14,6 +14,7 @@ class JsPrefabSnippet extends PrefabSnippet {
     }
     async resolve(data: any): Promise<void> {
         await super.readFile()
+        this.decodeArgs()
         const preprocessor = new Preprocessor(this.fileContent)
         preprocessor.path = this.filepaths[0]
         preprocessor.extractLinkedFiles()
@@ -29,8 +30,32 @@ class JsPrefabSnippet extends PrefabSnippet {
         await this.postProcess(data, this.resolvedArgs)
     }
 
-    async interpret(data: any): Promise<{resultString: string, returnArgs: any}> {
+    async interpret(data: any): Promise<{ resultString: string; returnArgs: any }> {
         return this.transpiler.interpreter.interpret(this.fileContent, data, this.args, this.transpiler.argParams)
+    }
+
+    decodeArgs() {
+        const args = []
+        let argString = this.args.filter((x) => x !== '').join(' ')
+        while (argString !== '') {
+
+            if (argString.charAt(0) === '`') {
+                const backtickIndex = argString.slice(1).indexOf('`')
+                args.push(argString.slice(0, backtickIndex + 2))
+                argString = argString.slice(backtickIndex + 3)
+            } else {
+                const blankIndex = argString.indexOf(' ')
+                if (blankIndex !== -1) {
+                    args.push(argString.slice(0, blankIndex))
+                    argString = argString.slice(blankIndex + 1)
+                } else if (argString !== '') {
+                    args.push(argString)
+                    argString = ''
+                }
+            }
+        }
+        console.log(args)
+        this.args = args
     }
 }
 

@@ -8,7 +8,7 @@ class Timer {
     }
     print() {
         this.endTime = Date.now();
-        console.log(`${this.name} ${this.endTime - this.startTime} ms`);
+        console.info(`${this.name} ${this.endTime - this.startTime} ms`);
     }
 }
 exports.Timer = Timer;

@@ -10,11 +10,12 @@ const JsPrefabSnippet_1 = __importDefault(require("./classes/JsPrefabSnippet"));
 const JsSnippet_1 = __importDefault(require("./classes/JsSnippet"));
 const seperate = (staticcString, start_seperator, end_seperator, path, transpiler) => {
     const numberOfLines = exports.occurrences(staticcString, /\n/) + 1;
-    const oc = exports.occurrences(staticcString, start_seperator);
     const plainHTMLSnippets = [];
     const codeSnippets = [];
-    for (let i = 0; i < oc; i++) {
-        const [firstPart, middlePart, lastPart] = exports.cutString(staticcString, start_seperator, end_seperator);
+    let finished = false;
+    while (!finished && exports.occurrences(staticcString, start_seperator) !== 0) {
+        const [firstPart, middlePart, lastPart, end] = exports.cutString(staticcString, start_seperator, end_seperator);
+        finished = end === 'true';
         plainHTMLSnippets.push(firstPart);
         codeSnippets.push(exports.classifySnippet(middlePart, path, exports.calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler));
         staticcString = lastPart;
@@ -29,11 +30,18 @@ const occurrences = (string, subString) => {
 exports.occurrences = occurrences;
 const cutString = (input_string, start_seperator, end_seperator) => {
     const openingIndex = input_string.indexOf(start_seperator);
-    const closingIndex = input_string.indexOf(end_seperator);
+    let currentClosingIndex = input_string.indexOf(end_seperator);
+    let currentOpeningIndex = input_string.indexOf(start_seperator, openingIndex + 1);
+    while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
+        currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1);
+        currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1);
+    }
+    const closingIndex = currentClosingIndex;
+    const end = openingIndex === -1 ? 'true' : 'false';
     const firstPart = input_string.slice(0, openingIndex);
     const middlePart = input_string.slice(openingIndex + start_seperator.length, closingIndex);
     const lastPart = input_string.slice(closingIndex + end_seperator.length);
-    return [firstPart, middlePart, lastPart];
+    return [firstPart, middlePart, lastPart, end];
 };
 exports.cutString = cutString;
 const classifySnippet = (snippet_string, path, lineNumber, transpiler) => {

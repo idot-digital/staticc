@@ -27,11 +27,11 @@ async function build(data: object, options: BuildOptions = defaultBuildOptions) 
     fileManager.ignoreFiles(buildableFiles)
     if (buildOptions.filesToBuild.length === 0) buildOptions.filesToBuild = buildableFiles
 
-    console.log('\nstarting build!')
+    console.info('\nstarting build!')
 
     await Promise.all(
         buildOptions.filesToBuild.map(async (file) => {
-            console.log(file)
+            console.info(file)
             const timer = new Timer(`Finished ${file} after`)
             await transpileFile(file, data, fileManager, buildOptions)
             timer.print()
@@ -41,14 +41,14 @@ async function build(data: object, options: BuildOptions = defaultBuildOptions) 
 }
 
 async function transpileFile(file: string, data: any, fileManager: FileManager, buildOptions: BuildOptionsStrict) {
-    console.log('Building: ' + file)
+    console.info('Building: ' + file)
     const successful = await generateNewFile(
         file,
         await changeFilenameFromSrcToDist(file, buildOptions.sourceFolder, buildOptions.buildFolder, async (name) => {
             const transpiler = new Transpiler(name, data, file, buildOptions.interpretingMode)
             let transpiledName = await transpiler.transpile()
             if (transpiler.errorMsg !== '') {
-                console.log(transpiler.errorMsg)
+                console.error(transpiler.errorMsg)
                 return name
             }
             return transpiledName
@@ -57,7 +57,7 @@ async function transpileFile(file: string, data: any, fileManager: FileManager, 
             const transpiler = new Transpiler(content, data, file, buildOptions.interpretingMode)
             let transpiledCode = await transpiler.transpile()
             if (transpiler.errorMsg !== '') {
-                console.log(transpiler.errorMsg)
+                console.error(transpiler.errorMsg)
                 transpiledCode = transpiler.getErrorAsHtml()
             }
             fileManager.copyFiles(transpiler.filesToCopy)
@@ -69,7 +69,7 @@ async function transpileFile(file: string, data: any, fileManager: FileManager, 
     )
 
     if (!successful) {
-        console.log(file + ' could not be transpiled!')
+        console.error(file + ' could not be transpiled!')
     }
 }
 
