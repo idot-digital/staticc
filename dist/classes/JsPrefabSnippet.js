@@ -54,7 +54,6 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
                 }
             }
         }
-        console.log(args);
         this.args = args;
     }
 }

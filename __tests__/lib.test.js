@@ -301,7 +301,7 @@ describe('transpile', () => {
                 '<br>Error in Line 1 in /src/index.html<br>title<br>Could not resolve data-snippet. The requested value is undefined!<br><br>Error in Line 1 in /src/index.html<br>title<br>Could not resolve data-snippet. The requested value is undefined!<br>'
             )
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     })
     test('getErrorAsHtml', async () => {

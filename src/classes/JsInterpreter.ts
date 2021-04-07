@@ -220,7 +220,6 @@ function findVariable(scriptText:string, declarationPrefix: string) {
         let endOfVariableName = Math.min(...[indexOfNextEquals, indexOfNextBlank, indexOfNextSemicolon])
 
         const variableName = partOfScriptString.slice(0, endOfVariableName)
-        // console.log('variableName', variableName)
         const endOfScriptString = partOfScriptString.slice(endOfVariableName)
         return [variableName, endOfScriptString]
     }

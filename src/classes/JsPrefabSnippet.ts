@@ -38,7 +38,6 @@ class JsPrefabSnippet extends PrefabSnippet {
         const args = []
         let argString = this.args.filter((x) => x !== '').join(' ')
         while (argString !== '') {
-
             if (argString.charAt(0) === '`') {
                 const backtickIndex = argString.slice(1).indexOf('`')
                 args.push(argString.slice(0, backtickIndex + 2))
@@ -54,7 +53,6 @@ class JsPrefabSnippet extends PrefabSnippet {
                 }
             }
         }
-        console.log(args)
         this.args = args
     }
 }

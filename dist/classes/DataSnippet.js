@@ -26,7 +26,7 @@ const dataLookup = (data, selector) => {
     try {
         snippetParts.forEach((snippetPart) => {
             data = data[snippetPart];
-            if (!data)
+            if (data === undefined)
                 throw new Error();
         });
     }
