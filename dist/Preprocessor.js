@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const seperate_1 = require("./seperate");
 const pathLib = __importStar(require("path"));
+const internal_lib_1 = require("./internal_lib");
 class Preprocessor {
     constructor(input_string) {
         this.input_string = input_string;
@@ -45,22 +46,21 @@ class Preprocessor {
         this.input_string = cleanedString + input_string;
     }
     extractLinkedFiles() {
-        if (this.input_string.indexOf('{{*') === -1 || this.input_string.indexOf('*}}') === -1)
-            return [];
-        if (this.path.indexOf('src') !== -1)
-            throw new Error('link in src');
-        const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'));
-        this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, ``);
-        //if (this.input_string.indexOf('{{*') === -1) throw new Error('multi-links')
-        const files = linkedFileString.trim().split(/\s+/);
-        this.linkedFiles = files.map((file) => {
+        while (this.input_string.indexOf('{{*') !== -1 && this.input_string.indexOf('*}}') !== -1) {
+            if (this.path.indexOf('src') !== -1)
+                return new Error('link in src');
+            const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'));
+            const file = linkedFileString.trim();
             const filepath = pathLib.join(pathLib.dirname(this.path), file);
             this.loadedFiles.push(filepath);
-            return {
+            const linkedFilepath = pathLib.join(pathLib.dirname(this.path).replace('prefabs', 'dist'), file);
+            this.linkedFiles.push({
                 from: filepath,
-                to: pathLib.join(pathLib.dirname(this.path).replace('prefabs', 'dist'), file),
-            };
-        });
+                to: linkedFilepath,
+            });
+            const returnPath = internal_lib_1.replaceAll(("/" + linkedFilepath.replace(`dist${pathLib.normalize("/")}`, ``)), pathLib.normalize("/"), "/");
+            this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath);
+        }
     }
 }
 exports.default = Preprocessor;

@@ -9,5 +9,5 @@ export default class Preprocessor {
     constructor(input_string: string);
     preprocess(path: string): string;
     cleanComments(): void;
-    extractLinkedFiles(): never[] | undefined;
+    extractLinkedFiles(): Error | undefined;
 }

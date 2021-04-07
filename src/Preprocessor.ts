@@ -1,5 +1,6 @@
 import { cutString, occurrences } from './seperate'
 import * as pathLib from 'path'
+import { replaceAll } from './internal_lib'
 
 export default class Preprocessor {
     input_string: string
@@ -30,22 +31,23 @@ export default class Preprocessor {
         this.input_string = cleanedString + input_string
     }
     extractLinkedFiles() {
-        if (this.input_string.indexOf('{{*') === -1 || this.input_string.indexOf('*}}') === -1) return []
-        if (this.path.indexOf('src') !== -1) throw new Error('link in src')
+        while(this.input_string.indexOf('{{*') !== -1 && this.input_string.indexOf('*}}') !== -1){
+            if (this.path.indexOf('src') !== -1) return new Error('link in src')
 
-        const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'))
-        this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, ``)
-        //if (this.input_string.indexOf('{{*') === -1) throw new Error('multi-links')
-
-        const files = linkedFileString.trim().split(/\s+/)
-
-        this.linkedFiles = files.map((file) => {
+            const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'))
+    
+            const file = linkedFileString.trim()
+    
             const filepath = pathLib.join(pathLib.dirname(this.path), file)
             this.loadedFiles.push(filepath)
-            return {
+            const linkedFilepath = pathLib.join(pathLib.dirname(this.path).replace('prefabs', 'dist'), file)
+            this.linkedFiles.push({
                 from: filepath,
-                to: pathLib.join(pathLib.dirname(this.path).replace('prefabs', 'dist'), file),
-            }
-        })
+                to: linkedFilepath,
+            })
+            const returnPath = replaceAll(("/" + linkedFilepath.replace(`dist${pathLib.normalize("/")}`, ``)), pathLib.normalize("/"), "/") 
+    
+            this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath)
+        }
     }
 }
