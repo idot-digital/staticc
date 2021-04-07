@@ -22,7 +22,7 @@ export const dataLookup = (data: any, selector: string) => {
     try {
         snippetParts.forEach((snippetPart) => {
             data = data[snippetPart]
-            if (!data) throw new Error()
+            if (data === undefined) throw new Error()
         })
     } catch (error) {
         throw Error('Could not resolve data-snippet. The requested value is undefined!')
