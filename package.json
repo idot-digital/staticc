@@ -1,10 +1,7 @@
 {
     "name": "staticc",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "main": "dist/lib.js",
-    "bin": {
-        "staticc": "dist/lib.js"
-    },
     "scripts": {
         "test": "jest --silent",
         "test-coverage": "jest  --silent --coverage=true ",
