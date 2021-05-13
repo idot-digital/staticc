@@ -10,5 +10,6 @@ interface BuildOptions {
     filesToBuild?: string[];
     sourceFolder?: string;
     buildFolder?: string;
+    baseFolder?: string;
 }
 export { Transpiler, minifyHTML, build, InterpretingMode, FileManager, getAllBuildableFiles };

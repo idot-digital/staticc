@@ -1,5 +1,5 @@
 const pathLib = require('path')
-jest.mock('../dist/internal_lib')
+jest.mock('../dist/internal_lib.js')
 //jest.mock('sass')
 
 const MOCK_FILE_INFO = {
@@ -51,7 +51,7 @@ describe('Preprocessor', () => {
 
     describe('extractLinkedFiles', () => {
         test('beginning', () => {
-            const p = new Preprocessor('{{* test.txt test2.css test3.gif *}}Hello, World!')
+            const p = new Preprocessor('<link href="{{* test.txt *}}"><link href="{{*  test2.css *}}"><link href="{{* test3.gif *}}">Hello, World!')
             p.path = 'prefabs/helloWorld'
             p.extractLinkedFiles()
             expect(p.linkedFiles).toEqual([
@@ -60,10 +60,10 @@ describe('Preprocessor', () => {
                 { from: pathLib.join('prefabs', 'test3.gif'), to: pathLib.join('dist', 'test3.gif') },
             ])
             expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt'), pathLib.join('prefabs', 'test2.css'), pathLib.join('prefabs', 'test3.gif')])
-            expect(p.input_string).toBe('Hello, World!')
+            expect(p.input_string).toBe('<link href="/test.txt"><link href="/test2.css"><link href="/test3.gif">Hello, World!')
         })
         test('middle', () => {
-            const p = new Preprocessor('Hello,{{* test.txt test2.css test3.gif *}} World!')
+            const p = new Preprocessor('Hello,<link href="{{* test.txt *}}"><link href="{{*  test2.css *}}"><link href="{{* test3.gif *}}">World!')
             p.path = 'prefabs/helloWorld'
             p.extractLinkedFiles()
             expect(p.linkedFiles).toEqual([
@@ -72,10 +72,10 @@ describe('Preprocessor', () => {
                 { from: pathLib.join('prefabs', 'test3.gif'), to: pathLib.join('dist', 'test3.gif') },
             ])
             expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt'), pathLib.join('prefabs', 'test2.css'), pathLib.join('prefabs', 'test3.gif')])
-            expect(p.input_string).toBe('Hello, World!')
+            expect(p.input_string).toBe('Hello,<link href="/test.txt"><link href="/test2.css"><link href="/test3.gif">World!')
         })
         test('end', () => {
-            const p = new Preprocessor('Hello, World!{{* test.txt test2.css test3.gif *}}')
+            const p = new Preprocessor('Hello, World!<link href="{{* test.txt *}}"><link href="{{*  test2.css *}}"><link href="{{* test3.gif *}}">')
             p.path = 'prefabs/helloWorld'
             p.extractLinkedFiles()
             expect(p.linkedFiles).toEqual([
@@ -84,32 +84,16 @@ describe('Preprocessor', () => {
                 { from: pathLib.join('prefabs', 'test3.gif'), to: pathLib.join('dist', 'test3.gif') },
             ])
             expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt'), pathLib.join('prefabs', 'test2.css'), pathLib.join('prefabs', 'test3.gif')])
-            expect(p.input_string).toBe('Hello, World!')
-        })
-        test('duplicate whitespace', () => {
-            const p = new Preprocessor('Hello, World!{{* test.txt  test2.css    test3.gif *}}')
-            p.path = 'prefabs/helloWorld'
-            p.extractLinkedFiles()
-            expect(p.linkedFiles).toEqual([
-                { from: pathLib.join('prefabs', 'test.txt'), to: pathLib.join('dist', 'test.txt') },
-                { from: pathLib.join('prefabs', 'test2.css'), to: pathLib.join('dist', 'test2.css') },
-                { from: pathLib.join('prefabs', 'test3.gif'), to: pathLib.join('dist', 'test3.gif') },
-            ])
-            expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt'), pathLib.join('prefabs', 'test2.css'), pathLib.join('prefabs', 'test3.gif')])
-            expect(p.input_string).toBe('Hello, World!')
+            expect(p.input_string).toBe('Hello, World!<link href="/test.txt"><link href="/test2.css"><link href="/test3.gif">')
         })
     })
     describe('preprocess', () => {
         test('simple', () => {
-            const p = new Preprocessor('{{* test.txt  /~ Yeet ~/ test2.css    test3.gif *}}Hello/~ Hui ~/, World!/~ LOL ~/')
+            const p = new Preprocessor('<link href="{{* test.txt  /~ Yeet ~/ *}}">Hello/~ Hui ~/, World!/~ LOL ~/')
             p.preprocess('prefabs/helloWorld')
-            expect(p.linkedFiles).toEqual([
-                { from: pathLib.join('prefabs', 'test.txt'), to: pathLib.join('dist', 'test.txt') },
-                { from: pathLib.join('prefabs', 'test2.css'), to: pathLib.join('dist', 'test2.css') },
-                { from: pathLib.join('prefabs', 'test3.gif'), to: pathLib.join('dist', 'test3.gif') },
-            ])
-            expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt'), pathLib.join('prefabs', 'test2.css'), pathLib.join('prefabs', 'test3.gif')])
-            expect(p.input_string).toBe('Hello, World!')
+            expect(p.linkedFiles).toEqual([{ from: pathLib.join('prefabs', 'test.txt'), to: pathLib.join('dist', 'test.txt') }])
+            expect(p.loadedFiles).toEqual([pathLib.join('prefabs', 'test.txt')])
+            expect(p.input_string).toBe('<link href="/test.txt">Hello, World!')
         })
     })
 })
@@ -120,10 +104,15 @@ describe('seperate', () => {
         const result = occurrences('Hello World! Hello Internet!', 'Hello')
         expect(result).toBe(2)
     })
-    test('cutString', () => {
+    test('cutString false', () => {
         const { cutString } = require('../dist/seperate')
         const result = cutString('Hello World{{this is a test}}lol', '{{', '}}')
-        expect(result).toEqual(['Hello World', 'this is a test', 'lol'])
+        expect(result).toEqual(['Hello World', 'this is a test', 'lol', 'false'])
+    })
+    test('cutString true', () => {
+        const { cutString } = require('../dist/seperate')
+        const result = cutString('Hello World lol', '{{', '}}')
+        expect(result).toEqual(['', '', 'Hello World lol', 'true'])
     })
     describe('classifySnippet', () => {
         const { DataSnippet } = require('../dist/classes/DataSnippet')
@@ -133,69 +122,32 @@ describe('seperate', () => {
         const { default: FileInlineSnippet } = require('../dist/classes/FileInlineSnippet')
         test('DataSnippet', () => {
             const { classifySnippet } = require('../dist/seperate')
-
             const result = classifySnippet('year', 'src/', 0, dummyTranspiler)
             expect(result).toEqual({ filepaths: [], filesToCopy: [], input_string: 'year', lineNumber: 0, referencePath: 'src/', result: '', transpiler: dummyTranspiler })
             expect(result.constructor).toEqual(DataSnippet)
         })
         test('JsPrefabSnippet', () => {
             const { classifySnippet } = require('../dist/seperate')
-
             const result = classifySnippet('!!year', 'src/', 0, dummyTranspiler)
-            expect(result).toEqual({
-                fileContent: '',
-                args: [],
-                filepaths: [],
-                filesToCopy: [],
-                input_string: 'year',
-                lineNumber: 0,
-                referencePath: 'src/',
-                result: '',
-                type: 0,
-                transpiler: dummyTranspiler,
-            })
+            expect(result).toEqual(new JsPrefabSnippet('year', 0, 'src/', dummyTranspiler))
             expect(result.constructor).toEqual(JsPrefabSnippet)
         })
         test('HtmlPrefabSnippet', () => {
             const { classifySnippet } = require('../dist/seperate')
-
             const result = classifySnippet('!year', 'src/', 0, dummyTranspiler)
-            expect(result).toEqual({
-                fileContent: '',
-                args: [],
-                filepaths: [],
-                filesToCopy: [],
-                input_string: 'year',
-                lineNumber: 0,
-                referencePath: 'src/',
-                result: '',
-                type: 1,
-                transpiler: dummyTranspiler,
-            })
+            expect(result).toEqual(new HtmlPrefabSnippet('year', 0, 'src/', dummyTranspiler))
             expect(result.constructor).toEqual(HtmlPrefabSnippet)
         })
         test('FileInlineSnippet', () => {
             const { classifySnippet } = require('../dist/seperate')
-
             const result = classifySnippet('?year', 'src/', 0, dummyTranspiler)
-            expect(result).toEqual({
-                fileContents: '',
-                fileIdentifier: '',
-                filepaths: [],
-                filesToCopy: [],
-                input_string: 'year',
-                lineNumber: 0,
-                referencePath: 'src/',
-                result: '',
-                transpiler: dummyTranspiler,
-            })
+            expect(result).toEqual(new FileInlineSnippet('year', 0, 'src/', dummyTranspiler))
             expect(result.constructor).toEqual(FileInlineSnippet)
         })
         test('JsSnippet', () => {
             const { classifySnippet } = require('../dist/seperate')
-
             const result = classifySnippet('#year', 'src/', 0, dummyTranspiler)
-            expect(result).toEqual({ filepaths: [], filesToCopy: [], input_string: 'year', lineNumber: 0, referencePath: 'src/', result: '', transpiler: dummyTranspiler })
+            expect(result).toEqual(new JsSnippet('year', 0, 'src/', dummyTranspiler))
             expect(result.constructor).toEqual(JsSnippet)
         })
     })
@@ -231,41 +183,11 @@ describe('seperate', () => {
         )
         expect(result).toEqual({
             codeSnippets: [
-                { filepaths: [], filesToCopy: [], input_string: 'title', lineNumber: 1, referencePath: 'src/index.html', result: '', transpiler: dummyTranspiler },
-                { filepaths: [], filesToCopy: [], input_string: 'title', lineNumber: 1, referencePath: 'src/index.html', result: '', transpiler: dummyTranspiler },
-                {
-                    filepaths: [],
-                    filesToCopy: [],
-                    input_string: 'data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`})',
-                    lineNumber: 1,
-                    referencePath: 'src/index.html',
-                    result: '',
-                    transpiler: dummyTranspiler,
-                },
-                {
-                    args: [],
-                    fileContent: '',
-                    filepaths: [],
-                    filesToCopy: [],
-                    input_string: 'hello_world',
-                    lineNumber: 1,
-                    referencePath: 'src/index.html',
-                    result: '',
-                    type: 1,
-                    transpiler: dummyTranspiler,
-                },
-                {
-                    args: [],
-                    fileContent: '',
-                    filepaths: [],
-                    filesToCopy: [],
-                    input_string: 'count_to_3',
-                    lineNumber: 1,
-                    referencePath: 'src/index.html',
-                    result: '',
-                    type: 0,
-                    transpiler: dummyTranspiler,
-                },
+                new DataSnippet('title', 1, 'src/index.html', dummyTranspiler),
+                new DataSnippet('title', 1, 'src/index.html', dummyTranspiler),
+                new JsSnippet('data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`})', 1, 'src/index.html', dummyTranspiler),
+                new HtmlPrefabSnippet('hello_world', 1, 'src/index.html', dummyTranspiler),
+                new JsPrefabSnippet('count_to_3', 1, 'src/index.html', dummyTranspiler),
             ],
             plainHTMLSnippets: ['<!DOCTYPE html><html><head><title>', '</title></head><body><h1>', '</h1>', ' ', ' ', ' </body></html>'],
         })
@@ -280,7 +202,7 @@ describe('transpile', () => {
             '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{ !!count_to_3 }} </body></html>',
             { title: 'STATICC Webpage', shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' },
             '/src/index.html',
-            0
+            6
         )
         const snippets = await transpiler.transpile()
         expect(snippets).toEqual(
@@ -294,7 +216,7 @@ describe('transpile', () => {
                 '<!DOCTYPE html><html><head><title>{{title}}</title></head><body><h1>{{title}}</h1>{{ # data.shop_items.map(elmt=>{ return `<h2>${elmt}</h2>`}) }} {{ !hello_world }} {{ !!count_to_3 }} </body></html>',
                 { shop_items: ['Item 1', 'Item 2', 'Item 3'], type: 'h6' },
                 '/src/index.html',
-                0
+                6
             )
             const snippets = await transpiler.transpile()
             expect(transpiler.getErrorAsHtml()).toEqual(

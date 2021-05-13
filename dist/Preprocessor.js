@@ -39,7 +39,7 @@ class Preprocessor {
         const oc = seperate_1.occurrences(input_string, '/~');
         let cleanedString = '';
         for (let i = 0; i < oc; i++) {
-            const [firstPart, _, lastPart] = seperate_1.cutString(input_string, '/~', '~/');
+            const [firstPart, _, lastPart] = oldCutString(input_string, '/~', '~/');
             cleanedString += firstPart;
             input_string = lastPart;
         }
@@ -58,9 +58,17 @@ class Preprocessor {
                 from: filepath,
                 to: linkedFilepath,
             });
-            const returnPath = internal_lib_1.replaceAll(("/" + linkedFilepath.replace(`dist${pathLib.normalize("/")}`, ``)), pathLib.normalize("/"), "/");
+            const returnPath = internal_lib_1.replaceAll('/' + linkedFilepath.replace(`dist${pathLib.normalize('/')}`, ``), pathLib.normalize('/'), '/');
             this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath);
         }
     }
 }
 exports.default = Preprocessor;
+const oldCutString = (input_string, start_seperator, end_seperator) => {
+    const openingIndex = input_string.indexOf(start_seperator);
+    const closingIndex = input_string.indexOf(end_seperator);
+    const firstPart = input_string.slice(0, openingIndex);
+    const middlePart = input_string.slice(openingIndex + start_seperator.length, closingIndex);
+    const lastPart = input_string.slice(closingIndex + end_seperator.length);
+    return [firstPart, middlePart, lastPart];
+};

@@ -15,7 +15,8 @@ declare class Transpiler {
     resolvedSnippets: string[];
     interpreter: JsInterpreter;
     argParams: any;
-    constructor(input_string: string, data: any, path: string, interpretingMode: InterpretingMode, start_seperator?: string, end_seperator?: string, argParams?: any);
+    baseFolder: string;
+    constructor(input_string: string, data: any, path: string, interpretingMode: InterpretingMode, baseFolder?: string, start_seperator?: string, end_seperator?: string, argParams?: any);
     transpile(): Promise<string>;
     getErrorAsHtml(): string;
     recombine(): void;

@@ -36,6 +36,7 @@ class Snippet {
             data,
             this.filepaths[0] || 'src',
             this.transpiler.interpreter.interpretingMode,
+            this.transpiler.baseFolder,
             this.transpiler.start_seperator,
             this.transpiler.end_seperator,
             resolvedArgs

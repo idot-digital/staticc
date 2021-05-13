@@ -1,4 +1,4 @@
-import { cutString, occurrences } from './seperate'
+import { occurrences } from './seperate'
 import * as pathLib from 'path'
 import { replaceAll } from './internal_lib'
 
@@ -24,7 +24,7 @@ export default class Preprocessor {
         const oc = occurrences(input_string, '/~')
         let cleanedString = ''
         for (let i = 0; i < oc; i++) {
-            const [firstPart, _, lastPart] = cutString(input_string, '/~', '~/')
+            const [firstPart, _, lastPart] = oldCutString(input_string, '/~', '~/')
             cleanedString += firstPart
             input_string = lastPart
         }
@@ -50,4 +50,13 @@ export default class Preprocessor {
             this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath)
         }
     }
+}
+
+const oldCutString = (input_string: string, start_seperator: string, end_seperator: string): string[] => {
+    const openingIndex: number = input_string.indexOf(start_seperator)
+    const closingIndex: number = input_string.indexOf(end_seperator)
+    const firstPart: string = input_string.slice(0, openingIndex)
+    const middlePart: string = input_string.slice(openingIndex + start_seperator.length, closingIndex)
+    const lastPart: string = input_string.slice(closingIndex + end_seperator.length)
+    return [firstPart, middlePart, lastPart]
 }

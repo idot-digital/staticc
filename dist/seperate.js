@@ -16,8 +16,10 @@ const seperate = (staticcString, start_seperator, end_seperator, path, transpile
     while (!finished && exports.occurrences(staticcString, start_seperator) !== 0) {
         const [firstPart, middlePart, lastPart, end] = exports.cutString(staticcString, start_seperator, end_seperator);
         finished = end === 'true';
-        plainHTMLSnippets.push(firstPart);
-        codeSnippets.push(exports.classifySnippet(middlePart, path, exports.calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler));
+        if (!finished) {
+            plainHTMLSnippets.push(firstPart);
+            codeSnippets.push(exports.classifySnippet(middlePart, path, exports.calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler));
+        }
         staticcString = lastPart;
     }
     plainHTMLSnippets.push(staticcString);
@@ -35,12 +37,13 @@ const cutString = (input_string, start_seperator, end_seperator) => {
     while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
         currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1);
         currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1);
+        console.log('run');
     }
     const closingIndex = currentClosingIndex;
     const end = openingIndex === -1 ? 'true' : 'false';
-    const firstPart = input_string.slice(0, openingIndex);
-    const middlePart = input_string.slice(openingIndex + start_seperator.length, closingIndex);
-    const lastPart = input_string.slice(closingIndex + end_seperator.length);
+    const firstPart = input_string.slice(0, end === 'true' ? 0 : openingIndex);
+    const middlePart = input_string.slice(end === 'true' ? 0 : openingIndex + start_seperator.length, end === 'true' ? 0 : closingIndex);
+    const lastPart = input_string.slice(end === 'true' ? 0 : closingIndex + end_seperator.length);
     return [firstPart, middlePart, lastPart, end];
 };
 exports.cutString = cutString;

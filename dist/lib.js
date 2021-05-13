@@ -47,7 +47,7 @@ exports.build = build;
 async function transpileFile(file, data, fileManager, buildOptions) {
     console.info('Building: ' + file);
     const successful = await generateNewFile(file, await changeFilenameFromSrcToDist(file, buildOptions.sourceFolder, buildOptions.buildFolder, async (name) => {
-        const transpiler = new Transpiler_1.default(name, data, file, buildOptions.interpretingMode);
+        const transpiler = new Transpiler_1.default(name, data, file, buildOptions.interpretingMode, buildOptions.baseFolder);
         let transpiledName = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
             console.error(transpiler.errorMsg);
@@ -55,7 +55,7 @@ async function transpileFile(file, data, fileManager, buildOptions) {
         }
         return transpiledName;
     }), async (content, build_prod) => {
-        const transpiler = new Transpiler_1.default(content, data, file, buildOptions.interpretingMode);
+        const transpiler = new Transpiler_1.default(content, data, file, buildOptions.interpretingMode, buildOptions.baseFolder);
         let transpiledCode = await transpiler.transpile();
         if (transpiler.errorMsg !== '') {
             console.error(transpiler.errorMsg);
@@ -85,6 +85,7 @@ const defaultBuildOptions = {
     filesToBuild: [],
     sourceFolder: 'src',
     buildFolder: 'dist',
+    baseFolder: '',
 };
 async function changeFilenameFromSrcToDist(file, sourceFolder, buildFolder, nameResolverFn = async (basename) => basename) {
     const fileEnding = path_1.default.extname(file);

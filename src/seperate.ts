@@ -23,8 +23,10 @@ export const seperate = (
     while (!finished && occurrences(staticcString, start_seperator) !== 0) {
         const [firstPart, middlePart, lastPart, end] = cutString(staticcString, start_seperator, end_seperator)
         finished = end === 'true'
-        plainHTMLSnippets.push(firstPart)
-        codeSnippets.push(classifySnippet(middlePart, path, calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler))
+        if (!finished) {
+            plainHTMLSnippets.push(firstPart)
+            codeSnippets.push(classifySnippet(middlePart, path, calculateLineNumber(numberOfLines, middlePart, lastPart), transpiler))
+        }
         staticcString = lastPart
     }
     plainHTMLSnippets.push(staticcString)
@@ -42,12 +44,13 @@ export const cutString = (input_string: string, start_seperator: string, end_sep
     while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
         currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1)
         currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1)
+        console.log('run')
     }
     const closingIndex = currentClosingIndex
     const end: string = openingIndex === -1 ? 'true' : 'false'
-    const firstPart: string = input_string.slice(0, openingIndex)
-    const middlePart: string = input_string.slice(openingIndex + start_seperator.length, closingIndex)
-    const lastPart: string = input_string.slice(closingIndex + end_seperator.length)
+    const firstPart: string = input_string.slice(0, end === 'true' ? 0 : openingIndex)
+    const middlePart: string = input_string.slice(end === 'true' ? 0 : openingIndex + start_seperator.length, end === 'true' ? 0 : closingIndex)
+    const lastPart: string = input_string.slice(end === 'true' ? 0 : closingIndex + end_seperator.length)
     return [firstPart, middlePart, lastPart, end]
 }
 

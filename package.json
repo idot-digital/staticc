@@ -3,7 +3,7 @@
     "version": "0.8.2",
     "main": "dist/lib.js",
     "scripts": {
-        "test": "jest --silent",
+        "test": "jest",
         "test-coverage": "jest  --silent --coverage=true ",
         "test-watch": "jest  --coverage=true --watchAll",
         "tsc": "tsc"

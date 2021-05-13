@@ -22,7 +22,7 @@ class Transpiler {
         data: any,
         path: string,
         interpretingMode: InterpretingMode,
-        baseFolder: string,
+        baseFolder: string = '',
         start_seperator: string = '{{',
         end_seperator: string = '}}',
         argParams: any = undefined
