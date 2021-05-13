@@ -45,7 +45,7 @@ async function transpileFile(file: string, data: any, fileManager: FileManager, 
     const successful = await generateNewFile(
         file,
         await changeFilenameFromSrcToDist(file, buildOptions.sourceFolder, buildOptions.buildFolder, async (name) => {
-            const transpiler = new Transpiler(name, data, file, buildOptions.interpretingMode)
+            const transpiler = new Transpiler(name, data, file, buildOptions.interpretingMode, buildOptions.baseFolder)
             let transpiledName = await transpiler.transpile()
             if (transpiler.errorMsg !== '') {
                 console.error(transpiler.errorMsg)
@@ -54,7 +54,7 @@ async function transpileFile(file: string, data: any, fileManager: FileManager, 
             return transpiledName
         }),
         async (content: string, build_prod: boolean): Promise<string> => {
-            const transpiler = new Transpiler(content, data, file, buildOptions.interpretingMode)
+            const transpiler = new Transpiler(content, data, file, buildOptions.interpretingMode, buildOptions.baseFolder)
             let transpiledCode = await transpiler.transpile()
             if (transpiler.errorMsg !== '') {
                 console.error(transpiler.errorMsg)
@@ -90,6 +90,7 @@ interface BuildOptions {
     filesToBuild?: string[]
     sourceFolder?: string
     buildFolder?: string
+    baseFolder?: string
 }
 
 interface BuildOptionsStrict {
@@ -98,6 +99,7 @@ interface BuildOptionsStrict {
     filesToBuild: string[]
     sourceFolder: string
     buildFolder: string
+    baseFolder: string
 }
 
 const defaultBuildOptions: BuildOptionsStrict = {
@@ -106,6 +108,7 @@ const defaultBuildOptions: BuildOptionsStrict = {
     filesToBuild: [],
     sourceFolder: 'src',
     buildFolder: 'dist',
+    baseFolder: '',
 }
 
 async function changeFilenameFromSrcToDist(file: string, sourceFolder: string, buildFolder: string, nameResolverFn = async (basename: string): Promise<string> => basename) {

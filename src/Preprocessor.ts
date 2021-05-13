@@ -31,13 +31,13 @@ export default class Preprocessor {
         this.input_string = cleanedString + input_string
     }
     extractLinkedFiles() {
-        while(this.input_string.indexOf('{{*') !== -1 && this.input_string.indexOf('*}}') !== -1){
+        while (this.input_string.indexOf('{{*') !== -1 && this.input_string.indexOf('*}}') !== -1) {
             if (this.path.indexOf('src') !== -1) return new Error('link in src')
 
             const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'))
-    
+
             const file = linkedFileString.trim()
-    
+
             const filepath = pathLib.join(pathLib.dirname(this.path), file)
             this.loadedFiles.push(filepath)
             const linkedFilepath = pathLib.join(pathLib.dirname(this.path).replace('prefabs', 'dist'), file)
@@ -45,8 +45,8 @@ export default class Preprocessor {
                 from: filepath,
                 to: linkedFilepath,
             })
-            const returnPath = replaceAll(("/" + linkedFilepath.replace(`dist${pathLib.normalize("/")}`, ``)), pathLib.normalize("/"), "/") 
-    
+            const returnPath = replaceAll('/' + linkedFilepath.replace(`dist${pathLib.normalize('/')}`, ``), pathLib.normalize('/'), '/')
+
             this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath)
         }
     }

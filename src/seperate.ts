@@ -71,4 +71,3 @@ export const calculateLineNumber = (totalNumberOfLines: number, middlePart: stri
 
     return totalNumberOfLines - (linesInLastPart + Math.round(linesInMiddlePart / 2))
 }
-

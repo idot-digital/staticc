@@ -31,7 +31,15 @@ class Snippet {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
     async postProcess(data: any, resolvedArgs: any = undefined): Promise<void> {
-        const transpiler = new Transpiler(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.start_seperator, this.transpiler.end_seperator, resolvedArgs)
+        const transpiler = new Transpiler(
+            this.result,
+            data,
+            this.filepaths[0] || 'src',
+            this.transpiler.interpreter.interpretingMode,
+            this.transpiler.start_seperator,
+            this.transpiler.end_seperator,
+            resolvedArgs
+        )
         const htmlString = await transpiler.transpile()
         if (transpiler.errorMsg !== '') throw new Error(transpiler.errorMsg)
         this.filesToCopy = [...this.filesToCopy, ...transpiler.filesToCopy]
