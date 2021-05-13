@@ -1,9 +1,9 @@
-import { DataSnippet } from './classes/DataSnippet'
-import FileInlineSnippet from './classes/FileInlineSnippet'
-import HtmlPrefabSnippet from './classes/HtmlPrefabSnippet'
-import JsPrefabSnippet from './classes/JsPrefabSnippet'
-import JsSnippet from './classes/JsSnippet'
-import Snippet from './classes/Snippet'
+import { DataSnippet } from './Snippets/DataSnippet'
+import FileInlineSnippet from './Snippets/FileInlineSnippet'
+import HtmlPrefabSnippet from './Snippets/HtmlPrefabSnippet'
+import JsPrefabSnippet from './Snippets/JsPrefabSnippet'
+import JsSnippet from './Snippets/JsSnippet'
+import Snippet from './Snippets/Snippet'
 import Transpiler from './Transpiler'
 
 export const seperate = (
@@ -44,7 +44,6 @@ export const cutString = (input_string: string, start_seperator: string, end_sep
     while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
         currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1)
         currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1)
-        console.log('run')
     }
     const closingIndex = currentClosingIndex
     const end: string = openingIndex === -1 ? 'true' : 'false'

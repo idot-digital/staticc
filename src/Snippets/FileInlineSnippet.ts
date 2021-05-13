@@ -34,11 +34,12 @@ class FileInlineSnippet extends Snippet {
         snippet_parts = snippet_parts.filter((value) => value != '')
         //@ts-ignore
         this.fileIdentifier = snippet_parts.shift()
-        this.filepaths = snippet_parts
+        const filepaths = snippet_parts
         await Promise.all(
-            this.filepaths.map(async (filepath) => {
+            filepaths.map(async (filepath) => {
                 const content = await readFileFromDisk(pathLib.join(pathLib.dirname(this.referencePath), filepath))
                 this.fileContents += ' ' + content
+                this.transpiler.addLoadedFile(filepath)
             })
         )
     }

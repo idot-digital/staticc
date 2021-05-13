@@ -3,8 +3,8 @@ import { glob } from 'glob'
 import Transpiler from './Transpiler'
 import { minify } from 'html-minifier'
 import { FileManager } from './FileManager'
-import { InterpretingMode } from './classes/JsInterpreter'
-import { Timer } from './classes/Timer'
+import { InterpretingMode } from './legacy/JsInterpreter'
+import { Timer } from './Timer'
 import { readFileFromDisk, saveFileToDisk } from './internal_lib'
 
 function minifyHTML(html_String: string) {

@@ -18,38 +18,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const seperate_1 = require("./seperate");
 const pathLib = __importStar(require("path"));
-const internal_lib_1 = require("./internal_lib");
-class Preprocessor {
-    constructor(input_string) {
-        this.input_string = input_string;
+const internal_lib_1 = require("../internal_lib");
+class FileLinker {
+    constructor(string, path) {
+        this.string = string;
+        this.path = path;
         this.loadedFiles = [];
         this.linkedFiles = [];
-        this.path = '';
     }
-    preprocess(path) {
-        this.path = path;
-        this.cleanComments();
-        this.extractLinkedFiles();
-        return this.input_string;
-    }
-    cleanComments() {
-        let input_string = this.input_string;
-        const oc = seperate_1.occurrences(input_string, '/~');
-        let cleanedString = '';
-        for (let i = 0; i < oc; i++) {
-            const [firstPart, _, lastPart] = oldCutString(input_string, '/~', '~/');
-            cleanedString += firstPart;
-            input_string = lastPart;
-        }
-        this.input_string = cleanedString + input_string;
-    }
-    extractLinkedFiles() {
-        while (this.input_string.indexOf('{{*') !== -1 && this.input_string.indexOf('*}}') !== -1) {
+    link() {
+        while (this.string.indexOf('{{*') !== -1 && this.string.indexOf('*}}') !== -1) {
             if (this.path.indexOf('src') !== -1)
                 return new Error('link in src');
-            const linkedFileString = this.input_string.slice(this.input_string.indexOf('{{*') + 3, this.input_string.indexOf('*}}'));
+            const linkedFileString = this.string.slice(this.string.indexOf('{{*') + 3, this.string.indexOf('*}}'));
             const file = linkedFileString.trim();
             const filepath = pathLib.join(pathLib.dirname(this.path), file);
             this.loadedFiles.push(filepath);
@@ -59,16 +41,8 @@ class Preprocessor {
                 to: linkedFilepath,
             });
             const returnPath = internal_lib_1.replaceAll('/' + linkedFilepath.replace(`dist${pathLib.normalize('/')}`, ``), pathLib.normalize('/'), '/');
-            this.input_string = this.input_string.replace(`{{*${linkedFileString}*}}`, returnPath);
+            this.string = this.string.replace(`{{*${linkedFileString}*}}`, returnPath);
         }
     }
 }
-exports.default = Preprocessor;
-const oldCutString = (input_string, start_seperator, end_seperator) => {
-    const openingIndex = input_string.indexOf(start_seperator);
-    const closingIndex = input_string.indexOf(end_seperator);
-    const firstPart = input_string.slice(0, openingIndex);
-    const middlePart = input_string.slice(openingIndex + start_seperator.length, closingIndex);
-    const lastPart = input_string.slice(closingIndex + end_seperator.length);
-    return [firstPart, middlePart, lastPart];
-};
+exports.default = FileLinker;

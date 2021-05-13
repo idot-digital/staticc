@@ -10,9 +10,9 @@ exports.Transpiler = Transpiler_1.default;
 const html_minifier_1 = require("html-minifier");
 const FileManager_1 = require("./FileManager");
 Object.defineProperty(exports, "FileManager", { enumerable: true, get: function () { return FileManager_1.FileManager; } });
-const JsInterpreter_1 = require("./classes/JsInterpreter");
+const JsInterpreter_1 = require("./legacy/JsInterpreter");
 Object.defineProperty(exports, "InterpretingMode", { enumerable: true, get: function () { return JsInterpreter_1.InterpretingMode; } });
-const Timer_1 = require("./classes/Timer");
+const Timer_1 = require("./Timer");
 const internal_lib_1 = require("./internal_lib");
 function minifyHTML(html_String) {
     return html_minifier_1.minify(html_String, {

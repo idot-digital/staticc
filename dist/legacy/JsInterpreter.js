@@ -43,8 +43,9 @@ function decodePrefabArgs(args, data, argParams = undefined) {
         else if (argLowerCase === 'false')
             return false;
         // boolean false
-        else if (arg.charAt(0) === "{" && arg.charAt(1) === "{")
-            return DataSnippet_1.dataLookup(data, arg.slice(2, arg.length - 2)); //datajson
+        else if (arg.charAt(0) === '{' && arg.charAt(1) === '{')
+            return DataSnippet_1.dataLookup(data, arg.slice(2, arg.length - 2));
+        //datajson
         else
             return argParams[arg]; //arg param
     });
@@ -100,8 +101,8 @@ class JsInterpreter {
     }
     async interpret(string, data, args = [], argParams = undefined) {
         return {
-            resultString: "",
-            returnArgs: null
+            resultString: '',
+            returnArgs: null,
         };
     }
 }
@@ -173,7 +174,7 @@ class DenoInterpreter extends JsInterpreter {
 exports.DenoInterpreter = DenoInterpreter;
 const babel = __importStar(require("@babel/core"));
 const internal_lib_1 = require("../internal_lib");
-const DataSnippet_1 = require("./DataSnippet");
+const DataSnippet_1 = require("../Snippets/DataSnippet");
 function babelTranspile(code) {
     try {
         const babelObj = babel.transform(code, {
@@ -232,9 +233,9 @@ function noramlizeJsReturns(interpreterResult) {
 exports.noramlizeJsReturns = noramlizeJsReturns;
 function prepareJs(scriptText) {
     let argVariables = [];
-    argVariables = [...findAllVariables(scriptText, "const:arg"), ...findAllVariables(scriptText, "let:arg")];
-    scriptText = internal_lib_1.replaceAll(scriptText, "const:arg", "const");
-    scriptText = internal_lib_1.replaceAll(scriptText, "let:arg", "let");
+    argVariables = [...findAllVariables(scriptText, 'const:arg'), ...findAllVariables(scriptText, 'let:arg')];
+    scriptText = internal_lib_1.replaceAll(scriptText, 'const:arg', 'const');
+    scriptText = internal_lib_1.replaceAll(scriptText, 'let:arg', 'let');
     scriptText = scriptText.replace('render(', `const _resultArgs = {${argVariables.join(',')}};render(`);
     return `${scriptText}; function render(value) {return {value, resultArgs: _resultArgs}}`;
 }
@@ -242,7 +243,7 @@ function findAllVariables(scriptText, declarationPrefix) {
     const argVariables = [];
     let returnString = scriptText;
     while (returnString !== null) {
-        const [variableName, endOfScriptString] = findVariable(returnString, "const:arg");
+        const [variableName, endOfScriptString] = findVariable(returnString, 'const:arg');
         returnString = endOfScriptString;
         if (variableName)
             argVariables.push(variableName);
@@ -264,10 +265,10 @@ function findVariable(scriptText, declarationPrefix) {
     return [null, null];
 }
 function seperateArgsAndResult(resultString) {
-    const seperator = "-----$!seperator!$-----";
+    const seperator = '-----$!seperator!$-----';
     const result = resultString.split(seperator);
     return {
         resultString: noramlizeJsReturns(result[0]),
-        returnArgs: JSON.parse(result[1])
+        returnArgs: JSON.parse(result[1]),
     };
 }

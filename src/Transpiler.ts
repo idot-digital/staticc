@@ -1,6 +1,6 @@
-import Preprocessor from './Preprocessor'
+import Preprocessor from './Preprocessing/Preprocessor'
 import { seperate } from './seperate'
-import { InterpretingMode, JsInterpreter } from './classes/JsInterpreter'
+import { InterpretingMode, JsInterpreter } from './legacy/JsInterpreter'
 import { replaceAll } from './internal_lib'
 
 class Transpiler {
@@ -42,7 +42,7 @@ class Transpiler {
         this.baseFolder = baseFolder
     }
     async transpile(): Promise<string> {
-        const preprocessor = new Preprocessor(this.input_string)
+        const preprocessor = new Preprocessor(this.input_string, this)
         try {
             this.input_string = preprocessor.preprocess(this.path)
         } catch (error) {
@@ -65,10 +65,6 @@ class Transpiler {
                 }
             })
         )
-        const loadedFiles = codeSnippets.map((snippet) => snippet.getLoadedFiles()).flat()
-        const filesToCopyFromSnippets = codeSnippets.map((snippet) => snippet.filesToCopy).flat()
-        this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles, ...filesToCopyFromSnippets]
-        this.loadedFiles = [...this.loadedFiles, ...preprocessor.loadedFiles, ...loadedFiles]
         this.resolvedSnippets = codeSnippets.map((snippet) => snippet.toString())
 
         this.recombine()
@@ -85,6 +81,15 @@ class Transpiler {
         }, '')
         result += this.plainHTMLSnippets[this.plainHTMLSnippets.length - 1]
         this.input_string = result
+    }
+    addLoadedFile(loadedFile: string) {
+        this.loadedFiles.push(loadedFile)
+    }
+    addLinkedFile(from: string, to: string) {
+        this.filesToCopy.push({
+            from,
+            to,
+        })
     }
 }
 

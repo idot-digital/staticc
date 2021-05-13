@@ -2,9 +2,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Preprocessor_1 = __importDefault(require("./Preprocessor"));
+const Preprocessor_1 = __importDefault(require("./Preprocessing/Preprocessor"));
 const seperate_1 = require("./seperate");
-const JsInterpreter_1 = require("./classes/JsInterpreter");
+const JsInterpreter_1 = require("./legacy/JsInterpreter");
 const internal_lib_1 = require("./internal_lib");
 class Transpiler {
     constructor(input_string, data, path, interpretingMode, baseFolder = '', start_seperator = '{{', end_seperator = '}}', argParams = undefined) {
@@ -23,7 +23,7 @@ class Transpiler {
         this.baseFolder = baseFolder;
     }
     async transpile() {
-        const preprocessor = new Preprocessor_1.default(this.input_string);
+        const preprocessor = new Preprocessor_1.default(this.input_string, this);
         try {
             this.input_string = preprocessor.preprocess(this.path);
         }
@@ -45,10 +45,6 @@ class Transpiler {
                 this.errorMsg += `\nError in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`;
             }
         }));
-        const loadedFiles = codeSnippets.map((snippet) => snippet.getLoadedFiles()).flat();
-        const filesToCopyFromSnippets = codeSnippets.map((snippet) => snippet.filesToCopy).flat();
-        this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles, ...filesToCopyFromSnippets];
-        this.loadedFiles = [...this.loadedFiles, ...preprocessor.loadedFiles, ...loadedFiles];
         this.resolvedSnippets = codeSnippets.map((snippet) => snippet.toString());
         this.recombine();
         return this.input_string;
@@ -64,6 +60,15 @@ class Transpiler {
         }, '');
         result += this.plainHTMLSnippets[this.plainHTMLSnippets.length - 1];
         this.input_string = result;
+    }
+    addLoadedFile(loadedFile) {
+        this.loadedFiles.push(loadedFile);
+    }
+    addLinkedFile(from, to) {
+        this.filesToCopy.push({
+            from,
+            to,
+        });
     }
 }
 exports.default = Transpiler;

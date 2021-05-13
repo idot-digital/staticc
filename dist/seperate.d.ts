@@ -1,4 +1,4 @@
-import Snippet from './classes/Snippet';
+import Snippet from './Snippets/Snippet';
 import Transpiler from './Transpiler';
 export declare const seperate: (staticcString: string, start_seperator: string, end_seperator: string, path: string, transpiler: Transpiler) => {
     plainHTMLSnippets: string[];

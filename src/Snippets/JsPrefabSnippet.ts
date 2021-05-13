@@ -1,6 +1,6 @@
 import Transpiler from '../Transpiler'
-import Preprocessor from '../Preprocessor'
 import { PrefabSnippet, PrefabType } from './PrefabSnippet'
+import FileLinker from '../Preprocessing/FileLinker'
 
 //@ts-ignore
 let modulePath: string = require.main.path
@@ -15,11 +15,9 @@ class JsPrefabSnippet extends PrefabSnippet {
     async resolve(data: any): Promise<void> {
         await super.readFile()
         this.decodeArgs()
-        const preprocessor = new Preprocessor(this.fileContent)
-        preprocessor.path = this.filepaths[0]
-        preprocessor.extractLinkedFiles()
-        this.fileContent = preprocessor.input_string
-        this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles]
+        const fileLinker = new FileLinker(this.fileContent, this.filepath)
+        this.fileContent = fileLinker.link()
+        fileLinker.linkedFiles.forEach(({ from, to }) => this.transpiler.addLinkedFile(from, to))
         try {
             const result = await this.interpret(data)
             this.result = result.resultString

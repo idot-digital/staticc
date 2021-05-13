@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.jsInterpretInitFn = void 0;
 const js_interpreter_1 = __importDefault(require("js-interpreter"));
 const worker_threads_1 = require("worker_threads");
-const JsInterpreter_1 = require("./legacy/JsInterpreter");
+const JsInterpreter_1 = require("./JsInterpreter");
 const { codeString, data, args } = worker_threads_1.workerData;
 const preparationCode = 'var data = JSON.parse(_data); var args = JSON.parse(_args); function render(arg){_render(JSON.stringify(arg))}';
 //babel transpilation

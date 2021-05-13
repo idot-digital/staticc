@@ -8,11 +8,10 @@ class Snippet {
     constructor(input_string, lineNumber, path, transpiler) {
         this.input_string = input_string;
         this.result = '';
-        this.filepaths = [];
+        this.filepath = 'src';
         this.lineNumber = lineNumber;
         this.referencePath = path;
         this.cleanSnippetString();
-        this.filesToCopy = [];
         this.transpiler = transpiler;
     }
     async resolve(data) {
@@ -21,19 +20,16 @@ class Snippet {
     toString() {
         return this.result;
     }
-    getLoadedFiles() {
-        return this.filepaths;
-    }
     cleanSnippetString() {
         this.input_string = internal_lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data, resolvedArgs = undefined) {
-        const transpiler = new Transpiler_1.default(this.result, data, this.filepaths[0] || 'src', this.transpiler.interpreter.interpretingMode, this.transpiler.baseFolder, this.transpiler.start_seperator, this.transpiler.end_seperator, resolvedArgs);
+        const transpiler = new Transpiler_1.default(this.result, data, this.filepath, this.transpiler.interpreter.interpretingMode, this.transpiler.baseFolder, this.transpiler.start_seperator, this.transpiler.end_seperator, resolvedArgs);
         const htmlString = await transpiler.transpile();
         if (transpiler.errorMsg !== '')
             throw new Error(transpiler.errorMsg);
-        this.filesToCopy = [...this.filesToCopy, ...transpiler.filesToCopy];
-        this.filepaths = [...this.filepaths, ...transpiler.loadedFiles];
+        transpiler.filesToCopy.forEach(({ from, to }) => this.transpiler.addLinkedFile(from, to));
+        transpiler.loadedFiles.forEach((loadedFile) => this.transpiler.addLoadedFile(loadedFile));
         this.result = htmlString;
         return;
     }

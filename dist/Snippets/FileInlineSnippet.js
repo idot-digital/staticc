@@ -37,10 +37,11 @@ class FileInlineSnippet extends Snippet_1.default {
         snippet_parts = snippet_parts.filter((value) => value != '');
         //@ts-ignore
         this.fileIdentifier = snippet_parts.shift();
-        this.filepaths = snippet_parts;
-        await Promise.all(this.filepaths.map(async (filepath) => {
+        const filepaths = snippet_parts;
+        await Promise.all(filepaths.map(async (filepath) => {
             const content = await internal_lib_1.readFileFromDisk(path_1.default.join(path_1.default.dirname(this.referencePath), filepath));
             this.fileContents += ' ' + content;
+            this.transpiler.addLoadedFile(filepath);
         }));
     }
 }

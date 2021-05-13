@@ -3,19 +3,17 @@ import Transpiler from '../Transpiler'
 class Snippet {
     input_string: string
     result: string
-    filepaths: string[]
     lineNumber: Number
     referencePath: string
-    filesToCopy: { from: string; to: string }[]
     transpiler: Transpiler
+    filepath: string
     constructor(input_string: string, lineNumber: Number, path: string, transpiler: Transpiler) {
         this.input_string = input_string
         this.result = ''
-        this.filepaths = []
+        this.filepath = 'src'
         this.lineNumber = lineNumber
         this.referencePath = path
         this.cleanSnippetString()
-        this.filesToCopy = []
         this.transpiler = transpiler
     }
     async resolve(data: any): Promise<void> {
@@ -24,9 +22,6 @@ class Snippet {
     toString(): string {
         return this.result
     }
-    getLoadedFiles(): string[] {
-        return this.filepaths
-    }
     cleanSnippetString(): void {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
@@ -34,7 +29,7 @@ class Snippet {
         const transpiler = new Transpiler(
             this.result,
             data,
-            this.filepaths[0] || 'src',
+            this.filepath,
             this.transpiler.interpreter.interpretingMode,
             this.transpiler.baseFolder,
             this.transpiler.start_seperator,
@@ -43,8 +38,8 @@ class Snippet {
         )
         const htmlString = await transpiler.transpile()
         if (transpiler.errorMsg !== '') throw new Error(transpiler.errorMsg)
-        this.filesToCopy = [...this.filesToCopy, ...transpiler.filesToCopy]
-        this.filepaths = [...this.filepaths, ...transpiler.loadedFiles]
+        transpiler.filesToCopy.forEach(({ from, to }) => this.transpiler.addLinkedFile(from, to))
+        transpiler.loadedFiles.forEach((loadedFile) => this.transpiler.addLoadedFile(loadedFile))
         this.result = htmlString
         return
     }

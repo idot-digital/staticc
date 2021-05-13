@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateLineNumber = exports.classifySnippet = exports.cutString = exports.occurrences = exports.seperate = void 0;
-const DataSnippet_1 = require("./classes/DataSnippet");
-const FileInlineSnippet_1 = __importDefault(require("./classes/FileInlineSnippet"));
-const HtmlPrefabSnippet_1 = __importDefault(require("./classes/HtmlPrefabSnippet"));
-const JsPrefabSnippet_1 = __importDefault(require("./classes/JsPrefabSnippet"));
-const JsSnippet_1 = __importDefault(require("./classes/JsSnippet"));
+const DataSnippet_1 = require("./Snippets/DataSnippet");
+const FileInlineSnippet_1 = __importDefault(require("./Snippets/FileInlineSnippet"));
+const HtmlPrefabSnippet_1 = __importDefault(require("./Snippets/HtmlPrefabSnippet"));
+const JsPrefabSnippet_1 = __importDefault(require("./Snippets/JsPrefabSnippet"));
+const JsSnippet_1 = __importDefault(require("./Snippets/JsSnippet"));
 const seperate = (staticcString, start_seperator, end_seperator, path, transpiler) => {
     const numberOfLines = exports.occurrences(staticcString, /\n/) + 1;
     const plainHTMLSnippets = [];
@@ -37,7 +37,6 @@ const cutString = (input_string, start_seperator, end_seperator) => {
     while (currentClosingIndex !== -1 && currentOpeningIndex !== -1 && currentOpeningIndex < currentClosingIndex) {
         currentClosingIndex = input_string.indexOf(end_seperator, currentClosingIndex + 1);
         currentOpeningIndex = input_string.indexOf(start_seperator, currentOpeningIndex + 1);
-        console.log('run');
     }
     const closingIndex = currentClosingIndex;
     const end = openingIndex === -1 ? 'true' : 'false';

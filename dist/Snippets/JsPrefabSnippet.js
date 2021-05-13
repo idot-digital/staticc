@@ -2,8 +2,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Preprocessor_1 = __importDefault(require("../Preprocessor"));
 const PrefabSnippet_1 = require("./PrefabSnippet");
+const FileLinker_1 = __importDefault(require("../Preprocessing/FileLinker"));
 //@ts-ignore
 let modulePath = require.main.path;
 modulePath = modulePath.replace('__tests__', 'dist');
@@ -15,11 +15,9 @@ class JsPrefabSnippet extends PrefabSnippet_1.PrefabSnippet {
     async resolve(data) {
         await super.readFile();
         this.decodeArgs();
-        const preprocessor = new Preprocessor_1.default(this.fileContent);
-        preprocessor.path = this.filepaths[0];
-        preprocessor.extractLinkedFiles();
-        this.fileContent = preprocessor.input_string;
-        this.filesToCopy = [...this.filesToCopy, ...preprocessor.linkedFiles];
+        const fileLinker = new FileLinker_1.default(this.fileContent, this.filepath);
+        this.fileContent = fileLinker.link();
+        fileLinker.linkedFiles.forEach(({ from, to }) => this.transpiler.addLinkedFile(from, to));
         try {
             const result = await this.interpret(data);
             this.result = result.resultString;

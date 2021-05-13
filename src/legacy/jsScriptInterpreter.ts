@@ -1,6 +1,6 @@
 import JsInterpreter from 'js-interpreter'
 import { workerData, parentPort } from 'worker_threads'
-import { babelTranspile, decodePrefabArgs, noramlizeJsReturns } from './classes/JsInterpreter'
+import { babelTranspile, decodePrefabArgs, noramlizeJsReturns } from './JsInterpreter'
 
 const { codeString, data, args } = workerData
 
@@ -15,10 +15,10 @@ interpreter.run()
 if (interpreter.globalObject._rendered) {
     const resolvedSnippet = JSON.parse(interpreter.globalObject.renderedContent)
     const noramlizedSnippet = noramlizeJsReturns(resolvedSnippet)
-    parentPort?.postMessage({resultString: noramlizedSnippet})
+    parentPort?.postMessage({ resultString: noramlizedSnippet })
 } else {
     const noramlizedSnippet = noramlizeJsReturns(interpreter.value)
-    parentPort?.postMessage({resultString: noramlizedSnippet})
+    parentPort?.postMessage({ resultString: noramlizedSnippet })
 }
 
 export function jsInterpretInitFn(interpreter: any, globalObject: any): void {

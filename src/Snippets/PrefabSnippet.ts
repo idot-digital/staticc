@@ -23,9 +23,9 @@ class PrefabSnippet extends Snippet {
         let snippet_parts = this.input_string.split(' ').filter((value) => value != '')
         if (snippet_parts.length < 1) throw new Error('Not enough arguments! You need to at least give the filename!')
         //@ts-ignore
-        this.filepaths = [pathLib.join(this.transpiler.baseFolder, 'prefabs', snippet_parts.shift(), this.type == PrefabType.JsPrefabSnippet ? 'prefab.js' : 'prefab.html')]
+        this.filepath = pathLib.join(this.transpiler.baseFolder, 'prefabs', snippet_parts.shift(), this.type == PrefabType.JsPrefabSnippet ? 'prefab.js' : 'prefab.html')
         this.args = snippet_parts
-        this.fileContent = await readFileFromDisk(this.filepaths[0])
+        this.fileContent = await readFileFromDisk(this.filepath)
     }
 }
 

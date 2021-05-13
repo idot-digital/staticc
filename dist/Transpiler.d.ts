@@ -1,4 +1,4 @@
-import { InterpretingMode, JsInterpreter } from './classes/JsInterpreter';
+import { InterpretingMode, JsInterpreter } from './legacy/JsInterpreter';
 declare class Transpiler {
     input_string: string;
     data: any;
@@ -20,5 +20,7 @@ declare class Transpiler {
     transpile(): Promise<string>;
     getErrorAsHtml(): string;
     recombine(): void;
+    addLoadedFile(loadedFile: string): void;
+    addLinkedFile(from: string, to: string): void;
 }
 export default Transpiler;

@@ -15,7 +15,8 @@ export function decodePrefabArgs(args: string[], data: any, argParams: any = und
         //boolean true
         else if (argLowerCase === 'false') return false
         // boolean false
-        else if(arg.charAt(0) === "{" && arg.charAt(1) === "{") return dataLookup(data, arg.slice(2, arg.length-2)) //datajson
+        else if (arg.charAt(0) === '{' && arg.charAt(1) === '{') return dataLookup(data, arg.slice(2, arg.length - 2))
+        //datajson
         else return argParams[arg] //arg param
     })
     return args
@@ -68,10 +69,10 @@ export class JsInterpreter {
                 return Interpreter
         }
     }
-    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{ resultString: string; returnArgs: any }> {
         return {
-            resultString: "",
-            returnArgs: null
+            resultString: '',
+            returnArgs: null,
         }
     }
 }
@@ -80,7 +81,7 @@ export class InsecureInterpreter extends JsInterpreter {
     constructor() {
         super()
     }
-    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{ resultString: string; returnArgs: any }> {
         args = decodePrefabArgs(args, data, argParams)
         const preparedJsCode = prepareJs(string)
         let res = eval(preparedJsCode)
@@ -100,7 +101,7 @@ export class JsScriptInterpreter extends JsInterpreter {
         this.modulePath = require.main.path
         this.modulePath = this.modulePath.replace('__tests__', 'dist')
     }
-    async interpret(codeString: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+    async interpret(codeString: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{ resultString: string; returnArgs: any }> {
         return new Promise((res, rej) => {
             const worker = new Worker(pathLib.join(this.modulePath, 'jsScriptInterpreter.js'), { workerData: { codeString, data, args } })
             worker.on('message', res)
@@ -117,7 +118,7 @@ export class DenoInterpreter extends JsInterpreter {
         super()
         this.url = remote ? 'http://195.90.200.109:9999' : 'http://127.0.0.1:9999'
     }
-    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{resultString: string, returnArgs: any}> {
+    async interpret(string: string, data: any, args: any[] = [], argParams: any = undefined): Promise<{ resultString: string; returnArgs: any }> {
         args = decodePrefabArgs(args, data, argParams)
         const preparedJsCode = prepareJs(string)
         try {
@@ -143,7 +144,7 @@ export class DenoInterpreter extends JsInterpreter {
 
 import * as babel from '@babel/core'
 import { replaceAll } from '../internal_lib'
-import { dataLookup } from './DataSnippet'
+import { dataLookup } from '../Snippets/DataSnippet'
 export function babelTranspile(code: string): string {
     try {
         const babelObj = babel.transform(code, {
@@ -193,29 +194,29 @@ export function noramlizeJsReturns(interpreterResult: any): string {
     }
 }
 
-function prepareJs(scriptText:string) {
+function prepareJs(scriptText: string) {
     let argVariables = []
-    argVariables = [...findAllVariables(scriptText, "const:arg"), ...findAllVariables(scriptText, "let:arg")]
-    scriptText = replaceAll(scriptText, "const:arg", "const")
-    scriptText = replaceAll(scriptText, "let:arg", "let")
+    argVariables = [...findAllVariables(scriptText, 'const:arg'), ...findAllVariables(scriptText, 'let:arg')]
+    scriptText = replaceAll(scriptText, 'const:arg', 'const')
+    scriptText = replaceAll(scriptText, 'let:arg', 'let')
     scriptText = scriptText.replace('render(', `const _resultArgs = {${argVariables.join(',')}};render(`)
     return `${scriptText}; function render(value) {return {value, resultArgs: _resultArgs}}`
 }
 
-function findAllVariables(scriptText:string,  declarationPrefix: string) {
+function findAllVariables(scriptText: string, declarationPrefix: string) {
     const argVariables = []
-    let returnString : string | null = scriptText
-        while (returnString !== null){
-            const [variableName, endOfScriptString] = findVariable(returnString, "const:arg")
-            returnString = endOfScriptString
-            if(variableName) argVariables.push(variableName)
-        }
+    let returnString: string | null = scriptText
+    while (returnString !== null) {
+        const [variableName, endOfScriptString] = findVariable(returnString, 'const:arg')
+        returnString = endOfScriptString
+        if (variableName) argVariables.push(variableName)
+    }
     return argVariables
 }
 
-function findVariable(scriptText:string, declarationPrefix: string) {
+function findVariable(scriptText: string, declarationPrefix: string) {
     const index = scriptText.indexOf(declarationPrefix)
-    if(index !== -1){
+    if (index !== -1) {
         const partOfScriptString = scriptText.slice(index + 10)
         const indexOfNextEquals = partOfScriptString.indexOf('=')
         const indexOfNextBlank = partOfScriptString.indexOf(' ')
@@ -230,11 +231,11 @@ function findVariable(scriptText:string, declarationPrefix: string) {
     return [null, null]
 }
 
-function seperateArgsAndResult(resultString:string) {
-    const seperator = "-----$!seperator!$-----";
+function seperateArgsAndResult(resultString: string) {
+    const seperator = '-----$!seperator!$-----'
     const result = resultString.split(seperator)
     return {
         resultString: noramlizeJsReturns(result[0]),
-        returnArgs: JSON.parse(result[1])
+        returnArgs: JSON.parse(result[1]),
     }
 }
