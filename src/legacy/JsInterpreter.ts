@@ -207,7 +207,7 @@ function findAllVariables(scriptText: string, declarationPrefix: string) {
     const argVariables = []
     let returnString: string | null = scriptText
     while (returnString !== null) {
-        const [variableName, endOfScriptString] = findVariable(returnString, 'const:arg')
+        const [variableName, endOfScriptString] = findVariable(returnString, declarationPrefix)
         returnString = endOfScriptString
         if (variableName) argVariables.push(variableName)
     }
