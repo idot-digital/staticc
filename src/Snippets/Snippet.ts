@@ -26,6 +26,7 @@ class Snippet {
         this.input_string = replaceAll(this.input_string, '\n', '')
     }
     async postProcess(data: any, resolvedArgs: any = undefined): Promise<void> {
+        this.result = `${this.result}`
         const transpiler = new Transpiler(
             this.result,
             data,
