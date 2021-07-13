@@ -12,6 +12,7 @@ class Preprocessor {
         this.transpiler = transpiler;
     }
     preprocess(path) {
+        console.log(`Preprocessing ${path}`);
         this.path = path;
         this.input_string = cleanComments_1.default(this.input_string);
         this.fileLinker = new FileLinker_1.default(this.input_string, this.path);

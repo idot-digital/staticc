@@ -24,6 +24,7 @@ class Snippet {
         this.input_string = internal_lib_1.replaceAll(this.input_string, '\n', '');
     }
     async postProcess(data, resolvedArgs = undefined) {
+        this.result = `${this.result}`;
         const transpiler = new Transpiler_1.default(this.result, data, this.filepath, this.transpiler.interpreter.interpretingMode, this.transpiler.baseFolder, this.transpiler.start_seperator, this.transpiler.end_seperator, resolvedArgs);
         const htmlString = await transpiler.transpile();
         if (transpiler.errorMsg !== '')

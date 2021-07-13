@@ -54,17 +54,21 @@ class Transpiler {
         }
 
         const { plainHTMLSnippets, codeSnippets } = seperate(this.input_string, this.start_seperator, this.end_seperator, this.path, this)
+        console.log(`Seperated ${this.path}`)
         this.plainHTMLSnippets = plainHTMLSnippets
 
         await Promise.all(
             codeSnippets.map(async (snippet) => {
+                console.log(`Resolving Snippet ${snippet.lineNumber}`)
                 try {
                     await snippet.resolve(this.data)
                 } catch (error) {
                     this.errorMsg += `\nError in Line ${snippet.lineNumber} in ${snippet.referencePath}\n${snippet.input_string}\n${error.message}\n`
                 }
+                console.log(`Resolved Snippet ${snippet.lineNumber}`)
             })
         )
+        console.log(`Resolved Snippets`)
         this.resolvedSnippets = codeSnippets.map((snippet) => snippet.toString())
 
         this.recombine()
