@@ -42,6 +42,8 @@ exports.trycatchasync = trycatchasync;
 const replaceAll = (string, searchValue, replaceValue) => {
     while (string.indexOf(searchValue) !== -1) {
         string = string.replace(searchValue, replaceValue);
+        if (searchValue === '/')
+            return string;
     }
     return string;
 };
