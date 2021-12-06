@@ -36,9 +36,11 @@ Staticc
 
 ```html
 <p>You can select from these Products</p>
-{{ # data.shop_items.map((item)=>{ return `
-<h2>${item}</h2>
-` }) }}
+{{ 
+    # data.shop_items.map((item)=>{ 
+        return `<h2>${item}</h2>` 
+    }) 
+}}
 ```
 
 data.json
@@ -152,9 +154,8 @@ Staticc (index.html)
 prefab.html
 
 ```html
-const year = new Date().getFullYear() render(`
-<h1>Copyright (c) ${year} ${data.company_name}</h1>
-`)
+const year = new Date().getFullYear() 
+render(`<h1>Copyright (c) ${year} ${data.company_name}</h1>`)
 ```
 
 data.json
