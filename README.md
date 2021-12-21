@@ -5,13 +5,13 @@ Staticc is a static side generator. It is made for simple static sides and gives
 ## Installation
 
 ```bash
-$ npm install staticc
+$ npm install staticc-cli
 ```
 
 or
 
 ```bash
-$ yarn add staticc
+$ yarn add staticc-cli
 ```
 
 ## Quick start
